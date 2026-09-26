@@ -35,3 +35,20 @@ async def add_user(
     session.add(user)
 
     return user
+
+
+async def get_user_by_email(
+    session: AsyncSession,
+    *,
+    email: str,
+) -> User | None:
+    query = (
+        select(User)
+        .where(func.lower(User.email) == email.lower())
+    )
+
+    result = await session.execute(query)
+
+    user: User | None = result.scalar_one_or_none()
+
+    return user
