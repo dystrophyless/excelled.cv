@@ -2,21 +2,29 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.emailer import send_verification_email
 from src.auth.models import PendingUser
 from src.auth.repository import get_pending_user_by_email
-from src.auth.schemas import UserRegisterRequest, VerifyEmailRequest
+from src.auth.schemas import Token, UserRegisterRequest, VerifyEmailRequest
 from src.auth.utils import (
+    create_access_token,
     generate_verification_code,
     hash_password,
     hash_verification_code,
     verify_code,
+    verify_password,
 )
 from src.database import get_session
-from src.users.repository import add_user, check_if_user_exists_by_email
+from src.users.models import User
+from src.users.repository import (
+    add_user,
+    check_if_user_exists_by_email,
+    get_user_by_email,
+)
 
 router = APIRouter()
 
@@ -139,6 +147,7 @@ async def register_user(
 
 @router.post(
     "/verify-email",
+    response_model=Token,
 )
 async def verify_email(
     verification_data: VerifyEmailRequest,
@@ -195,6 +204,15 @@ async def verify_email(
             await session.flush()
 
         await session.delete(pending_user)
+
+        access_token: str = create_access_token(
+            data={"sub": str(user.id)},
+        )
+
+        token: Token = Token(
+            access_token=access_token,
+            token_type="bearer",
+        )
         await session.commit()
     except IntegrityError:
         await session.rollback()
@@ -203,4 +221,44 @@ async def verify_email(
             detail="Failed to complete email verification. Please try requesting a new code.",
         )
 
-    return {"message": "Email verified successfully. You can now log in."}
+    return token
+
+
+@router.post(
+    "/token",
+)
+async def login_user(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: Annotated[AsyncSession, Depends(get_session)],
+):
+    email = form_data.username.lower()
+
+    user: User | None = await get_user_by_email(
+        session,
+        email=email,
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid email or password.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    password_hash: str = user.hashed_password
+
+    if not verify_password(form_data.password, password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid email or password.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token = create_access_token(
+        data={"sub": str(user.id)},
+    )
+
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+    )

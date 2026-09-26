@@ -14,5 +14,7 @@ class Settings(BaseSettings):
     resend_api_key: SecretStr
     resend_from_email: str = "onboarding@resend.dev"
 
+    access_token_expire_minutes: int = 30
+
 
 settings = Settings()
