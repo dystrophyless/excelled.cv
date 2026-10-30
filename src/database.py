@@ -16,6 +16,8 @@ async_engine = create_async_engine(
 
 SessionMaker = async_sessionmaker(
     bind=async_engine,
+    # async sessions cannot lazy-load: keep attributes readable after commit
+    expire_on_commit=False,
 )
 
 

@@ -1,7 +1,13 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 import { createBrowserRouter, Navigate, useLocation } from "react-router";
+import { RedirectIfSignedIn, RequireRole } from "@/features/auth/guards";
+import { ResetConfirmPage } from "@/features/auth/ResetConfirmPage";
+import { ResetRequestPage } from "@/features/auth/ResetRequestPage";
+import { ResetVerifyPage } from "@/features/auth/ResetVerifyPage";
+import { SignInPage } from "@/features/auth/SignInPage";
+import { SignUpPage } from "@/features/auth/SignUpPage";
+import { VerifyEmailPage } from "@/features/auth/VerifyEmailPage";
 import { StyleguidePage } from "@/pages/styleguide/styleguide-page";
-import { AuthTemplate } from "@/pages/styleguide/templates/auth";
 import { BrowseTemplate } from "@/pages/styleguide/templates/browse";
 import { CandidateTemplate } from "@/pages/styleguide/templates/candidate";
 import { DashboardTemplate } from "@/pages/styleguide/templates/dashboard";
@@ -22,7 +28,8 @@ import { PrototypeRoute } from "@/prototypes/prototype-route";
 /*
  * DEMO ROUTES — until a feature ships, its real path (design-system/ia.md) shows the reference template,
  * so the whole app can be clicked through. When /speckit-implement delivers a page, replace its demo route
- * with the real <XxxPage /> (wrapped in its role layout).
+ * with the real <XxxPage /> (wrapped in its role layout). Already real: sign-in, sign-up (+ verify) and
+ * reset-password (+ verify, confirm) in the auth feature; every other path below is still a demo.
  */
 function Demo({ page: Page }: { page: ComponentType }) {
   const location = useLocation();
@@ -32,33 +39,48 @@ function Demo({ page: Page }: { page: ComponentType }) {
 
 const demo = (path: string, page: ComponentType) => ({ path, element: <Demo page={page} /> });
 
+// Role-guarded demo page. The reference templates already render their own role layout (StudentLayout / EmployerLayout),
+// so the guard does not wrap another one.
+const guarded = (role: "student" | "employer", path: string, page: ComponentType) => ({
+  path,
+  element: <RequireRole role={role}><Demo page={page} /></RequireRole>,
+});
+const student = (path: string, page: ComponentType) => guarded("student", path, page);
+const employer = (path: string, page: ComponentType) => guarded("employer", path, page);
+
+const publicOnly = (path: string, page: ReactNode) => ({ path, element: <RedirectIfSignedIn>{page}</RedirectIfSignedIn> });
+
 export const router = createBrowserRouter([
   // Public
   demo("/", LandingTemplate),
   demo("/employers", LandingTemplate),
   demo("/vacancies", BrowseTemplate),
   demo("/vacancies/:id", DetailTemplate),
-  demo("/sign-in", AuthTemplate),
-  { path: "/sign-up", element: <Navigate to="/sign-in?state=sign-up" replace /> },
+  publicOnly("/sign-in", <SignInPage />),
+  publicOnly("/sign-up", <SignUpPage />),
+  publicOnly("/sign-up/verify", <VerifyEmailPage />),
+  publicOnly("/reset-password", <ResetRequestPage />),
+  publicOnly("/reset-password/verify", <ResetVerifyPage />),
+  publicOnly("/reset-password/confirm", <ResetConfirmPage />),
   demo("/onboarding", WizardTemplate),
   // Student
-  demo("/app", DashboardTemplate),
-  demo("/app/vacancies", BrowseTemplate),
-  demo("/app/vacancies/:id", DetailTemplate),
-  demo("/app/applications", TrackerTemplate),
-  demo("/app/saved", SavedTemplate),
-  demo("/app/profile", ProfileTemplate),
-  demo("/app/profile/edit", FormTemplate),
-  demo("/app/settings", SettingsTemplate),
+  student("/app", DashboardTemplate),
+  student("/app/vacancies", BrowseTemplate),
+  student("/app/vacancies/:id", DetailTemplate),
+  student("/app/applications", TrackerTemplate),
+  student("/app/saved", SavedTemplate),
+  student("/app/profile", ProfileTemplate),
+  student("/app/profile/edit", FormTemplate),
+  student("/app/settings", SettingsTemplate),
   // Employer
-  { path: "/company", element: <Navigate to="/company/vacancies" replace /> },
-  demo("/company/vacancies", TableTemplate),
-  demo("/company/vacancies/new", VacancyEditTemplate),
-  demo("/company/vacancies/:id", PipelineTemplate),
-  demo("/company/vacancies/:id/edit", VacancyEditTemplate),
-  demo("/company/candidates/:id", CandidateTemplate),
-  demo("/company/profile", SettingsTemplate),
-  demo("/company/settings", SettingsTemplate),
+  { path: "/company", element: <RequireRole role="employer"><Navigate to="/company/vacancies" replace /></RequireRole> },
+  employer("/company/vacancies", TableTemplate),
+  employer("/company/vacancies/new", VacancyEditTemplate),
+  employer("/company/vacancies/:id", PipelineTemplate),
+  employer("/company/vacancies/:id/edit", VacancyEditTemplate),
+  employer("/company/candidates/:id", CandidateTemplate),
+  employer("/company/profile", SettingsTemplate),
+  employer("/company/settings", SettingsTemplate),
 
   // Design system
   { path: "/styleguide", element: <StyleguidePage /> },
