@@ -25,6 +25,20 @@ async def _send_email(to: str, subject: str, html: str) -> None:
         raise EmailDeliveryError from exc
 
 
+async def send_password_reset_email(to: str, code: str):
+    subject = "Reset your password"
+    html = f"""
+    <html>
+        <body>
+            <p>We received a request to reset your password. Use this code to continue:</p>
+            <h2>{code}</h2>
+            <p>This code will expire in 10 minutes. If you did not ask for it, ignore this email: your password stays the same.</p>
+        </body>
+    </html>
+    """
+    await _send_email(to, subject, html)
+
+
 async def send_verification_email(to: str, code: str):
     subject = "Verify your email"
     html = f"""

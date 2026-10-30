@@ -1,17 +1,19 @@
 import hashlib
 import hmac
 import secrets
-from datetime import UTC, datetime, timedelta
 
-import jwt
-from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
 
 from src.config import settings
 
 password_hash = PasswordHash.recommended()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+# Verified against when the email has no account, so both paths cost the same time.
+_DUMMY_PASSWORD_HASH = password_hash.hash(secrets.token_urlsafe(16))
+
+
+def normalize_email(email: str) -> str:
+    return email.strip().lower()
 
 
 def hash_password(password: str) -> str:
@@ -22,14 +24,16 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return password_hash.verify(password, hashed_password)
 
 
+def verify_password_dummy(password: str) -> None:
+    password_hash.verify(password, _DUMMY_PASSWORD_HASH)
+
+
 def generate_verification_code() -> str:
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
 def hash_verification_code(email: str, code: str) -> str:
-    normalized_email = email.strip().lower()
-
-    message = f"{normalized_email}:{code}".encode()
+    message = f"{normalize_email(email)}:{code}".encode()
 
     secret = settings.secret_key.get_secret_value().encode()
 
@@ -41,35 +45,11 @@ def verify_code(email: str, code: str, hashed_code: str) -> bool:
     return hmac.compare_digest(expected_hash, hashed_code)
 
 
-def create_access_token(data: dict, expires_delta: int | None = None) -> str:
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(UTC) + timedelta(minutes=expires_delta)
-    else:
-        expire = datetime.now(UTC) + timedelta(
-            minutes=settings.access_token_expire_minutes,
-        )
-
-    to_encode.update({"exp": expire})
-
-    encoded_jwt = jwt.encode(
-        to_encode,
-        settings.secret_key.get_secret_value(),
-        algorithm="HS256",
-    )
-
-    return encoded_jwt
+def new_token() -> str:
+    """32 random bytes, URL-safe — used for session cookies and one-time reset tokens."""
+    return secrets.token_urlsafe(32)
 
 
-def verify_access_token(token: str) -> dict:
-    try:
-        payload = jwt.decode(
-            token,
-            settings.secret_key.get_secret_value(),
-            algorithms=["HS256"],
-            options={"sub", "exp"},
-        )
-    except jwt.InvalidTokenError:
-        return None
-    else:
-        return payload.get("sub")
+def hash_token(token: str) -> str:
+    """Only this hash is stored; the raw token never reaches the database."""
+    return hashlib.sha256(token.encode()).hexdigest()
