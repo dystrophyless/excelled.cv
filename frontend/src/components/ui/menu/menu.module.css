@@ -1,0 +1,112 @@
+/* Dropdown menu + tooltip — popover recipe from affect (profile-menu, smart-recommendation). */
+
+.root {
+  position: relative;
+  display: inline-flex;
+}
+
+.menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-dropdown);
+  display: grid;
+  gap: var(--space-2);
+  min-width: 200px;
+  max-width: 320px;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  animation: menu-in var(--duration-menu) var(--ease-out);
+}
+
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  width: 100%;
+  min-height: var(--option-height);
+  padding: 0 var(--space-10);
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  font-size: var(--text-body);
+  color: var(--color-text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.item svg {
+  flex: none;
+  color: var(--color-muted-strong);
+}
+
+.item:hover,
+.item:focus-visible {
+  background: var(--color-row-hover);
+  color: var(--color-ink);
+}
+
+.item:hover svg,
+.item:focus-visible svg {
+  color: var(--color-ink);
+}
+
+.item[data-danger],
+.item[data-danger] svg {
+  color: var(--color-destructive);
+}
+
+.item[aria-disabled="true"] {
+  color: var(--color-faint);
+  cursor: not-allowed;
+}
+
+.separator {
+  height: 1px;
+  margin: var(--space-4) var(--space-6);
+  background: var(--color-line-subtle);
+}
+
+/* Tooltip */
+.tipRoot {
+  position: relative;
+  display: inline-flex;
+}
+
+.tip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-toast);
+  width: max-content;
+  max-width: 240px;
+  padding: var(--space-6) var(--space-10);
+  border-radius: var(--radius-chip);
+  background: var(--color-ink);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-on-ink);
+  pointer-events: none;
+  animation: tip-in var(--duration-fast) var(--ease-out);
+}
+
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+
+.menu[data-side="top"] {
+  transform-origin: bottom;
+}
+
+@keyframes tip-in {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu, .tip { animation: none; }
+}

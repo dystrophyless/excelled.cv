@@ -1,0 +1,204 @@
+/* App shell — sticky header + page body. design-system/templates.md § App shell. */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--color-header);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--color-line-subtle);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-24);
+  height: var(--header-height);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex: none;
+  border-radius: var(--radius-chip);
+  font-size: var(--text-title);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-title);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--radius-chip);
+  background: var(--brand-tile);
+  box-shadow: var(--shadow-raised);
+}
+
+.mark svg {
+  display: block;
+}
+
+.markStar {
+  fill: var(--brand-star);
+}
+
+.markEye {
+  fill: var(--brand-eye);
+}
+
+/* Primary nav = affect SegmentedControl language: a gray track, the current section is the white thumb */
+.nav {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px;
+  border-radius: var(--radius-control);
+  background: var(--color-tray);
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 var(--space-12);
+  border-radius: calc(var(--radius-control) - 3px);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-muted-strong);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.navLink:hover {
+  color: var(--color-ink);
+}
+
+.navLink[aria-current="page"] {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-control);
+  color: var(--color-ink);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-left: auto;
+}
+
+.menuButton {
+  display: grid;
+  place-items: center;
+  width: var(--control-md);
+  height: var(--control-md);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.menuButton:hover {
+  background: var(--color-tray);
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Mobile sheet */
+.sheet {
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+.sheet::backdrop {
+  background: var(--color-backdrop);
+}
+
+.sheet[open] {
+  animation: sheet-in var(--duration-slow) var(--ease-out);
+}
+
+.sheetBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--color-line-subtle);
+}
+
+.sheetNav {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-12) var(--gutter);
+}
+
+.sheetLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  height: 48px;
+  padding: 0 var(--space-12);
+  border-radius: var(--radius-control);
+  font-size: var(--text-title);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.sheetLink:hover {
+  background: var(--color-tray);
+  color: var(--color-ink);
+}
+
+.sheetLink[aria-current="page"] {
+  background: var(--color-tray);
+  color: var(--color-ink);
+}
+
+.sheetActions {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--gutter);
+}
+
+@media (min-width: 1024px) {
+  .nav { display: flex; }
+  .menuButton { display: none; }
+}
+
+/* Below lg: secondary header actions move into the sheet */
+@media (max-width: 1023.98px) {
+  .actions [data-shell-collapse] { display: none; }
+}
+
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(-8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet[open] { animation: none; }
+  .navLink { transition: none; }
+}

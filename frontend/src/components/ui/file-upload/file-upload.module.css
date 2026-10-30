@@ -1,0 +1,103 @@
+/* File upload — dashed drop zone; a chosen file becomes a row. */
+
+.zone {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-20) var(--space-16);
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-field);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.zone:hover,
+.zone[data-dragging] {
+  border-color: var(--color-muted);
+  background: var(--color-surface);
+}
+
+.zone:focus-within {
+  border-color: var(--color-ink);
+  box-shadow: var(--shadow-focus-halo);
+}
+
+.zone[data-invalid] {
+  border-color: var(--color-danger-line);
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.zoneIcon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: var(--space-6);
+  border-radius: var(--radius-control-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-control);
+  color: var(--color-muted-strong);
+}
+
+.zoneTitle {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.zoneHint {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-10) var(--space-10) var(--space-10) var(--space-12);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-control);
+}
+
+.fileIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-control-sm);
+  background: var(--color-accent-tint);
+  color: var(--color-accent);
+}
+
+.fileText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  overflow: hidden;
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileMeta {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}

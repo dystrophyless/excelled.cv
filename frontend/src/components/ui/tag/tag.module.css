@@ -1,0 +1,81 @@
+/* Tags, chips, counts — design/patterns.md §4. */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: none;
+  padding: 1px var(--space-8);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-tag);
+  line-height: var(--leading-tag);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.tag[data-tone="neutral"] { background: var(--color-fill); color: var(--color-text); }
+.tag[data-tone="accent"] { background: var(--color-accent-tint); color: var(--color-accent); }
+.tag[data-tone="success"] { background: var(--color-success-tint); color: var(--color-success); }
+.tag[data-tone="warning"] { background: var(--color-warning-tint); color: var(--color-warning); }
+.tag[data-tone="danger"] { background: var(--color-destructive-tint); color: var(--color-danger); }
+.tag[data-tone="rose"] { background: var(--color-rose-tint); color: var(--color-rose); }
+.tag[data-tone="violet"] { background: var(--color-violet-tint); color: var(--color-violet); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--chip-height);
+  padding: 0 var(--space-12);
+  border-radius: var(--radius-control-sm);
+  background: var(--color-fill);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  white-space: nowrap;
+  animation: chip-in var(--duration-base) var(--ease-out) both;
+}
+
+.chip[data-removable] {
+  padding-right: var(--space-4);
+}
+
+.chipRemove {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-tiny);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.chipRemove:hover {
+  background: var(--color-fill-hover);
+  color: var(--color-ink);
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  background: var(--color-fill-hover);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes chip-in {
+  from { opacity: 0; transform: scale(0.94); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip { animation: none; }
+}
