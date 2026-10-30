@@ -85,7 +85,7 @@ export type TextFieldProps = Omit<ComponentPropsWithRef<"input">, "className" | 
 export function TextField({ label, hint, error, optional, required, hideLabel, size = "md", id, className, ...input }: TextFieldProps) {
   return (
     <Field label={label} hint={hint} error={error} optional={optional} required={required} hideLabel={hideLabel} id={id} className={className}>
-      {(control) => <input className={styles.control} data-size={size} {...input} {...control} />}
+      {(control) => <input className={styles.control} data-size={size} {...input} {...control} aria-invalid={control["aria-invalid"] ?? input["aria-invalid"]} />}
     </Field>
   );
 }
@@ -139,6 +139,8 @@ export function PasswordField({ label, hint, error, optional, required, hideLabe
             autoComplete="current-password"
             {...input}
             {...control}
+            aria-invalid={control["aria-invalid"] ?? input["aria-invalid"]}
+            aria-describedby={[control["aria-describedby"], input["aria-describedby"]].filter(Boolean).join(" ") || undefined}
           />
           <button
             type="button"

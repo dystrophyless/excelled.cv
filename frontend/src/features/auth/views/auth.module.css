@@ -1,0 +1,65 @@
+/* Auth screens: same structure as the reference template (pages/styleguide/templates). Tokens only. */
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: var(--space-48) var(--gutter);
+  background: var(--color-page);
+}
+
+.column {
+  display: grid;
+  gap: var(--space-24);
+  width: 100%;
+  max-width: var(--width-auth);
+}
+
+.logo {
+  justify-self: center;
+}
+
+.head {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+  text-align: center;
+}
+
+.title {
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h2);
+}
+
+.sub {
+  color: var(--color-muted);
+}
+
+.legal {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.rowEnd {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.timer {
+  font-variant-numeric: tabular-nums;
+}
+
+.center {
+  display: grid;
+  justify-items: center;
+}
+
+/* Shared hint under a pair of fields: same text style as the kit's Field hint. */
+.hint {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
