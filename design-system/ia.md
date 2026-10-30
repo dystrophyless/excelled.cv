@@ -45,13 +45,33 @@ One account has one role, chosen at sign-up. Employers belong to a company (seve
 |---|---|---|
 | `/company/onboarding` | Company basics → first vacancy (skippable) | Wizard |
 | `/company` | Home: open vacancies, new applicants, pipeline summary | Dashboard |
-| `/company/vacancies` | My vacancies (draft / open / closed) | Browse (table) |
+| `/company/vacancies` | My vacancies (draft / open / paused / closed — see Vacancy lifecycle) | Browse (table) |
 | `/company/vacancies/new` | Post a vacancy: basics → skills (Required / Nice to have) → details → preview | Wizard |
 | `/company/vacancies/:id/edit` | Edit vacancy | Form |
 | `/company/vacancies/:id` | Applicants pipeline for one vacancy (New → Shortlisted → Interview → Offer → Hired / Rejected) | Tracker |
 | `/company/candidates/:id` | Candidate profile + match breakdown against the vacancy + status actions | Detail |
 | `/company/profile` | Company profile edit (logo, about, links, locations) | Form |
 | `/company/settings` | Account, team (later), notifications | Settings |
+
+## Vacancy lifecycle (employer)
+
+Every vacancy has one status. HR changes it from the vacancy's "⋯" menu (in `/company/vacancies` and on
+`/company/vacancies/:id`); every change shows a toast, closing asks for confirmation.
+
+| Status | Students see it in search | Takes new applications | Moves to |
+|---|---|---|---|
+| **Draft** | no | no | Open ("Publish": needs all required fields and a deadline in the future) |
+| **Open** | yes | yes | Paused ("Pause") · Closed ("Close vacancy", any time before the deadline) · Closed automatically when the deadline passes |
+| **Paused** | no | no | Open ("Resume", deadline unchanged) · Closed ("Close vacancy") · Closed automatically when the deadline passes |
+| **Closed** | no | no | Open ("Reopen": asks for a new deadline in the future) |
+
+- **Applicants are never touched by a status change.** HR keeps working the pipeline (Shortlist, Interview, Offer,
+  Reject) in every status; reopening keeps the same pipeline and new applications join it.
+- **Students who saved or applied** can still open a Paused or Closed vacancy: Paused shows "Not accepting applications
+  right now", Closed shows "This vacancy is closed" (greyed card with a "Closed" tag in Saved). Their application status
+  does not change.
+- Editing is allowed in every status; editing an Open vacancy keeps it Open.
+- Draft can be deleted; Open / Paused / Closed cannot (they have applicants or a public history) — close instead.
 
 ## Navigation model
 
