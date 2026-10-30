@@ -1,0 +1,37 @@
+.account {
+  position: relative;
+}
+
+.avatarButton {
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.avatarButton:hover,
+.avatarButton[aria-expanded="true"] {
+  box-shadow: var(--shadow-hover-ring);
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  right: 0;
+  z-index: var(--z-dropdown);
+  width: 320px;
+  border-radius: var(--radius-tray-lg);
+  box-shadow: var(--shadow-popover);
+  animation: pop-in var(--duration-menu) var(--ease-out);
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popover { animation: none; }
+}
