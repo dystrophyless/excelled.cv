@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/components/ui/button/**", "src/components/ui/otp-input/**", "src/components/ui/segmented-control/**",
+        "src/components/ui/filter-menu/**", "src/components/ui/profile-menu/**", "src/components/ui/progress-tracker/**",
+        "src/components/ui/smart-recommendation/**", "src/components/ui/decision-inbox/**", "src/components/ui/notification-stack/**",
+        "src/components/ui/tips-panel/**", "src/components/ui/change-summary/**", "src/components/ui/thinking-loader/**",
+        "src/components/ui/shimmer-loader/**", "src/components/ui/number-ticker/**", "src/components/ui/grid-background/**"
+      ],
+      "rules": {
+        "react/refs": "off",
+        "react/purity": "off",
+        "react/set-state-in-effect": "off"
+      }
+    }
+  ]
+}

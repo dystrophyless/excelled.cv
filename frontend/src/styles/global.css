@@ -1,0 +1,86 @@
+/* App-wide base: font, page background, resets. Values come from tokens.css. */
+/* Registers the family as "Inter" — the name affect-ui components ask for */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-page);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, p, figure, blockquote, dl, dd {
+  margin: 0;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+img, svg, video {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+/* zero specificity: any component rule (e.g. inputs inside a combobox) can override it */
+:where(:focus-visible) {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}
+
+/* Thin, quiet scrollbars (menus, lists, tables) instead of the browser default */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-strong);
+  background-clip: content-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visually hidden, still read by screen readers and tests */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

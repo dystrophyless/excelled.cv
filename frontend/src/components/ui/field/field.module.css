@@ -1,0 +1,302 @@
+/* Field recipe — design/patterns.md §3 (derived from affect otp-input). */
+
+.field {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.optional {
+  margin-left: var(--space-4);
+  font-weight: var(--weight-regular);
+  color: var(--color-muted);
+}
+
+.hint {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-6);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-text);
+  animation: field-in var(--duration-base) var(--ease-out);
+}
+
+.errorIcon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-danger);
+}
+
+/* Shared by input, textarea and select */
+.control {
+  width: 100%;
+  min-width: 0;
+  height: var(--control-md);
+  padding: 0 var(--space-12);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-field);
+  box-shadow: var(--shadow-field);
+  outline: none;
+  font-size: var(--text-body);
+  color: var(--color-ink);
+  transition: box-shadow var(--duration-fast) ease, background-color var(--duration-fast) ease;
+}
+
+.control::placeholder {
+  color: var(--color-muted);
+}
+
+.control:not(:placeholder-shown) {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-field-filled);
+}
+
+.control:focus,
+.control:focus-visible {
+  background: var(--color-surface);
+  box-shadow: var(--field-focus);
+  outline: none;
+}
+
+.control[aria-invalid="true"] {
+  box-shadow: var(--field-error);
+}
+
+.control[aria-invalid="true"]:focus {
+  box-shadow: var(--field-error-focus);
+}
+
+.control:disabled,
+.control[readonly] {
+  background: var(--color-field-wait);
+  box-shadow: var(--shadow-field);
+  color: var(--color-text);
+  cursor: default;
+}
+
+.control:disabled {
+  color: var(--color-faint);
+  cursor: not-allowed;
+}
+
+.textarea {
+  height: auto;
+  min-height: 96px;
+  padding: var(--space-10) var(--space-12);
+  line-height: var(--leading-body);
+  resize: vertical;
+}
+
+/* Control with a trailing button or icon (password toggle, select chevron) */
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.wrap > .control {
+  padding-right: var(--space-40);
+}
+
+.trailing {
+  position: absolute;
+  right: var(--space-6);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--color-muted-strong);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.trailing:hover {
+  background: var(--color-row-hover);
+  color: var(--color-ink);
+}
+
+.trailing:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 0;
+}
+
+.chevron {
+  pointer-events: none;
+  background: transparent;
+}
+
+/* Toolbar size: lines up with SegmentedControl md (36px) */
+.control[data-size="sm"] {
+  height: var(--control-toolbar);
+  border-radius: var(--radius-control-sm);
+}
+
+.wrap > .control[data-size="sm"] ~ .trailing,
+.wrap > .control[data-size="sm"] + .trailing {
+  width: 24px;
+  height: 24px;
+}
+
+/* Search: leading icon */
+.search > .control {
+  padding-left: var(--space-36);
+}
+
+.leading {
+  position: absolute;
+  left: var(--space-12);
+  color: var(--color-muted-strong);
+  pointer-events: none;
+}
+
+.search > .control::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* Select (custom listbox) */
+.selectButton {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-field-filled);
+}
+
+.selectButton[data-empty] {
+  background: var(--color-field);
+  box-shadow: var(--shadow-field);
+  color: var(--color-muted);
+}
+
+/* mouse focus on a select/date button: no heavy ink ring — the open list is the feedback */
+.selectButton:focus:not(:focus-visible) {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-field-filled);
+}
+
+.selectButton[aria-expanded="true"] {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-field-open);
+}
+
+.selectButton[data-empty]:focus-visible {
+  background: var(--color-surface);
+  box-shadow: var(--field-focus);
+}
+
+.selectButton[data-size="sm"] {
+  min-width: 176px;
+}
+
+.selectValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron[data-open] svg {
+  transform: rotate(180deg);
+}
+
+.chevron svg {
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.list {
+  position: absolute;
+  top: calc(100% + var(--space-6));
+  left: 0;
+  z-index: var(--z-dropdown);
+  display: grid;
+  gap: var(--space-2);
+  min-width: 100%;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  list-style: none;
+  animation: list-in var(--duration-menu) var(--ease-out);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  min-height: var(--option-height);
+  padding: var(--space-6) var(--space-10);
+  border-radius: var(--radius-chip);
+  font-size: var(--text-body);
+  color: var(--color-text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.option[data-active] {
+  background: var(--color-row-hover);
+  color: var(--color-ink);
+}
+
+.option[aria-selected="true"] {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.option[aria-disabled="true"] {
+  color: var(--color-faint);
+  cursor: not-allowed;
+}
+
+.optionText {
+  display: grid;
+  gap: 2px;
+}
+
+.optionDescription {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  color: var(--color-muted);
+}
+
+@keyframes list-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+
+@media (max-width: 640px) {
+  /* iOS zooms into inputs below 16px */
+  .control {
+    font-size: var(--text-input-mobile);
+  }
+}
+
+@keyframes field-in {
+  from { opacity: 0; transform: translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error, .list { animation: none; }
+  .control, .trailing, .chevron svg { transition: none; }
+}

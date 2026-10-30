@@ -1,0 +1,192 @@
+.page {
+  padding-bottom: var(--space-64);
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding: var(--space-12) 0;
+  background: var(--color-page);
+  border-bottom: 1px solid var(--color-line-subtle);
+}
+
+.nav a {
+  flex: none;
+  padding: var(--space-4) var(--space-10);
+  border-radius: var(--radius-chip);
+  font-size: var(--text-sm);
+  color: var(--color-muted-strong);
+  text-decoration: none;
+}
+
+.nav a:hover {
+  background: var(--color-tray);
+  color: var(--color-ink);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-20);
+  padding-top: var(--space-48);
+  scroll-margin-top: 56px;
+}
+
+.sectionHead {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.sectionNote {
+  max-width: 70ch;
+  color: var(--color-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: var(--space-32) var(--space-24);
+  align-items: start;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-14);
+}
+
+/* Foundations */
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-12);
+}
+
+.swatch {
+  display: grid;
+  gap: var(--space-6);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-muted);
+}
+
+.swatchChip {
+  height: 48px;
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-inset);
+}
+
+.swatch code {
+  font-family: var(--font-mono);
+  color: var(--color-ink);
+}
+
+.typeRow {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: baseline;
+  gap: var(--space-16);
+  padding: var(--space-10) 0;
+  border-bottom: 1px solid var(--color-line-subtle);
+}
+
+.typeRow code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 80px;
+  background: var(--color-surface);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+/* Vacancy example */
+.vacancyHead {
+  display: flex;
+  gap: var(--space-12);
+}
+
+.vacancyMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.vacancyTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.vacancyTitle {
+  font-size: var(--text-title);
+  line-height: var(--leading-title);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-title);
+}
+
+.vacancyMeta {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  margin-top: var(--space-14);
+}
+
+.skill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 26px;
+  padding: 0 var(--space-10);
+  border-radius: var(--radius-chip);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.skill[data-match] {
+  background: var(--color-success-tint);
+  color: var(--color-success);
+}
+
+.skill:not([data-match]) {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-inset);
+  color: var(--color-muted);
+}
+
+.match {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}

@@ -1,0 +1,106 @@
+/* Page layout [novio] — design/patterns.md §7, §10. affect-ui has no page layouts. */
+
+.container {
+  width: 100%;
+  max-width: calc(var(--width-page) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.container[data-width="content"] { max-width: calc(var(--width-content) + 2 * var(--gutter)); }
+.container[data-width="form"] { max-width: calc(var(--width-form) + 2 * var(--gutter)); }
+
+@media (min-width: 768px) {
+  .container { max-width: calc(var(--width-page) + 2 * var(--gutter-lg)); padding: 0 var(--gutter-lg); }
+  .container[data-width="content"] { max-width: calc(var(--width-content) + 2 * var(--gutter-lg)); }
+  .container[data-width="form"] { max-width: calc(var(--width-form) + 2 * var(--gutter-lg)); }
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-16) var(--space-24);
+  padding: var(--space-32) 0 var(--space-24);
+}
+
+.headerText {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.title {
+  font-size: var(--text-h1);
+  line-height: var(--leading-h1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h1);
+  color: var(--color-ink);
+}
+
+.description {
+  max-width: 60ch;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.sectionTitle {
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h2);
+  color: var(--color-ink);
+}
+
+.label {
+  margin-bottom: var(--space-12);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
+
+.link {
+  border-radius: var(--radius-4);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: color var(--duration-fast) ease;
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-line-strong);
+  text-underline-offset: 3px;
+}
+
+.link[data-tone="muted"] {
+  font-weight: var(--weight-regular);
+  color: var(--color-muted);
+}
+
+.link[data-tone="muted"]:hover {
+  color: var(--color-ink);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.back:hover {
+  text-decoration: none;
+}

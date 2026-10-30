@@ -1,0 +1,109 @@
+/* Modal — tray + card on a backdrop; actions sit on the tray below the card. */
+
+.dialog {
+  width: min(var(--width-component), calc(100vw - 2 * var(--gutter)));
+  max-height: calc(100dvh - 2 * var(--gutter));
+  margin: auto;
+  padding: var(--tray-padding);
+  border: 0;
+  border-radius: var(--radius-tray-lg);
+  background: var(--color-tray);
+  box-shadow: var(--shadow-floating);
+  color: var(--color-ink);
+  overflow: visible;
+}
+
+.dialog[data-size="lg"] {
+  width: min(var(--width-form), calc(100vw - 2 * var(--gutter)));
+}
+
+.dialog::backdrop {
+  background: var(--color-backdrop);
+}
+
+.dialog[open] {
+  animation: modal-in var(--duration-slow) var(--ease-out);
+}
+
+.dialog[open]::backdrop {
+  animation: backdrop-in var(--duration-base) ease;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-6);
+  max-height: calc(100dvh - 2 * var(--gutter) - 70px);
+  overflow: auto;
+  padding: var(--space-20);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card-lg);
+  box-shadow: var(--shadow-raised);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.title {
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h3);
+}
+
+.description {
+  font-size: var(--text-body);
+  line-height: var(--leading-reading);
+  color: var(--color-text);
+}
+
+.body {
+  margin-top: var(--space-10);
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin: -4px -6px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--color-muted-strong);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.close:hover {
+  background: var(--color-row-hover);
+  color: var(--color-ink);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-6);
+  min-height: 50px;
+  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-12);
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open], .dialog[open]::backdrop { animation: none; }
+}

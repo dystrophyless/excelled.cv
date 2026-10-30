@@ -1,0 +1,85 @@
+/* Tray + card — design/patterns.md §1, the affect-ui signature container. */
+
+.tray {
+  container-type: inline-size;
+  width: 100%;
+  padding: var(--tray-padding);
+  border-radius: var(--radius-tray);
+  background: var(--color-tray);
+}
+
+.tray[data-size="lg"] {
+  border-radius: var(--radius-tray-lg);
+}
+
+.trayHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: 40px;
+  padding: var(--space-6) var(--space-10) var(--space-8);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.trayFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-10);
+  min-height: 50px;
+  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-12);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.trayFooter[data-align="center"] {
+  justify-content: center;
+  padding-left: var(--space-8);
+}
+
+.trayFooter[data-align="end"] {
+  justify-content: flex-end;
+}
+
+.card {
+  min-width: 0;
+  padding: var(--space-16);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-raised);
+}
+
+.tray[data-size="lg"] > .card {
+  border-radius: var(--radius-card-lg);
+}
+
+/* Standalone card (page sections, grids) */
+.card[data-standalone] {
+  border-radius: var(--radius-card-lg);
+}
+
+.card[data-padding="none"] { padding: 0; }
+.card[data-padding="sm"] { padding: var(--space-8); }
+.card[data-padding="lg"] { padding: var(--space-24); }
+
+.card[data-interactive] {
+  transition: box-shadow var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.card[data-interactive]:hover {
+  border-color: var(--color-line-strong);
+}
+
+.tray[data-stretch] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tray[data-stretch] > .card {
+  flex: 1;
+}

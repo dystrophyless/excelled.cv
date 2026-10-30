@@ -1,0 +1,12 @@
+.switcher {
+  position: fixed;
+  left: var(--space-16);
+  bottom: var(--space-16);
+  z-index: var(--z-toast);
+  max-width: calc(100vw - 2 * var(--space-16));
+  overflow-x: auto;
+  padding: var(--space-4);
+  border-radius: var(--radius-tray);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-floating);
+}
