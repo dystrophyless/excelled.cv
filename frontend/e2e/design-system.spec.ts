@@ -1,11 +1,24 @@
 import { expect, test } from "@playwright/test";
 import { expectNoA11yViolations, trackConsoleErrors } from "./support/a11y";
+import { account } from "./support/auth-api";
 
 /*
  * Guards the design system itself: every reference template and state renders without errors and passes axe,
  * and the interactive behaviour the templates demonstrate (filters, row actions, undo, menus) actually works.
  * Feature specs (e2e/<feature>.spec.ts) follow the same pattern.
  */
+
+/*
+ * /app/* and /company/* are behind the role guards (feature 001-user-auth), so these demo-route tests run signed in:
+ * /me answers as an employer for /company/* pages and as a student everywhere else.
+ */
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => {
+    const from = route.request().headers()["referer"] ?? "";
+    const role = new URL(from, "http://localhost").pathname.startsWith("/company") ? "employer" : "student";
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ account: account(role) }) });
+  });
+});
 
 const TEMPLATE_STATES: Record<string, string[]> = {
   auth: ["sign-in", "sign-up", "error", "verify"],
