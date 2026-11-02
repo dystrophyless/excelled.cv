@@ -133,7 +133,7 @@ test("tracker: status tabs filter, withdraw can be undone", async ({ page }) => 
 });
 
 test("employer table: tabs filter, duplicate and delete work", async ({ page }) => {
-  await page.goto("/company/vacancies");
+  await page.goto("/styleguide/templates/table");
   const rows = page.getByTestId("vacancies-table").locator("tbody tr");
   await expect(rows).toHaveCount(4);
   await page.getByRole("radio", { name: /Drafts/ }).click();
@@ -151,7 +151,7 @@ test("employer table: tabs filter, duplicate and delete work", async ({ page }) 
 });
 
 test("pipeline: views switch and a candidate can be moved", async ({ page }) => {
-  await page.goto("/company/vacancies/v1");
+  await page.goto("/styleguide/templates/pipeline");
   const newColumn = page.getByRole("region", { name: "Applicants by stage" }).getByRole("region", { name: "New" });
   await expect(newColumn.getByTestId("candidate-card")).toHaveCount(2);
   await page.getByRole("button", { name: "Move Maya Akhmetova" }).click();
@@ -169,12 +169,15 @@ test("settings: confirm-delete state opens the dialog", async ({ page }) => {
 });
 
 test("date field: pick a date from the calendar", async ({ page }) => {
-  await page.goto("/company/vacancies/v1/edit");
+  // /company/vacancies/:id/edit is a real page now (feature 002); the reference template lives under /styleguide
+  await page.goto("/styleguide/templates/vacancy-edit");
   const field = page.getByRole("button", { name: /Apply by/ });
-  await expect(field).toContainText("30 Nov 2026");
+  // the template is the "new vacancy" form here (no :id), so the field starts empty
+  await expect(field).toContainText("Pick a date");
   await field.click();
-  await page.getByRole("gridcell", { name: "28 Nov 2026" }).click();
-  await expect(field).toContainText("28 Nov 2026");
+  await page.getByRole("button", { name: "Next month" }).click();
+  await page.getByRole("gridcell", { name: /^15 / }).click();
+  await expect(field).toContainText(/15 \w{3} \d{4}/);
 });
 
 test("dashboard: overview, top matches, funnel and skill suggestion", async ({ page }) => {
