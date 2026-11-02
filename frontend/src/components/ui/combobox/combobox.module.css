@@ -72,8 +72,8 @@
 .chipRemove {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 24px; /* WCAG 2.2 target size (2.5.8): at least 24 x 24 */
+  height: 24px;
   padding: 0;
   border: 0;
   border-radius: var(--radius-tiny);
@@ -160,4 +160,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .list, .chip { animation: none; }
+}
+
+/* multiple: the list is part of the flow, so it pushes the next field and the primary action down instead of covering them */
+.wrap[data-flow] .list {
+  position: static;
+  margin-top: var(--space-6);
+  max-height: 200px;
+  animation: none;
 }

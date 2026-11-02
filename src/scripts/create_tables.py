@@ -13,7 +13,9 @@ from src.auth.models import (
     SignInThrottle,
 )
 from src.database import Base, async_engine
+from src.skills import models as skill_models  # noqa: F401
 from src.users import models as user_models  # noqa: F401
+from src.vacancies import models as vacancy_models  # noqa: F401
 from src.users.models import User
 
 AUTH_TABLES = [

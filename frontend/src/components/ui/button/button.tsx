@@ -3,8 +3,9 @@
  * Code and styles are kept 1:1; light palette values that exactly match a design token
  * now read from tokens.css. Do not restyle this file — see design-system/components.md.
  *
- * Novio patches (the only deliberate deviations, approved by the product owner):
- *   1. secondary outline as an outer ring → same visual size as primary.
+ * Novio patch (the only deliberate deviation, approved by the product owner):
+ *   1. primary without the outer 1px dark ring, so primary and secondary of one size are visibly equally big
+ *      (the secondary is affect's original: 1px border inside the box).
  */
 
 import {
@@ -255,9 +256,9 @@ const css = /* css */ `
     linear-gradient(var(--ui-btn-dark-top), var(--ui-btn-dark-bottom)) padding-box,
     linear-gradient(var(--ui-btn-edge-top), var(--ui-btn-edge-mid), var(--ui-btn-edge-bottom)) border-box;
   color: var(--ui-btn-on-ink);
-  box-shadow:
-    0 0 0 1px var(--ui-btn-ring),
-    0 2px 4px var(--ui-btn-dark-shadow);
+  /* NOVIO PATCH 1: no outer ring. The dark outer ring made a primary look 2px taller than a secondary beside it,
+     while the secondary draws its border inside the box; the gradient border already outlines the primary. */
+  box-shadow: 0 2px 4px var(--ui-btn-dark-shadow);
 }
 .ui-button[data-variant="primary"]:hover:not(:disabled) {
   background:
@@ -268,11 +269,9 @@ const css = /* css */ `
 /* secondary: white with the card outline */
 .ui-button[data-variant="secondary"] {
   background: var(--ui-btn-surface);
-  /* NOVIO PATCH 1: outline drawn as an outer 1px ring (like affect smart-recommendation) instead of a border,
-     so a secondary button is exactly as large as a primary one, whose ring also sits outside */
-  border-color: transparent;
+  border-color: var(--ui-btn-line);
   color: var(--ui-btn-ink);
-  box-shadow: 0 0 0 1px var(--ui-btn-line), 0 1px 2px var(--ui-btn-surface-shadow);
+  box-shadow: 0 1px 2px var(--ui-btn-surface-shadow);
 }
 .ui-button[data-variant="secondary"]:hover:not(:disabled) {
   background: var(--ui-btn-surface-hover);

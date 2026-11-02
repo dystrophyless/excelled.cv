@@ -1,0 +1,204 @@
+/* Layout helpers of the employer-vacancies views. Tokens only; same structure as the reference templates. */
+
+.rowMain {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTitle {
+  overflow: hidden;
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowTitle a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rowTitle a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-line-strong);
+  text-underline-offset: 3px;
+}
+
+.rowMeta {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.statusCell {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+.dim {
+  color: var(--color-muted);
+}
+
+.statusLine {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/* ── Wizard ──────────────────────────────────────────── */
+.wizardPage {
+  min-height: 100dvh;
+  background: var(--color-page);
+}
+
+.wizardBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+}
+
+.wizardBody {
+  display: grid;
+  gap: var(--space-24);
+  padding: var(--space-24) 0 var(--space-64);
+}
+
+.wizardHead {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.wizardTitle {
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h2);
+}
+
+.wizardSub {
+  color: var(--color-muted);
+}
+
+.wizardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.fixList {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fixLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--color-line-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.fixLink:hover {
+  text-decoration-color: var(--color-ink);
+}
+
+/* ── Preview (what students see) ─────────────────────── */
+.prose {
+  display: grid;
+  gap: var(--space-12);
+  font-size: var(--text-body);
+  line-height: var(--leading-reading);
+  color: var(--color-text);
+}
+
+.prose h3 {
+  margin-top: var(--space-8);
+  font-size: var(--text-title);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.prose p {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.previewTitle {
+  font-size: var(--text-title);
+  line-height: var(--leading-title);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.skillGroup {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.skillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-line-subtle);
+}
+
+.asideBlock {
+  display: grid;
+  gap: var(--space-14);
+}
+
+.charCount {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Vacancy page ────────────────────────────────────── */
+.notFound {
+  padding-top: var(--space-48);
+}
+
+/* ── Stacked rows (list below 1024px) ────────────────── */
+.mRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-8);
+  border-top: 1px solid var(--color-line-subtle);
+}
+
+.mRow:first-child {
+  border-top: 0;
+}
+
+.mBody {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-6);
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mBody .rowTitle {
+  max-width: 100%;
+}
