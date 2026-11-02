@@ -4,14 +4,17 @@ export class ApiError extends Error {
   code: string;
   retryAfter?: number;
   attemptsLeft?: number;
+  /** The whole `detail` object, for codes that carry extra data (`fields`, `vacancy`, `status`). */
+  detail?: Record<string, unknown>;
 
-  constructor(init: { status: number; code: string; message: string; retryAfter?: number; attemptsLeft?: number }) {
+  constructor(init: { status: number; code: string; message: string; retryAfter?: number; attemptsLeft?: number; detail?: Record<string, unknown> }) {
     super(init.message);
     this.name = "ApiError";
     this.status = init.status;
     this.code = init.code;
     this.retryAfter = init.retryAfter;
     this.attemptsLeft = init.attemptsLeft;
+    this.detail = init.detail;
   }
 }
 
@@ -34,6 +37,7 @@ function toApiError(status: number, body: unknown): ApiError {
       message: d.message ?? "Something went wrong.",
       retryAfter: d.retry_after,
       attemptsLeft: d.attempts_left,
+      detail: detail as Record<string, unknown>,
     });
   }
   // Non-contract body, e.g. FastAPI's default 422 shape.

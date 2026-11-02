@@ -11,9 +11,12 @@ from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import JSONResponse
 
 from src.auth.router import router as auth_router
+from src.catalog.router import router as catalog_router
 from src.config import settings
 from src.database import async_engine
+from src.skills.router import router as skills_router
 from src.users.router import router as users_router
+from src.vacancies.router import router as vacancies_router
 
 STATE_CHANGING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
@@ -75,6 +78,11 @@ app.include_router(
     prefix="/api/auth",
     tags=["auth"],
 )
+
+
+app.include_router(catalog_router, prefix="/api", tags=["catalog"])
+app.include_router(skills_router, prefix="/api", tags=["skills"])
+app.include_router(vacancies_router, prefix="/api", tags=["vacancies"])
 
 
 @app.get("/")

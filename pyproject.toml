@@ -1,7 +1,7 @@
 [project]
 name = "novio"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.3.0"
+description = "Career platform that matches students' skills with internships and junior jobs."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

@@ -3,6 +3,9 @@ import {
   ResetConfirmPrototype, ResetRequestPrototype, RESET_CONFIRM_STATES, RESET_REQUEST_STATES, RESET_VERIFY_STATES, ResetVerifyPrototype, SIGN_IN_STATES, SIGN_UP_STATES,
   SignInPrototype, SignUpPrototype, VERIFY_STATES, VerifyEmailPrototype,
 } from "./001-user-auth";
+import {
+  EDIT_STATES, LIST_STATES, NEW_STATES, PAGE_STATES, VacancyEditPrototype, VacancyListPrototype, VacancyNewPrototype, VacancyPagePrototype,
+} from "./002-employer-vacancies";
 
 /*
  * Feature prototypes, added by the ui-designer during /speckit-design.
@@ -27,6 +30,16 @@ export const PROTOTYPES: PrototypeEntry[] = [
       "reset-password": { title: "Forgot password", states: RESET_REQUEST_STATES, Component: ResetRequestPrototype },
       "reset-verify": { title: "Enter reset code", states: RESET_VERIFY_STATES, Component: ResetVerifyPrototype },
       "reset-confirm": { title: "Set new password", states: RESET_CONFIRM_STATES, Component: ResetConfirmPrototype },
+    },
+  },
+  {
+    id: "002-employer-vacancies",
+    title: "Employer vacancies",
+    screens: {
+      list: { title: "My vacancies", states: LIST_STATES, Component: VacancyListPrototype },
+      new: { title: "Post a vacancy", states: NEW_STATES, Component: VacancyNewPrototype },
+      edit: { title: "Edit vacancy", states: EDIT_STATES, Component: VacancyEditPrototype },
+      vacancy: { title: "Vacancy page", states: PAGE_STATES, Component: VacancyPagePrototype },
     },
   },
 ];

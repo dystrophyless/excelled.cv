@@ -11,7 +11,7 @@ and get a section on `/styleguide`.
 
 | Component | Origin | Use | Don't use for |
 |---|---|---|---|
-| `Button` | A | any action; variants primary · secondary · ghost · destructive; sizes sm · md · lg; `loading`, `icon`, `iconRight`. **Novio patch 1:** secondary outline is an outer ring so primary and secondary of one size are equally big | navigation (use `TextLink`) |
+| `Button` | A | any action; variants primary · secondary · ghost · destructive; sizes sm · md · lg; `loading`, `icon`, `iconRight`. **One Novio patch:** the primary has no outer dark ring, so primary and secondary (affect's original, 1px inner border) of one size are visibly equally big on any background | navigation (use `TextLink`) |
 | `DropdownMenu` | N | row / card "⋯" actions, overflow actions; `danger` items | the account menu (use `AccountMenu`), choosing a value (Select / Combobox) |
 | `TextLink`, `ExternalLink` | N | in-app / external navigation inside text and headers | buttons |
 | `BackLink` | N | the back link in `PageHeader eyebrow` (arrow icon + parent name). Never type "←" | |

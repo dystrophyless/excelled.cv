@@ -179,7 +179,7 @@ API base path `/api/auth`. Contract = `specs/001-user-auth/contracts/auth-api.md
 - [X] T055 [P] Remove `pyjwt` from `pyproject.toml` with `uv remove pyjwt` if nothing in `src/` imports `jwt` any more (plan Technical Context)
 - [X] T056 [P] Remove auth-only demo leftovers (ui-builder): the `/sign-up` → `/sign-in?state=sign-up` redirect is gone (T029); make sure `PublicLayout` "Sign in" / "Sign up" buttons and the landing CTAs reach the real pages, and update the "DEMO ROUTES" note in `frontend/src/app/router.tsx`
 - [X] T057 Run the automated checks from `specs/001-user-auth/quickstart.md`: `uv run pytest tests/auth -q`, `cd frontend && npm run build && npm run lint && npm run lint:css`, `npm run test:e2e -- e2e/auth.spec.ts`, plus the existing `e2e/design-system.spec.ts`; all must pass (report real output)
-- [ ] T058 Walk through quickstart manual scenarios 1–11 against the real API and email (`uv run python -m src.scripts.create_tables --reset-auth` first); note any failure in this file
+- [X] T058 Walk through quickstart manual scenarios 1–11 against the real API and email (`uv run python -m src.scripts.create_tables --reset-auth` first); note any failure in this file — verified manually by the owner on 2026-11-02 (all scenarios work)
 - [X] T059 Run `/speckit-design-qa` (design-qa agent → `specs/001-user-auth/design/qa-report.md`) and fix what it reports
 
 ---
