@@ -1,0 +1,163 @@
+/* Combobox — a field with suggestions; multiple mode shows chips inside the field (skills). */
+
+.wrap {
+  position: relative;
+}
+
+.box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: var(--control-md);
+  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
+  border-radius: var(--radius-control);
+  background: var(--color-field);
+  box-shadow: var(--shadow-field);
+  cursor: text;
+  transition: box-shadow var(--duration-fast) ease, background-color var(--duration-fast) ease;
+}
+
+.box[data-filled] {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-field-filled);
+}
+
+.box:focus-within {
+  background: var(--color-surface);
+  box-shadow: var(--field-focus);
+}
+
+.box[data-invalid] {
+  box-shadow: var(--field-error);
+}
+
+.box[data-invalid]:focus-within {
+  box-shadow: var(--field-error-focus);
+}
+
+.box[data-multiple] {
+  padding-left: var(--space-6);
+}
+
+.input {
+  flex: 1;
+  min-width: 120px;
+  height: 30px;
+  padding: 0 var(--space-6);
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: var(--text-body);
+  color: var(--color-ink);
+}
+
+.input::placeholder {
+  color: var(--color-muted);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  padding: 0 2px 0 var(--space-10);
+  border-radius: var(--radius-chip);
+  background: var(--color-fill);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  animation: chip-in var(--duration-base) var(--ease-out) both;
+}
+
+.chipRemove {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-tiny);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.chipRemove:hover {
+  background: var(--color-fill-hover);
+  color: var(--color-ink);
+}
+
+.list {
+  position: absolute;
+  top: calc(100% + var(--space-6));
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  display: grid;
+  gap: var(--space-2);
+  max-height: 264px;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  list-style: none;
+  animation: list-in var(--duration-menu) var(--ease-out);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-10);
+  min-height: var(--option-height);
+  padding: 0 var(--space-10);
+  border-radius: var(--radius-chip);
+  font-size: var(--text-body);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.option[data-active] {
+  background: var(--color-row-hover);
+  color: var(--color-ink);
+}
+
+.option[aria-selected="true"] {
+  color: var(--color-ink);
+  font-weight: var(--weight-medium);
+}
+
+.option mark {
+  background: none;
+  font-weight: var(--weight-semibold);
+  color: var(--color-ink);
+}
+
+.create {
+  color: var(--color-muted-strong);
+}
+
+.create strong {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.empty {
+  padding: var(--space-8) var(--space-10);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+@keyframes list-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+
+@keyframes chip-in {
+  from { opacity: 0; transform: scale(0.94); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list, .chip { animation: none; }
+}

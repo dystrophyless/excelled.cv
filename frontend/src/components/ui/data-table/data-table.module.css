@@ -1,0 +1,92 @@
+/* Data table — rows inside a card; the card scrolls horizontally on small screens. */
+
+.card {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-raised);
+}
+
+.scroll {
+  /* positioned, so absolutely positioned children (sr-only labels, menus) are clipped and scroll with the table */
+  position: relative;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: var(--text-body);
+}
+
+.th {
+  height: 40px;
+  padding: 0 var(--space-16);
+  border-bottom: 1px solid var(--color-line-subtle);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  color: var(--color-muted);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.th[data-align="end"],
+.td[data-align="end"] {
+  text-align: right;
+}
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0 calc(-1 * var(--space-6));
+  padding: var(--space-4) var(--space-6);
+  border: 0;
+  border-radius: var(--radius-tiny);
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sort:hover,
+.th[aria-sort="ascending"] .sort,
+.th[aria-sort="descending"] .sort {
+  color: var(--color-ink);
+}
+
+.sort:hover {
+  background: var(--color-row-hover);
+}
+
+.td {
+  height: 56px;
+  padding: var(--space-8) var(--space-16);
+  border-bottom: 1px solid var(--color-line-subtle);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.row:last-child .td {
+  border-bottom: 0;
+}
+
+.row[data-clickable] {
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease;
+}
+
+.row[data-clickable]:hover {
+  background: var(--color-surface-hover);
+}
+
+.row[data-clickable]:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: -2px;
+}
+
+.state {
+  padding: var(--space-8);
+}

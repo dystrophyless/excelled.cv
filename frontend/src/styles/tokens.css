@@ -1,0 +1,263 @@
+/*
+ * Novio design tokens — extracted from affect-ui (Light + Classic), see design/audit.md.
+ *
+ * Fidelity rule: values are copied 1:1 from affect-ui. Where affect itself disagrees,
+ * the most-used value wins (noted inline). Do not "improve" colours — including the
+ * low-contrast muted grey #8f8f8f, which is an accepted part of the style.
+ *
+ * Tokens marked [novio] are NOT in affect-ui; they extend the scale where the pack
+ * has nothing (page headings, layout widths, z-index). They follow affect's proportions.
+ *
+ * Theme: light is the default on :root. Dark follows affect's own switch — a `.dark`
+ * class or `data-theme="dark"` on an ancestor (usually <html>). Dark is defined, not yet shipped.
+ */
+
+:root {
+  /* ── Colour: neutrals ─────────────────────────────────────────── */
+  --color-page: #fafafa;            /* app background */
+  --color-tray: #f0f0f0;            /* gray shell around cards, segmented track */
+  --color-surface: #ffffff;         /* cards, menus, inputs when filled, secondary buttons */
+  --color-surface-hover: #fafafa;   /* secondary button hover */
+  --color-fill: #f3f3f3;            /* chips, icon tiles, empty checkbox */
+  --color-fill-hover: #ebebeb;
+  --color-row-hover: #f5f5f5;       /* menu rows, list rows (affect also uses #f7f7f7) */
+  --color-row-selected: #f5f8ff;    /* selected option */
+
+  --color-ink: #171717;             /* headings, labels, primary text */
+  --color-text: #404040;            /* body text */
+  --color-muted: #8f8f8f;           /* secondary text, counts, hints */
+  --color-muted-strong: #737373;    /* secondary icons, ghost button text */
+  --color-faint: #b5b5b5;           /* separators glyphs, disabled text */
+  --color-on-ink: #fafafa;          /* text on the graphite primary button */
+
+  --color-line: #e5e5e5;            /* card border, control hairline (most used) */
+  --color-line-subtle: #ececec;     /* dividers inside a card */
+  --color-line-strong: #cfcfd4;     /* filled input, hovered input */
+  --color-field: #fafafa;           /* empty input background (otp-input) */
+  --color-field-wait: #f2f2f3;      /* input while verifying / read-only */
+
+  /* ── Colour: accent & status ──────────────────────────────────── */
+  --color-accent: #2f6bff;
+  --color-accent-tint: #eef3ff;     /* tag bg */
+  --color-accent-tint-subtle: #f5f8ff;
+
+  --color-success: #1f8a4c;         /* affect has 4 greens; #1f8a4c is the most used */
+  --color-success-tint: #e8f5e6;
+  --color-online: #34c46a;
+
+  /* affect has two reds and uses both on purpose: */
+  --color-danger: #e5484d;          /* field errors: icon, edge, halo (otp-input) */
+  --color-danger-line: rgba(229, 72, 77, 0.6);
+  --color-danger-halo: rgba(229, 72, 77, 0.12);
+  --color-destructive: #ff0000;     /* destructive button text/icon (button) */
+  --color-destructive-tint: #ffe6e9; /* destructive button background */
+
+  --color-warning: #c2570c;
+  --color-warning-tint: #fdeedd;
+
+  --color-rose: #e11d48;            /* "New" badge */
+  --color-rose-tint: #fff0f3;
+  --color-violet: #7c4dff;          /* pill accent */
+  --color-violet-tint: #f4f0ff;
+
+  /* ── Brand mark [novio] — same in both themes (from the A* star artwork) ── */
+  --brand-tile: #2f6bff;        /* = accent */
+  --brand-star: #fbfcfd;
+  --brand-eye: #254ad0;
+
+  /* ── Primary (graphite) button ────────────────────────────────── */
+  --primary-bg: linear-gradient(#323137, #201e25);
+  --primary-bg-hover: linear-gradient(#3b3a41, #26242b);
+  --primary-ring: #0d0d0d;
+  --primary-shadow: 0 0 0 1px var(--primary-ring), 0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  /* ── Focus ───────────────────────────────────────────────────── */
+  /* affect uses neutral (5×) and blue (4×) rings; neutral wins */
+  --focus-ring: rgba(23, 23, 23, 0.22);
+  --focus-outline: 2px solid var(--focus-ring);
+  --focus-offset: 2px;
+  --field-focus: inset 0 0 0 1.5px var(--color-ink), 0 0 0 4px rgba(23, 23, 23, 0.07);
+  --field-error: inset 0 0 0 1px var(--color-danger-line);
+  --field-error-focus: inset 0 0 0 1.5px var(--color-danger), 0 0 0 4px var(--color-danger-halo);
+
+  /* ── Elevation ───────────────────────────────────────────────── */
+  --shadow-hairline: 0 0 0 1px var(--color-line);
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-control: 0 0 0 1px var(--color-line), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 0, 0, 0.035);
+  --shadow-popover: 0 0 0 1px var(--color-line), 0 12px 30px -8px rgba(0, 0, 0, 0.2);
+  --shadow-floating: 0 0 0 1px var(--color-line), 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-field: inset 0 0 0 1px var(--color-line);
+  --shadow-field-filled: inset 0 0 0 1px var(--color-line-strong);
+  --shadow-thumb: 0 1px 2px rgba(0, 0, 0, 0.16);  /* [novio] switch thumb */
+  --shadow-inset: inset 0 0 0 1px var(--color-line);              /* hairline inside tiles, chips, boxes */
+  --shadow-inset-strong: inset 0 0 0 1px var(--color-line-strong); /* hovered empty checkbox */
+  --shadow-focus-halo: 0 0 0 4px var(--focus-ring);               /* drop zone focus */
+  --shadow-hover-ring: 0 0 0 3px var(--color-tray);               /* avatar button hover */
+  --shadow-badge-ring: 0 0 0 2px var(--color-page);               /* count badge over an icon */
+  --shadow-field-open: var(--shadow-field-filled), 0 0 0 4px var(--color-tint-hover); /* select / date while its list is open */
+
+  /* ── Typography ──────────────────────────────────────────────── */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;             /* the workhorse: labels, buttons, emphasis */
+  --weight-semibold: 600;           /* titles */
+
+  /* page-level scale [novio] — affect stops at 16px */
+  --text-hero: 44px;     --leading-hero: 52px;     /* landing hero ≥ 768px only */
+  --text-display: 32px;  --leading-display: 40px;  --tracking-display: -0.02em;
+  --text-h1: 24px;       --leading-h1: 32px;       --tracking-h1: -0.015em;
+  --text-h2: 20px;       --leading-h2: 28px;       --tracking-h2: -0.01em;
+  /* component scale (affect) */
+  --text-h3: 16px;       --leading-h3: 24px;       --tracking-h3: -0.01em;
+  --text-title: 15px;    --leading-title: 22px;    --tracking-title: -0.01em;
+  --text-body: 14px;     --leading-body: 20px;
+  --text-reading: 14px;  --leading-reading: 21px;  /* paragraphs inside cards */
+  --text-sm: 13px;       --leading-sm: 20px;       /* most-used size in affect */
+  --text-caption: 12.5px; --leading-caption: 18px;
+  --text-xs: 12px;       --leading-xs: 16px;
+  --text-tag: 11.5px;    --leading-tag: 16px;      /* pills, badges */
+  --text-micro: 10.5px;  --leading-micro: 16px;    /* tiny tags */
+  --text-input-mobile: 16px;  /* inputs < 640px — stops iOS zoom */
+
+  /* ── Spacing (affect uses a 2px grid; name = px value) ───────── */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-36: 36px;   /* [novio] input padding next to a leading icon */
+  --space-32: 32px;   /* [novio] page rhythm */
+  --space-40: 40px;   /* [novio] */
+  --space-48: 48px;   /* [novio] */
+  --space-64: 64px;   /* [novio] */
+
+  /* ── Radius (nested: tray > card > control > chip) ───────────── */
+  --radius-1: 1px;            /* signal bars */
+  --radius-2: 2px;
+  --radius-4: 4px;            /* text links focus box */
+  --radius-tiny: 6px;          /* checkbox, kbd, inline icon button */
+  --radius-chip: 8px;          /* options, small controls, "Clear all" */
+  --radius-control-sm: 10px;   /* sm button, chip, row */
+  --radius-control: 12px;      /* md button, menu, popover, row header */
+  --radius-control-lg: 14px;   /* lg button */
+  --radius-card: 16px;         /* card inside a compact tray */
+  --radius-card-lg: 20px;      /* card inside a roomy tray */
+  --radius-tray: 22px;         /* compact tray (pairs with --radius-card) */
+  --radius-tray-lg: 24px;      /* roomy tray (pairs with --radius-card-lg) */
+  --radius-pill: 999px;
+  --tray-padding: 6px;         /* gap between tray edge and card */
+
+  /* ── Sizes ───────────────────────────────────────────────────── */
+  --control-sm: 32px;    /* button sm: font 13, px 12, icon 16, radius 10 */
+  --control-md: 40px;    /* button md: font 14, px 16, icon 18, radius 12 */
+  --control-lg: 48px;    /* button lg: font 15, px 20, icon 20, radius 14 */
+  --control-toolbar: 36px; /* [novio] fields size="sm" in toolbars = SegmentedControl md track */
+  --row-height: 36px;    /* menu / list rows */
+  --option-height: 34px;
+  --chip-height: 30px;
+  --icon-sm: 14px;
+  --icon-md: 16px;
+  --icon-lg: 18px;
+  --icon-stroke: 1.8;
+
+  /* ── Layout [novio] ──────────────────────────────────────────── */
+  --width-component: 440px;    /* affect's default component max-width */
+  --width-auth: 400px;         /* auth card */
+  --width-form: 560px;
+  --width-content: 760px;
+  --width-page: 1120px;
+  --header-height: 60px;
+  --gutter: 16px;              /* page side padding on mobile */
+  --gutter-lg: 32px;
+
+  /* ── Motion ──────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);      /* default for everything that moves */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* pops, checkmarks */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 160ms;      /* hover colour / background */
+  --duration-menu: 180ms;      /* dropdown enter */
+  --duration-base: 240ms;      /* fades */
+  --duration-slow: 320ms;      /* expand / collapse, layout */
+  --duration-slower: 360ms;
+  --press-scale: 0.97;
+
+  /* ── Overlay [novio] ─────────────────────────────────────────── */
+  --color-backdrop: rgba(23, 23, 23, 0.24);
+  --color-header: color-mix(in srgb, var(--color-page) 86%, transparent); /* translucent sticky header */
+  --color-tint-hover: color-mix(in srgb, var(--color-ink) 6%, transparent); /* hover on tinted surfaces */
+
+  /* ── Z-index [novio] ─────────────────────────────────────────── */
+  --z-sticky: 10;
+  --z-dropdown: 50;
+  --z-overlay: 100;
+  --z-modal: 110;
+  --z-toast: 200;
+
+  color-scheme: light;
+}
+
+:where(.dark, [data-theme="dark"]) {
+  --color-page: #111113;
+  --color-tray: #161618;
+  --color-surface: #232326;
+  --color-surface-hover: #2a2a2d;
+  --color-fill: #2a2a2d;
+  --color-fill-hover: #313135;
+  --color-row-hover: rgba(255, 255, 255, 0.06);
+  --color-row-selected: rgba(47, 107, 255, 0.16);
+
+  --color-ink: #ededed;
+  --color-text: #c4c4c4;
+  --color-muted: #8f8f8f;
+  --color-muted-strong: #8f8f8f;
+  --color-faint: #6b6b72;
+  --color-on-ink: #121213;
+
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-subtle: rgba(255, 255, 255, 0.06);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+  --color-field: #19191b;
+  --color-field-wait: #1d1d20;
+
+  --color-accent: #6b95ff;
+  --color-accent-tint: rgba(47, 107, 255, 0.16);
+  --color-accent-tint-subtle: rgba(47, 107, 255, 0.1);
+  --color-success: #3dbb6f;
+  --color-success-tint: rgba(111, 210, 122, 0.14);
+  --color-danger: #ff6369;
+  --color-danger-line: rgba(255, 99, 105, 0.6);
+  --color-danger-halo: rgba(255, 99, 105, 0.16);
+  --color-destructive: #ff6b6b;
+  --color-destructive-tint: rgba(255, 64, 64, 0.16);
+  --color-warning: #fb9a4b;
+  --color-warning-tint: rgba(251, 154, 75, 0.14);
+  --color-rose: #fb7185;
+  --color-rose-tint: rgba(251, 113, 133, 0.16);
+  --color-violet: #b49cff;
+  --color-violet-tint: rgba(139, 92, 246, 0.18);
+
+  --primary-bg: linear-gradient(#f4f4f5, #e4e4e7);
+  --primary-bg-hover: linear-gradient(#ffffff, #ececef);
+  --primary-ring: rgba(0, 0, 0, 0.6);
+  --primary-shadow: 0 0 0 1px var(--primary-ring), 0 2px 4px rgba(0, 0, 0, 0.35), inset 0 1px 0 #ffffff;
+
+  --focus-ring: rgba(255, 255, 255, 0.3);
+  --field-focus: inset 0 0 0 1.5px var(--color-ink), 0 0 0 4px rgba(255, 255, 255, 0.08);
+
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-control: 0 0 0 1px var(--color-line), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-popover: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 30px -8px rgba(0, 0, 0, 0.5);
+  --shadow-floating: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
