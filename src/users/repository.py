@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.users.models import User
+from src.users.models import User, UserRole
 
 
 async def check_if_user_exists_by_email(session: AsyncSession, *, email: str) -> bool:
@@ -25,11 +25,13 @@ async def add_user(
     username: str | None,
     email: str,
     hashed_password: str,
+    role: UserRole,
 ) -> User:
     user = User(
         username=username,
         email=email,
         hashed_password=hashed_password,
+        role=role,
     )
 
     session.add(user)
