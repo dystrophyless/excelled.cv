@@ -115,7 +115,10 @@ export function DateField({
               </div>
               <div className={styles.weekdays} aria-hidden="true">{WEEKDAYS.map((d) => <span key={d}>{d}</span>)}</div>
               <div ref={grid} className={styles.grid} role="grid" onKeyDown={onGridKey}>
-                {days.map((d) => {
+                {Array.from({ length: 6 }, (_, week) => (
+                  // role="row" keeps grid > row > gridcell valid; `display: contents` leaves the 7-column layout as it was
+                  <div key={week} role="row" className={styles.week}>
+                {days.slice(week * 7, week * 7 + 7).map((d) => {
                   const iso = toIso(d);
                   const isFocus = iso === toIso(focus);
                   return (
@@ -137,6 +140,8 @@ export function DateField({
                     </button>
                   );
                 })}
+                  </div>
+                ))}
               </div>
             </div>
           )}

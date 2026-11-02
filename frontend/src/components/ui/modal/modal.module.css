@@ -107,3 +107,7 @@
 @media (prefers-reduced-motion: reduce) {
   .dialog[open], .dialog[open]::backdrop { animation: none; }
 }
+
+.dialog[data-overflow="visible"] .card {
+  overflow: visible;
+}
