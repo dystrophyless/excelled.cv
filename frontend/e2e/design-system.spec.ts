@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { expectNoA11yViolations, trackConsoleErrors } from "./support/a11y";
 import { account } from "./support/auth-api";
+import { mockStudentProfile } from "./support/profiles-api";
+import { mockCompanyProfile } from "./support/vacancies-api";
 
 /*
  * Guards the design system itself: every reference template and state renders without errors and passes axe,
@@ -18,6 +20,9 @@ test.beforeEach(async ({ page }) => {
     const role = new URL(from, "http://localhost").pathname.startsWith("/company") ? "employer" : "student";
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ account: account(role) }) });
   });
+  // the role layouts show the profile name in the account menu (003-profiles)
+  await mockStudentProfile.ok(page);
+  await mockCompanyProfile.ok(page);
 });
 
 const TEMPLATE_STATES: Record<string, string[]> = {
@@ -239,16 +244,12 @@ test("saved: own list, remove with undo, closed vacancy has no Apply", async ({ 
   await expect(cards).toHaveCount(4);
 });
 
-test("profile: Edit → Preview shows the employer view and leads back", async ({ page }) => {
-  await page.goto("/app/profile");
+// /app/profile and /app/profile/edit are real pages since 003-profiles (e2e/profiles.spec.ts); the reference template keeps
+// its owner panel and Edit still leads to the edit path. Its "Preview" demo (/app/profile?preview=1) no longer exists.
+test("profile template: owner panel and Edit leads to the edit form", async ({ page }) => {
+  await page.goto("/styleguide/templates/profile");
   await expect(page.getByTestId("owner-panel")).toBeVisible();
   await page.getByRole("button", { name: "Edit profile" }).click();
-  await expect(page).toHaveURL(/\/app\/profile\/edit$/);
-  await page.getByRole("button", { name: "Preview" }).click();
-  await expect(page).toHaveURL(/\/app\/profile\?preview=1$/);
-  await expect(page.getByTestId("owner-panel")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Edit profile" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Back to editing" }).click();
   await expect(page).toHaveURL(/\/app\/profile\/edit$/);
 });
 
@@ -256,4 +257,194 @@ test("settings: sign-in email is read-only", async ({ page }) => {
   await page.goto("/app/settings");
   await expect(page.getByLabel("Email")).toHaveAttribute("readonly", "");
   await expect(page.getByRole("button", { name: "Change email" })).toHaveCount(0);
+});
+
+test("choice cards: native radio keys, checkbox toggle, error and disabled states", async ({ page }) => {
+  const errors = trackConsoleErrors(page);
+  await page.goto("/styleguide#choice-cards");
+  const section = page.getByTestId("styleguide-choice-cards");
+  await expect(section).toBeVisible();
+
+  // radio group: the accessible name is the label only; arrow keys move the selection inside the group
+  const year = page.getByTestId("cc-year");
+  await expect(year.getByRole("radio", { name: "3rd year" })).toBeChecked();
+  await year.getByRole("radio", { name: "3rd year" }).focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(year.getByRole("radio", { name: "4th year" })).toBeChecked();
+  await expect(year.getByRole("radio", { name: "4th year" })).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(year.getByRole("radio", { name: "3rd year" })).toBeChecked();
+
+  // description is a description, not part of the name; a click on the card selects it
+  const uni = page.getByTestId("cc-university");
+  await uni.getByRole("radio", { name: "Nazarbayev University" }).click();
+  await expect(uni.getByRole("radio", { name: "Nazarbayev University" })).toBeChecked();
+  await expect(uni.getByRole("radio", { name: "Nazarbayev University" })).toHaveAccessibleDescription("Astana");
+  await uni.getByRole("radio", { name: "Other" }).click();
+  await expect(page.getByLabel("Your university")).toBeVisible();
+
+  // icon cards
+  const industry = page.getByTestId("cc-industry");
+  await expect(industry.getByRole("radio")).toHaveCount(10);
+  await industry.getByRole("radio", { name: "Manufacturing" }).click();
+  await expect(industry.getByRole("radio", { name: "Manufacturing" })).toBeChecked();
+
+  // checkbox group: Space toggles, several answers
+  const format = page.getByTestId("cc-format");
+  await format.getByRole("checkbox", { name: "Remote" }).focus();
+  await page.keyboard.press("Space");
+  await expect(format.getByRole("checkbox", { name: "Remote" })).toBeChecked();
+  await expect(format.getByRole("checkbox", { name: "Hybrid" })).toBeChecked();
+
+  // error: every input aria-invalid, the message is announced and linked to the group
+  const errorGroup = page.getByTestId("cc-error");
+  await section.getByRole("button", { name: "Continue" }).click();
+  await expect(errorGroup.getByRole("alert")).toHaveText("Choose your year of study");
+  await expect(errorGroup.getByRole("radio", { name: "1st year" })).toHaveAttribute("aria-invalid", "true");
+  await expect(errorGroup).toHaveAccessibleDescription("Choose your year of study");
+  await expectNoA11yViolations(page);
+  await errorGroup.getByRole("radio", { name: "2nd year" }).click();
+  await expect(errorGroup.getByRole("alert")).toHaveCount(0);
+  await expect(errorGroup.getByRole("radio", { name: "1st year" })).not.toHaveAttribute("aria-invalid", "true");
+
+  // disabled
+  await expect(section.getByRole("radio", { name: "Full-time job" })).toBeDisabled();
+  await expect(page.getByTestId("cc-disabled").getByRole("radio", { name: "Education" })).toBeDisabled();
+
+  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(page.viewportSize()!.width);
+  expect(errors).toEqual([]);
+});
+
+test("combobox: aliases, description line, create label, all options reachable, clearing", async ({ page }) => {
+  const errors = trackConsoleErrors(page);
+  await page.goto("/styleguide#forms");
+  const university = page.getByTestId("sg-combobox-university").getByRole("combobox", { name: "University" });
+  await expect(university).toHaveValue("Kazakh-British Technical University");
+
+  // an alias finds its university and ranks first; the matched alias shows on the description line
+  await university.fill("kbtu");
+  const list = page.getByRole("listbox");
+  await expect(list.getByRole("option").first()).toHaveText(/^Kazakh-British Technical University\s*Almaty · KBTU/);
+  await university.fill("nu");
+  await expect(list.getByRole("option").first()).toContainText("Nazarbayev University");
+  await expect(list.getByRole("option").first()).toContainText("Astana · NU");
+  await university.fill("enu");
+  await expect(list.getByRole("option").first()).toContainText("L.N. Gumilyov Eurasian National University");
+  await expectNoA11yViolations(page);
+  await page.keyboard.press("Enter");
+  await expect(university).toHaveValue("L.N. Gumilyov Eurasian National University");
+
+  // an unknown name: the create option uses createLabel
+  await university.fill("Narxoz University");
+  await expect(list.getByRole("option", { name: "Use “Narxoz University”" })).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(university).toHaveValue("Narxoz University");
+
+  // clearable: empty the field and leave it → stays empty; the clear button does the same
+  await university.fill("");
+  await university.blur();
+  await expect(university).toHaveValue("");
+  await university.fill("sdu");
+  await page.keyboard.press("Enter");
+  await expect(university).toHaveValue("Suleyman Demirel University");
+  await page.getByTestId("sg-combobox-university").getByRole("button", { name: "Clear" }).click();
+  await expect(university).toHaveValue("");
+  await university.blur();
+  await expect(university).toHaveValue("");
+
+  // no 50-option cap: every option is listed, the last one is reachable by keyboard and scrolled into view
+  const city = page.getByTestId("sg-combobox-city").getByRole("combobox", { name: "City" });
+  await city.click();
+  const cities = page.getByRole("listbox").getByRole("option");
+  expect(await cities.count()).toBeGreaterThan(50);
+  await page.keyboard.press("Control+End");
+  await expect(cities.last()).toBeInViewport();
+  await page.keyboard.press("Enter");
+  await expect(city).toHaveValue("Zyryanovsk");
+  // a former name finds the city
+  await city.fill("Ust-Kamenogorsk");
+  await page.keyboard.press("Enter");
+  await expect(city).toHaveValue("Oskemen");
+  expect(errors).toEqual([]);
+});
+
+test("combobox: focus alone never opens the list; a press, typing or ArrowDown does", async ({ page }) => {
+  await page.goto("/styleguide#forms");
+  const university = page.getByTestId("sg-combobox-university").getByRole("combobox", { name: "University" });
+  const list = page.getByRole("listbox");
+  // programmatic focus (as an error focus does) and Tab-in show no list
+  await university.focus();
+  await expect(university).toBeFocused();
+  await expect(list).toHaveCount(0);
+  await expect(university).toHaveAttribute("aria-expanded", "false");
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await expect(university).toBeFocused();
+  await expect(list).toHaveCount(0);
+  // ArrowDown opens it; Escape closes it
+  await page.keyboard.press("ArrowDown");
+  await expect(list).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(list).toHaveCount(0);
+  // Alt+ArrowDown too
+  await page.keyboard.press("Alt+ArrowDown");
+  await expect(list).toBeVisible();
+  await page.keyboard.press("Escape");
+  // typing opens it
+  await page.keyboard.press("ControlOrMeta+A");
+  await page.keyboard.type("kb");
+  await expect(list.getByRole("option").first()).toContainText("Kazakh-British");
+  await page.keyboard.press("Escape");
+  await expect(list).toHaveCount(0);
+  // a press on the field opens it
+  await university.click();
+  await expect(list).toBeVisible();
+});
+
+test("combobox: Tab accepts the highlighted option after typing, and changes nothing when nothing was typed", async ({ page }) => {
+  await page.goto("/styleguide#forms");
+  const university = page.getByTestId("sg-combobox-university").getByRole("combobox", { name: "University" });
+  await university.click();
+  await university.fill("kbtu");
+  await expect(page.getByRole("listbox").getByRole("option").first()).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(university).toHaveValue("Kazakh-British Technical University");
+  await expect(university).not.toBeFocused();
+  // tabbing through again without typing keeps the value
+  await university.focus();
+  await page.keyboard.press("Tab");
+  await expect(university).toHaveValue("Kazakh-British Technical University");
+});
+
+test("combobox: an open single list never covers the primary action below it (inFlow)", async ({ page }) => {
+  await page.goto("/styleguide#forms");
+  const university = page.getByTestId("sg-combobox-university").getByRole("combobox", { name: "University" });
+  const next = page.getByTestId("sg-combobox-continue");
+  await university.click();
+  await university.fill("Kaz");
+  await expect(page.getByRole("listbox").getByRole("option").first()).toBeVisible();
+  await next.scrollIntoViewIfNeeded();
+  // the element at the button's centre is the button (or inside it), not an option of the open list
+  const hit = await next.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return top !== null && el.contains(top);
+  });
+  expect(hit).toBe(true);
+  // a real click reaches the button although the list closes on the blur it causes; the typed name is kept
+  await next.click();
+  await expect(page.getByRole("status").filter({ hasText: "Continued with" })).toHaveText("Continued with Kaz");
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  await expectNoA11yViolations(page);
+
+  // A short list (an alias, or a name that is not listed) shrinks or changes when the blur commits the text; that commit
+  // waits for the press to end too, so the first click still lands (regression: it used to move the button away).
+  for (const [typed, result] of [["kbtu", "Kazakh-British Technical University"], ["Narxoz Uni", "Narxoz Uni"]]) {
+    await university.click();
+    await university.fill(typed);
+    await expect(page.getByRole("listbox").getByRole("option").first()).toBeVisible();
+    await next.click();
+    await expect(page.getByRole("status").filter({ hasText: "Continued with" })).toHaveText(`Continued with ${result}`);
+  }
 });

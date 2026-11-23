@@ -3,6 +3,7 @@ import { expectNoA11yViolations } from "./support/a11y";
 import { signedInAs } from "./support/auth-api";
 import {
   mockCatalog,
+  mockCompanyProfile,
   mockSkills,
   mockVacancyCreate,
   mockVacancyDelete,
@@ -21,6 +22,7 @@ import {
 
 test.beforeEach(async ({ page }) => {
   await signedInAs(page, "employer");
+  await mockCompanyProfile.ok(page);
   await mockCatalog.ok(page);
   await mockSkills.ok(page);
 });
@@ -36,7 +38,8 @@ const cont = (page: Page) => page.getByRole("button", { name: "Continue" });
 
 async function choose(page: Page, field: string, option: string) {
   await page.getByRole("combobox", { name: new RegExp(`^${field}\\b`) }).click();
-  await page.getByRole("option", { name: option, exact: true }).click();
+  // field options carry a description line (003 catalog), so the name starts with the label
+  await page.getByRole("option", { name: new RegExp(`^${option}(\\s|$)`) }).click();
 }
 
 /** Picks a skill. The list stays open after a pick (round 5); the next click must still work with it open. */

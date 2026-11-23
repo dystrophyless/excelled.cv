@@ -7,9 +7,11 @@ import type { Page, Route } from "@playwright/test";
  */
 
 export type Role = "student" | "employer";
-export type MockAccount = { id: number; email: string; role: Role };
+export type MockAccount = { id: number; email: string; role: Role; has_profile: boolean };
 
-export const account = (role: Role = "student", email = "maya@sdu.edu.kz"): MockAccount => ({ id: 42, email, role });
+/** `hasProfile` defaults to true: every role page needs the profile (003-profiles R3); onboarding tests pass false. */
+export const account = (role: Role = "student", email = "maya@sdu.edu.kz", hasProfile = true): MockAccount =>
+  ({ id: 42, email, role, has_profile: hasProfile });
 
 const json = (route: Route, status: number, body?: unknown) =>
   route.fulfill(body === undefined ? { status } : { status, contentType: "application/json", body: JSON.stringify(body) });
@@ -22,9 +24,13 @@ const at = (page: Page, method: string, path: string, handler: (route: Route) =>
 
 const CODE_SENT = { resend_in: 60, expires_in: 600 };
 
-/** GET /me → 200 signed in as `role`. */
-export const signedInAs = (page: Page, role: Role = "student", email?: string) =>
-  at(page, "GET", "me", (r) => json(r, 200, { account: account(role, email) }));
+export type SignedInOptions = { email?: string; hasProfile?: boolean };
+
+/** GET /me → 200 signed in as `role` (with a profile unless `hasProfile: false`). The third argument may be the email. */
+export const signedInAs = (page: Page, role: Role = "student", options: string | SignedInOptions = {}) => {
+  const { email, hasProfile = true } = typeof options === "string" ? { email: options } : options;
+  return at(page, "GET", "me", (r) => json(r, 200, { account: account(role, email, hasProfile) }));
+};
 
 /** GET /me → 401 not_signed_in. */
 export const signedOut = (page: Page) => at(page, "GET", "me", (r) => err(r, 401, "not_signed_in"));
