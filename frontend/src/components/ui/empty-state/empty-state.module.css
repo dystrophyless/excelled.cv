@@ -1,0 +1,52 @@
+/* Empty / error state inside a card — design/patterns.md §8. */
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  padding: var(--space-32) var(--space-16);
+  text-align: center;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-10);
+  border-radius: var(--radius-control);
+  background: var(--color-fill);
+  box-shadow: var(--shadow-inset);
+  color: var(--color-muted-strong);
+}
+
+.empty[data-tone="error"] .icon {
+  color: var(--color-danger);
+}
+
+.illustration {
+  margin-bottom: var(--space-12);
+}
+
+.title {
+  font-size: var(--text-title);
+  line-height: var(--leading-title);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-title);
+  color: var(--color-ink);
+}
+
+.description {
+  max-width: 34ch;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-8);
+  margin-top: var(--space-14);
+}

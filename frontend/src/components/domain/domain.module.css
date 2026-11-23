@@ -1,0 +1,288 @@
+/* Novio domain components — built only from tokens and UI-kit recipes. */
+
+/* ── Match score ───────────────────────────────────────── */
+.score {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.bars span {
+  width: 3px;
+  border-radius: var(--radius-1);
+  background: var(--color-line-strong);
+}
+
+.bars span:nth-child(1) { height: 6px; }
+.bars span:nth-child(2) { height: 9px; }
+.bars span:nth-child(3) { height: 12px; }
+
+/* level colours follow affect smart-recommendation: 1 amber · 2 accent · 3 success */
+.score[data-level="1"] .bars span[data-on] { background: var(--color-warning); }
+.score[data-level="2"] .bars span[data-on] { background: var(--color-accent); }
+.score[data-level="3"] .bars span[data-on] { background: var(--color-success); }
+
+.pct {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.score[data-size="lg"] {
+  gap: var(--space-10);
+  font-size: var(--text-body);
+}
+
+.score[data-size="lg"] .pct {
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h2);
+}
+
+.score[data-size="lg"] .bars span { width: 4px; }
+.score[data-size="lg"] .bars span:nth-child(1) { height: 9px; }
+.score[data-size="lg"] .bars span:nth-child(2) { height: 14px; }
+.score[data-size="lg"] .bars span:nth-child(3) { height: 19px; }
+
+/* ── Skills ────────────────────────────────────────────── */
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.skill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 26px;
+  padding: 0 var(--space-10);
+  border-radius: var(--radius-chip);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.skill[data-state="matched"] {
+  background: var(--color-success-tint);
+  color: var(--color-success);
+}
+
+.skill[data-state="missing"] {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-inset);
+  color: var(--color-text);
+}
+
+.skill[data-state="missing"][data-nice] {
+  color: var(--color-muted);
+}
+
+.skill[data-state="neutral"] {
+  background: var(--color-fill);
+  color: var(--color-text);
+}
+
+.breakdown {
+  display: grid;
+  gap: var(--space-14);
+}
+
+.group {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.groupHead strong {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.tip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.tip svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-accent);
+}
+
+.tip strong {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+/* ── Facts (location · format · salary …) ──────────────── */
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6) var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.facts svg {
+  color: var(--color-muted-strong);
+}
+
+.facts[data-layout="list"] {
+  display: grid;
+  gap: var(--space-10);
+  font-size: var(--text-body);
+  color: var(--color-text);
+}
+
+/* ── Vacancy card ─────────────────────────────────────── */
+.vacancyHead {
+  display: flex;
+  gap: var(--space-12);
+}
+
+.vacancyMain {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.title {
+  font-size: var(--text-title);
+  line-height: var(--leading-title);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-title);
+  color: var(--color-ink);
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* the whole card is clickable through the title link */
+.titleLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.titleLink:focus-visible {
+  outline: none;
+}
+
+.titleLink:focus-visible::after {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.company {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.cardBody {
+  display: grid;
+  gap: var(--space-12);
+  margin-top: var(--space-12);
+}
+
+.clickable {
+  position: relative;
+}
+
+.clickable :where(button, a:not(.titleLink)) {
+  position: relative;
+  z-index: 1;
+}
+
+.footActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+/* ── Candidate card ──────────────────────────────────── */
+.candidateHead {
+  padding: var(--space-6);
+}
+
+.candidateName {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.suggest {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 26px;
+  padding: 0 var(--space-10);
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-chip);
+  background: transparent;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.suggest:hover {
+  border-style: solid;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.candidate {
+  border-radius: var(--radius-card);
+}
+
+.candidateFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin-top: var(--space-4);
+  padding: var(--space-6) var(--space-6) 0;
+  border-top: 1px solid var(--color-line-subtle);
+}

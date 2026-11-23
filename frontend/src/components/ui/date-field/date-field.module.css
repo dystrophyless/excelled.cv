@@ -1,0 +1,109 @@
+/* Calendar popover — popover recipe; days are small square buttons, selected = ink like a checked box. */
+
+.popover {
+  position: absolute;
+  top: calc(100% + var(--space-6));
+  left: 0;
+  z-index: var(--z-dropdown);
+  width: 284px;
+  padding: var(--space-10);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  animation: pop-in var(--duration-menu) var(--ease-out);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+}
+
+.month {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.nav {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--color-muted-strong);
+  cursor: pointer;
+}
+
+.nav:hover {
+  background: var(--color-row-hover);
+  color: var(--color-ink);
+}
+
+.weekdays,
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-2);
+}
+
+.weekdays span {
+  padding: var(--space-4) 0;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.day {
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.day:hover:not(:disabled) {
+  background: var(--color-row-hover);
+  color: var(--color-ink);
+}
+
+.day[data-outside] {
+  color: var(--color-faint);
+}
+
+.day[data-today] {
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+}
+
+.day[aria-selected="true"] {
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  font-weight: var(--weight-medium);
+}
+
+.day:disabled {
+  color: var(--color-faint);
+  cursor: not-allowed;
+}
+
+.day:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 0;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popover { animation: none; }
+}

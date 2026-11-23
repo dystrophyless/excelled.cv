@@ -1,0 +1,20 @@
+# Novio lifecycle hooks (read by the speckit-* skills). See design-system/process.md.
+hooks:
+  after_plan:
+    - extension: novio-design
+      command: speckit.design
+      enabled: true
+      optional: false
+      description: Design the feature's UI (ui-spec + prototype) and get the product owner's approval.
+  before_tasks:
+    - extension: novio-design
+      command: speckit.design.gate
+      enabled: true
+      optional: false
+      description: Block task generation until the ui-spec is Approved (or the feature has no UI).
+  after_implement:
+    - extension: novio-design
+      command: speckit.design.qa
+      enabled: true
+      optional: false
+      description: Check the implemented UI against the approved design and the design system.
