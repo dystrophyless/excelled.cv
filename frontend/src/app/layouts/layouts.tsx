@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { Icon } from "@/components/icons";
 import { AppShell, Avatar, Button, NotificationCenter, ProfileMenu, type NavItem } from "@/components/ui";
+import { useMe, useSignOut } from "@/features/auth/hooks";
 import { EMPLOYER_NOTIFICATIONS, STUDENT_NOTIFICATIONS } from "@/mocks/data";
 import styles from "./layouts.module.css";
 
@@ -88,6 +89,8 @@ const STUDENT: Account = { name: "Maya Akhmetova", email: "maya@sdu.edu.kz", set
 const EMPLOYER: Account = { name: "Aruzhan Bekova", email: "aruzhan@kaspi.kz" };
 
 export function StudentLayout({ children }: { children: ReactNode }) {
+  const { data: me } = useMe();
+  const signOut = useSignOut();
   return (
     <AppShell
       home="/app"
@@ -96,11 +99,11 @@ export function StudentLayout({ children }: { children: ReactNode }) {
         <>
           <NotificationCenter items={STUDENT_NOTIFICATIONS} settingsTo="/app/settings" />
           <AccountMenu
-            account={STUDENT}
+            account={{ ...STUDENT, email: me?.email ?? STUDENT.email }}
             items={[
               { id: "profile", label: "Profile", icon: <Icon name="profile" size={20} />, to: "/app/profile" },
               { id: "settings", label: "Settings", icon: <Icon name="settings" size={20} />, to: "/app/settings" },
-              { id: "logout", label: "Log out", icon: <Icon name="logout" size={20} /> },
+              { id: "logout", label: "Log out", icon: <Icon name="logout" size={20} />, onSelect: () => signOut.mutate() },
             ]}
           />
         </>
@@ -112,6 +115,8 @@ export function StudentLayout({ children }: { children: ReactNode }) {
 }
 
 export function EmployerLayout({ children }: { children: ReactNode }) {
+  const { data: me } = useMe();
+  const signOut = useSignOut();
   return (
     <AppShell
       home="/company"
@@ -120,11 +125,11 @@ export function EmployerLayout({ children }: { children: ReactNode }) {
         <>
           <NotificationCenter items={EMPLOYER_NOTIFICATIONS} settingsTo="/company/settings" />
           <AccountMenu
-            account={EMPLOYER}
+            account={{ ...EMPLOYER, email: me?.email ?? EMPLOYER.email }}
             items={[
               { id: "company", label: "Company profile", icon: <Icon name="company" size={20} />, to: "/company/profile" },
               { id: "settings", label: "Settings", icon: <Icon name="settings" size={20} />, to: "/company/settings" },
-              { id: "logout", label: "Log out", icon: <Icon name="logout" size={20} /> },
+              { id: "logout", label: "Log out", icon: <Icon name="logout" size={20} />, onSelect: () => signOut.mutate() },
             ]}
           />
         </>
