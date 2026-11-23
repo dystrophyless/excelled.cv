@@ -18,11 +18,13 @@ export type ModalProps = {
   size?: "md" | "lg";
   /** Close on backdrop click (default true). Turn off for forms with unsaved input. */
   dismissible?: boolean;
+  /** "visible" lets a popover (DateField calendar) extend past the card; use only for short forms */
+  overflow?: "auto" | "visible";
   "data-testid"?: string;
 };
 
 export function Modal({
-  open, onClose, title, description, children, footer, size = "md", dismissible = true, ...rest
+  open, onClose, title, description, children, footer, size = "md", dismissible = true, overflow = "auto", ...rest
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -40,6 +42,7 @@ export function Modal({
       ref={ref}
       className={styles.dialog}
       data-size={size}
+      data-overflow={overflow === "visible" ? "visible" : undefined}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       onCancel={(event) => {

@@ -1,5 +1,7 @@
 import os
 import re
+from dataclasses import dataclass
+from datetime import datetime
 
 import pytest
 
@@ -22,7 +24,9 @@ from src.auth.utils import hash_password  # noqa: E402
 from src.config import settings  # noqa: E402
 from src.database import Base, SessionMaker, async_engine  # noqa: E402
 from src.main import app  # noqa: E402
+from src.skills import models as skill_models  # noqa: F401, E402
 from src.users import models as user_models  # noqa: F401, E402
+from src.vacancies import models as vacancy_models  # noqa: F401, E402
 from src.users.models import User, UserRole  # noqa: E402
 
 CODE_RE = re.compile(r"<h2>(\d{6})</h2>")
@@ -84,6 +88,47 @@ def make_session(db):
 def cookie(raw: str) -> dict[str, str]:
     """Request headers carrying a session cookie (the cookie is scoped to /api, which the helper ignores)."""
     return {"Cookie": f"{sessions.COOKIE_NAME}={raw}"}
+
+
+@dataclass
+class Account:
+    """A signed-in test account: the user row and request headers carrying its session cookie."""
+
+    user: User
+    headers: dict[str, str]
+
+
+async def _signed_in(make_user, make_session, email: str, role: UserRole) -> Account:
+    user = await make_user(email=email, role=role)
+    _, raw = await make_session(user)
+    return Account(user=user, headers=cookie(raw))
+
+
+@pytest.fixture
+async def employer(make_user, make_session) -> Account:
+    return await _signed_in(make_user, make_session, "hr@kaspi.kz", UserRole.employer)
+
+
+@pytest.fixture
+async def other_employer(make_user, make_session) -> Account:
+    return await _signed_in(make_user, make_session, "hr@halyk.kz", UserRole.employer)
+
+
+@pytest.fixture
+async def student(make_user, make_session) -> Account:
+    return await _signed_in(make_user, make_session, "maya@sdu.edu.kz", UserRole.student)
+
+
+@pytest.fixture
+def freeze_now():
+    """Pins the clock the vacancy routes use (the `now_utc` dependency): freeze_now(datetime(..., tzinfo=UTC))."""
+    from src.vacancies.deadlines import now_utc
+
+    def _freeze(moment: datetime) -> None:
+        app.dependency_overrides[now_utc] = lambda: moment
+
+    yield _freeze
+    app.dependency_overrides.pop(now_utc, None)
 
 
 @pytest.fixture
