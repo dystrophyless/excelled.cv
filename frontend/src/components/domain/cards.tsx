@@ -77,6 +77,8 @@ export type VacancyCardProps = {
   /** Skills of the viewer, to colour the chips; omit for guests */
   have?: string[];
   to: string;
+  /** Router state the title link carries to the page it opens (e.g. the list's query, for Back) */
+  linkState?: unknown;
   /** Right side of the tray footer: Save / Apply buttons */
   actions?: ReactNode;
   /** Apply-by line on the tray footer ("Apply by 15 Dec"); `soon` = calm emphasis for the last 7 days ("Closes in 3 days") */
@@ -87,7 +89,7 @@ export type VacancyCardProps = {
  * The vacancy as a tray + card: identity and facts in the card, match + actions on the tray.
  * The title is the link; the whole card is clickable through it.
  */
-export function VacancyCard({ vacancy: v, have, to, actions, deadline }: VacancyCardProps) {
+export function VacancyCard({ vacancy: v, have, to, linkState, actions, deadline }: VacancyCardProps) {
   const deadlineEl = deadline && (
     <span className={styles.deadline} data-soon={deadline.soon || undefined} data-testid="vacancy-deadline">
       <Icon name={deadline.soon ? "interview" : "deadline"} size={14} />
@@ -120,7 +122,7 @@ export function VacancyCard({ vacancy: v, have, to, actions, deadline }: Vacancy
         <div className={styles.vacancyMain}>
           <div className={styles.titleRow}>
             <h3 className={styles.title}>
-              <Link to={to} className={styles.titleLink}>{v.title}</Link>
+              <Link to={to} state={linkState} className={styles.titleLink}>{v.title}</Link>
             </h3>
             <Tag tone={vacancyTypeTone(v.type)}>{v.type}</Tag>
           </div>

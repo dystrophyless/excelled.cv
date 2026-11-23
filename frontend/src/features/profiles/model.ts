@@ -26,6 +26,8 @@ export type ProfileCatalog = {
   /** vacancy position types: Internship, Full-time, Part-time, Research */
   types: Option[];
   languageLevels: Option[];
+  /** work formats (On-site, Hybrid, Remote); read by the student opportunities filters, not by the profile forms */
+  formats?: Option[];
 };
 
 /** A screen that reads data first: catalog (onboarding) or catalog + profile (profile and edit pages). */

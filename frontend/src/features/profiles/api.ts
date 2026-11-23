@@ -65,6 +65,7 @@ export type ApiProfileCatalog = {
   fields: (ApiOption & { description: string })[];
   types: ApiOption[];
   language_levels: ApiOption[];
+  formats?: ApiOption[];
 };
 
 /** One FastAPI 422 item (default validation shape). */
@@ -132,6 +133,7 @@ export const toProfileCatalog = (c: ApiProfileCatalog): ProfileCatalog => ({
   fields: c.fields.map((f) => ({ value: f.value, label: f.label, description: f.description })),
   types: c.types,
   languageLevels: c.language_levels,
+  formats: c.formats ?? [],
 });
 
 export const EMPTY_PROFILE_CATALOG: ProfileCatalog = {
