@@ -90,6 +90,22 @@
   color: var(--color-ink);
 }
 
+/* A single section: plain label, no track and no white thumb (a lone white pill reads as a button) */
+.nav[data-single] {
+  display: flex;
+  padding: 0;
+  background: transparent;
+}
+
+.nav[data-single] .navLink {
+  color: var(--color-ink);
+}
+
+.nav[data-single] .navLink[aria-current="page"] {
+  background: transparent;
+  box-shadow: none;
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -188,6 +204,8 @@
   .nav { display: flex; }
   .menuButton { display: none; }
 }
+
+.menuButton[data-single] { display: none; }
 
 /* Below lg: secondary header actions move into the sheet */
 @media (max-width: 1023.98px) {

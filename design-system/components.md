@@ -40,7 +40,7 @@ and get a section on `/styleguide`.
 
 | Component | Origin | Use |
 |---|---|---|
-| `Tag` | N | status / category pill; tones neutral · accent · success · warning · danger · rose · violet |
+| `Tag` | N | status / category pill; tones neutral · accent · success · warning · danger · rose · violet. **Vacancy type tones** (one rule, `vacancyTypeTone()`): Internship accent · Research violet · Full-time / Part-time neutral |
 | `Chip` | N | a selected value, removable (`onRemove`) |
 | `Count` | N | number next to a label |
 | `Avatar` | N | person (round) / company (`shape="square"`), initials fallback |
@@ -76,7 +76,7 @@ and get a section on `/styleguide`.
 | Component | Origin | Use |
 |---|---|---|
 | `StudentLayout`, `EmployerLayout`, `PublicLayout` | N | the shell of every page by role — pages never build headers |
-| `AppShell` | N | lower-level shell used by the layouts (nav, actions, mobile sheet) |
+| `AppShell` | N | lower-level shell used by the layouts (nav, actions, mobile sheet). A single nav item renders as a plain label (ink colour, `aria-current`) and hides the menu button |
 | `AccountMenu` | N | avatar → affect `ProfileMenu` popover |
 | `NotificationCenter` | N | the header bell: unread badge + panel (Today / Earlier, tinted icon tiles, unread dot, Mark all as read, settings link); opening an item marks it read and navigates. Items: `{ icon, tone, title, detail, time, group, unread, to }` |
 | `ProfileMenu` | A | account card with items + profile setup progress |
@@ -100,8 +100,8 @@ and get a section on `/styleguide`.
 | Component | Use |
 |---|---|
 | `MatchScore` | match % + 3-bar signal + label; `size="lg"` on detail pages, `compact` in tables / cards |
-| `SkillChip`, `SkillMatchRow`, `SkillBreakdown`, `SkillSuggestion` | skills: plain / matched / missing; row for cards; full breakdown for detail; "+ Docker" suggestion |
-| `VacancyCard` | a vacancy in lists (tray: identity + facts + skills; footer: match + actions) |
+| `SkillChip`, `SkillMatchRow`, `SkillBreakdown`, `SkillSuggestion` | skills: plain / matched / missing; row for cards; full breakdown for detail ("x of y" appears only when x > 0, so a bare number never reads as a score; without `have` = plain Required / Nice to have lists, no counts, no tip); "+ Docker" suggestion |
+| `VacancyCard` | a vacancy in lists (tray: identity + facts + skills; footer: match + deadline + actions). `deadline={{ label, soon }}` = the apply-by line (muted; last 7 days: ink text + warning icon, "Closes in 3 days"); without match / actions the footer reads deadline · posted ago. Types: Internship · Full-time · Part-time · Research |
 | `CandidateCard` | a candidate in pipeline columns (white card) |
 | `StatusTag`, `APPLICATION_STATUS` | the only way to show an application status |
 | `FactList` | location · format · duration · salary with icons; `layout="list"` in asides |

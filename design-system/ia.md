@@ -1,6 +1,6 @@
 # Novio — information architecture
 
-Status: **approved** · 2026-10-30. Page archetypes (right column) are defined in `templates/`.
+Status: **approved** · 2026-10-30 · amended 2026-11-24 (004: student section "Opportunities"). Page archetypes (right column) are defined in `templates/`.
 
 ## Roles
 
@@ -31,14 +31,16 @@ One account has one role, chosen at sign-up. Employers belong to a company (seve
 | Route | Page | Archetype |
 |---|---|---|
 | `/onboarding` | University → skills → preferences → CV (skippable steps) | Wizard |
-| `/app` | Home: profile completeness, recommended matches, application updates | Dashboard |
-| `/app/vacancies` | Search & filters, sorted by match | Browse |
-| `/app/vacancies/:id` | Vacancy + "your match" breakdown (matched / missing skills) + Apply | Detail |
-| `/app/applications` | My applications by status (Applied → Viewed → Interview → Offer / Rejected) | Tracker |
-| `/app/saved` | Saved vacancies | Browse |
+| `/app/opportunities` | Active internships, vacancies and research: search, type, Format / City / Field filters, Newest / Closing soon, 10 per page | Browse |
+| `/app/opportunities/:id` | Everything the employer published + company; Back keeps the list's search. Later: "your match" + Apply + Save | Detail |
+| `/app` | Home (hidden until real; redirects to `/app/opportunities`) | Dashboard |
+| `/app/applications` | My applications by status (hidden until real; redirects to Opportunities) | Tracker |
+| `/app/saved` | Saved opportunities (hidden until real; redirects to Opportunities) | Browse |
 | `/app/profile` | My profile as employers see it | Detail |
 | `/app/profile/edit` | Edit profile: about, education, skills, projects, experience, languages, CV | Form |
 | `/app/settings` | Account (sign-in email read-only, password), notifications, privacy, delete account | Settings |
+
+Old addresses `/app/vacancies` and `/app/vacancies/:id` redirect to `/app/opportunities` and `/app/opportunities/:id`. Employers keep "Vacancies" (`/company/vacancies`); students call the same records "opportunities" because the list also holds research.
 
 ### Employer (`/company/…` after sign-in)
 | Route | Page | Archetype |
@@ -77,7 +79,7 @@ Every vacancy has one status. HR changes it from the vacancy's "⋯" menu (in `/
 
 - **Signed-in app shell:** top header (logo · primary nav · search (student) · notifications · profile menu).
   Desktop ≥ 1024px: nav items inline in the header. Below: header shows logo + menu button → sheet with the nav.
-- **Student primary nav:** Home · Vacancies · Applications · Saved. Profile, Settings, Log out live in the profile menu (affect profile-menu, with profile-setup progress).
+- **Student primary nav:** Opportunities only (004). Home, Applications and Saved return when their features are real. With one section the nav is a plain label (no gray track, no lone white thumb) and mobile needs no menu sheet. The demo notification bell is hidden for students. Profile, Settings, Log out live in the profile menu (affect profile-menu, with profile-setup progress).
 - **Employer primary nav:** Home · Vacancies. Company profile, Settings, Log out in the profile menu.
   Applicants are reached through a vacancy (no cross-vacancy Candidates section in MVP).
 - **Public header:** logo · Vacancies · For employers · Sign in · Sign up (primary).
@@ -85,8 +87,8 @@ Every vacancy has one status. HR changes it from the vacancy's "⋯" menu (in `/
 
 ## Core flows
 
-1. **Student sign-up:** `/sign-up` (role: Student) → `/sign-up/verify` → `/onboarding` (4 steps) → `/app` with first matches.
-2. **Apply:** `/app/vacancies` → card → `/app/vacancies/:id` (match breakdown) → Apply (modal: CV + optional note) → toast + status "Applied" in `/app/applications`.
+1. **Student sign-up:** `/sign-up` (role: Student) → `/sign-up/verify` → `/onboarding` (4 steps) → `/app/opportunities`.
+2. **Apply (later feature):** `/app/opportunities` → card → `/app/opportunities/:id` (match breakdown) → Apply (modal: CV + optional note) → toast + status "Applied" in `/app/applications`.
 3. **Employer sign-up:** `/sign-up` (role: Employer) → verify → `/company/onboarding` → `/company/vacancies/new`.
 4. **Review applicants:** `/company/vacancies/:id` → candidate card (match %) → `/company/candidates/:id` → Shortlist / Invite to interview / Reject.
 

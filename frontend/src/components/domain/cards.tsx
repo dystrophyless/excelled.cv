@@ -46,11 +46,20 @@ export function FactList({ facts, layout = "inline" }: { facts: Fact[]; layout?:
 
 /* ── Vacancy card ────────────────────────────────────────── */
 
+/**
+ * Tone of a type tag, one rule everywhere a type is shown: Internship accent · Research violet · Full-time / Part-time neutral.
+ * Takes the catalog value (`research`) or its label (`Research`).
+ */
+export function vacancyTypeTone(type: string | null | undefined): TagTone {
+  const key = (type ?? "").toLowerCase();
+  return key === "internship" ? "accent" : key === "research" ? "violet" : "neutral";
+}
+
 export type VacancySummary = {
   id: string;
   title: string;
   company: string;
-  type: "Internship" | "Full-time" | "Part-time";
+  type: "Internship" | "Full-time" | "Part-time" | "Research";
   location: string;
   format: "On-site" | "Hybrid" | "Remote";
   duration?: string;
@@ -70,22 +79,38 @@ export type VacancyCardProps = {
   to: string;
   /** Right side of the tray footer: Save / Apply buttons */
   actions?: ReactNode;
+  /** Apply-by line on the tray footer ("Apply by 15 Dec"); `soon` = calm emphasis for the last 7 days ("Closes in 3 days") */
+  deadline?: { label: string; soon?: boolean };
 };
 
 /**
  * The vacancy as a tray + card: identity and facts in the card, match + actions on the tray.
  * The title is the link; the whole card is clickable through it.
  */
-export function VacancyCard({ vacancy: v, have, to, actions }: VacancyCardProps) {
+export function VacancyCard({ vacancy: v, have, to, actions, deadline }: VacancyCardProps) {
+  const deadlineEl = deadline && (
+    <span className={styles.deadline} data-soon={deadline.soon || undefined} data-testid="vacancy-deadline">
+      <Icon name={deadline.soon ? "interview" : "deadline"} size={14} />
+      {deadline.label}
+    </span>
+  );
   return (
     <Tray
       className={styles.clickable}
       data-testid="vacancy-card"
+      data-id={v.id}
       footer={
-        (v.match !== undefined || actions) && (
+        (v.match !== undefined || actions || deadline) && (
           <>
-            {v.match !== undefined ? <MatchScore score={v.match} /> : <span>{v.postedAgo}</span>}
-            {actions && <div className={styles.footActions}>{actions}</div>}
+            {v.match !== undefined || deadline ? (
+              <div className={styles.footMeta}>
+                {v.match !== undefined && <MatchScore score={v.match} />}
+                {deadlineEl}
+              </div>
+            ) : (
+              <span>{v.postedAgo}</span>
+            )}
+            {actions ? <div className={styles.footActions}>{actions}</div> : deadline && v.match === undefined ? <span>{v.postedAgo}</span> : null}
           </>
         )
       }
@@ -97,7 +122,7 @@ export function VacancyCard({ vacancy: v, have, to, actions }: VacancyCardProps)
             <h3 className={styles.title}>
               <Link to={to} className={styles.titleLink}>{v.title}</Link>
             </h3>
-            <Tag tone={v.type === "Internship" ? "accent" : "neutral"}>{v.type}</Tag>
+            <Tag tone={vacancyTypeTone(v.type)}>{v.type}</Tag>
           </div>
           <span className={styles.company}>{v.company}</span>
         </div>

@@ -64,6 +64,8 @@ export function Logo({ to = "/", onClick }: { to?: string; onClick?: () => void 
 
 export function AppShell({ nav, actions, sheetActions, home = "/", children }: AppShellProps) {
   const [open, setOpen] = useState(false);
+  // one section = nothing to switch between: the nav is a plain label (no track, no lone white thumb) and needs no menu sheet
+  const single = nav.length === 1 && !sheetActions;
   const sheet = useRef<HTMLDialogElement>(null);
   const { pathname } = useLocation();
   // the section is current for its own path, its sub-paths (unless `end`) and any `also` prefixes
@@ -87,7 +89,7 @@ export function AppShell({ nav, actions, sheetActions, home = "/", children }: A
         <Container>
           <div className={styles.bar}>
             <Logo to={home} />
-            <nav className={styles.nav} aria-label="Main">
+            <nav className={styles.nav} aria-label="Main" data-single={single || undefined}>
               {nav.map((item) => (
                 <Link key={item.to} to={item.to} className={styles.navLink} aria-current={current(item)}>
                   {item.label}
@@ -99,6 +101,7 @@ export function AppShell({ nav, actions, sheetActions, home = "/", children }: A
               <button
                 type="button"
                 className={styles.menuButton}
+                data-single={single || undefined}
                 onClick={() => setOpen(true)}
                 aria-label="Open menu"
                 aria-expanded={open}

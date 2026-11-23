@@ -79,24 +79,30 @@ export function SkillMatchRow({ skills, have, max = 6 }: { skills: VacancySkill[
   );
 }
 
-/** Full breakdown for a detail page: Required x of y · Nice to have x of y · the most useful missing skill. */
-export function SkillBreakdown({ skills, have, subject = "you" }: { skills: VacancySkill[]; have: string[]; subject?: "you" | "candidate" }) {
-  const owned = new Set(have.map((s) => s.toLowerCase()));
+/**
+ * Full breakdown for a detail page: Required x of y · Nice to have x of y · the most useful missing skill.
+ * "x of y" shows only when x > 0 (nothing matched = no count, so a bare number never reads as a score).
+ * Without `have` (no profile skills to compare) it is the plain requirements list: neutral chips, no counts, no tip.
+ */
+export function SkillBreakdown({ skills, have, subject = "you" }: { skills: VacancySkill[]; have?: string[]; subject?: "you" | "candidate" }) {
+  const owned = new Set((have ?? []).map((s) => s.toLowerCase()));
   const required = skills.filter((s) => s.required);
   const nice = skills.filter((s) => !s.required);
   const count = (list: VacancySkill[]) => list.filter((s) => owned.has(s.name.toLowerCase())).length;
-  const firstMissing = required.find((s) => !owned.has(s.name.toLowerCase())) ?? nice.find((s) => !owned.has(s.name.toLowerCase()));
+  const firstMissing = have
+    ? (required.find((s) => !owned.has(s.name.toLowerCase())) ?? nice.find((s) => !owned.has(s.name.toLowerCase())))
+    : undefined;
 
   const group = (title: string, list: VacancySkill[]) =>
     list.length > 0 && (
       <div className={styles.group}>
         <div className={styles.groupHead}>
           <span>{title}</span>
-          <span><strong>{count(list)}</strong> of {list.length}</span>
+          {have && count(list) > 0 && <span><strong>{count(list)}</strong> of {list.length}</span>}
         </div>
         <div className={styles.skills}>
           {list.map((s) => (
-            <SkillChip key={s.name} name={s.name} state={owned.has(s.name.toLowerCase()) ? "matched" : "missing"} nice={!s.required} />
+            <SkillChip key={s.name} name={s.name} state={!have ? "neutral" : owned.has(s.name.toLowerCase()) ? "matched" : "missing"} nice={!s.required} />
           ))}
         </div>
       </div>
