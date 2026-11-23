@@ -22,7 +22,7 @@ export function useMe() {
 }
 
 export function homeFor(role: Role): string {
-  return role === "student" ? "/app" : "/company";
+  return role === "student" ? "/app/opportunities" : "/company";
 }
 
 /** Where an account without a profile goes first (003-profiles research R3). */

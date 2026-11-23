@@ -35,6 +35,8 @@ export type OpportunitiesListViewProps = {
   /** ISO date; deadlines are relative to it */
   today: string;
   detailHref: (id: string) => string;
+  /** Router state the card link carries to the details page (the list's query, so Back restores it) */
+  detailState?: unknown;
   onRetry: () => void;
   /** Opens the mobile filters sheet on first render (prototype state) */
   initialFiltersOpen?: boolean;
@@ -45,22 +47,33 @@ export type OpportunitiesListViewProps = {
 };
 
 const SEARCH_DELAY = 250;
+const SEARCH_MAX = 120;
 
-/** The search text is typed locally and sent after a short pause; an outside change (Clear filters) replaces it. */
+/**
+ * The search text is typed locally and sent after a short pause. Only a change that did not come from this field (Clear
+ * filters, Back) replaces it: the address holds the trimmed text, so our own commit coming back must never overwrite what
+ * is being typed (a trailing space, keys typed after the commit).
+ */
 function useSearchDraft(value: string, onCommit: (v: string) => void) {
   const [draft, setDraft] = useState(value);
   const [seen, setSeen] = useState(value);
+  const [committed, setCommitted] = useState(value);
   const timer = useRef<number | undefined>(undefined);
-  // the address changed from outside (Clear filters, Back): show it
   if (seen !== value) {
     setSeen(value);
-    setDraft(value);
+    if (value !== committed.trim()) {
+      setDraft(value);
+      setCommitted(value);
+    }
   }
   useEffect(() => () => window.clearTimeout(timer.current), []);
   const change = (next: string) => {
     setDraft(next);
     window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => onCommit(next), SEARCH_DELAY);
+    timer.current = window.setTimeout(() => {
+      setCommitted(next);
+      onCommit(next);
+    }, SEARCH_DELAY);
   };
   return [draft, change] as const;
 }
@@ -140,6 +153,7 @@ export function OpportunitiesListView(p: OpportunitiesListViewProps) {
                   placeholder="Title, company or skill"
                   value={draft}
                   onChange={setDraft}
+                  maxLength={SEARCH_MAX}
                 />
                 <Show below="lg">
                   <Button variant="secondary" icon={<Icon name="filter" />} onClick={() => setFiltersOpen(true)}>
@@ -235,6 +249,7 @@ export function OpportunitiesListView(p: OpportunitiesListViewProps) {
                           vacancy={summaryOf(o, p)}
                           have={p.match?.have}
                           to={p.detailHref(o.id)}
+                          linkState={p.detailState}
                           deadline={deadlineInfo(o.applyBy, p.today)}
                           actions={
                             p.save && (

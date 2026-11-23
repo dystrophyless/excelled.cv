@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import { createBrowserRouter, Navigate, useLocation } from "react-router";
+import { createBrowserRouter, Navigate, useLocation, useParams } from "react-router";
 import { RedirectIfSignedIn, RequireOnboarding, RequireRole } from "@/features/auth/guards";
 import { ResetConfirmPage } from "@/features/auth/ResetConfirmPage";
 import { ResetRequestPage } from "@/features/auth/ResetRequestPage";
@@ -11,6 +11,8 @@ import { EditVacancyPage } from "@/features/company-vacancies/EditVacancyPage";
 import { NewVacancyPage } from "@/features/company-vacancies/NewVacancyPage";
 import { VacanciesListPage } from "@/features/company-vacancies/VacanciesListPage";
 import { VacancyPage } from "@/features/company-vacancies/VacancyPage";
+import { OpportunitiesPage } from "@/features/opportunities/OpportunitiesPage";
+import { OpportunityPage } from "@/features/opportunities/OpportunityPage";
 import { CompanyOnboardingPage } from "@/features/profiles/CompanyOnboardingPage";
 import { CompanyProfilePage } from "@/features/profiles/CompanyProfilePage";
 import { StudentOnboardingPage } from "@/features/profiles/StudentOnboardingPage";
@@ -19,13 +21,10 @@ import { StudentProfilePage } from "@/features/profiles/StudentProfilePage";
 import { StyleguidePage } from "@/pages/styleguide/styleguide-page";
 import { BrowseTemplate } from "@/pages/styleguide/templates/browse";
 import { CandidateTemplate } from "@/pages/styleguide/templates/candidate";
-import { DashboardTemplate } from "@/pages/styleguide/templates/dashboard";
 import { DetailTemplate } from "@/pages/styleguide/templates/detail";
 import { LandingTemplate } from "@/pages/styleguide/templates/landing";
 import { TemplateRoute, TemplatesIndex } from "@/pages/styleguide/templates/registry";
-import { SavedTemplate } from "@/pages/styleguide/templates/saved";
 import { SettingsTemplate } from "@/pages/styleguide/templates/settings";
-import { TrackerTemplate } from "@/pages/styleguide/templates/tracker";
 import { PrototypeRoute } from "@/prototypes/prototype-route";
 
 /*
@@ -34,9 +33,11 @@ import { PrototypeRoute } from "@/prototypes/prototype-route";
  * with the real <XxxPage /> (wrapped in its role layout). Already real:
  *   - auth (001): sign-in, sign-up (+ verify), reset-password (+ verify, confirm);
  *   - company-vacancies (002): /company/vacancies, /new, /:id, /:id/edit;
- *   - profiles (003): /onboarding, /app/profile, /app/profile/edit, /company/onboarding, /company/profile.
- * Still demos (reference templates): /, /employers, /vacancies, /vacancies/:id, /app, /app/vacancies, /app/vacancies/:id,
- * /app/applications, /app/saved, /app/settings, /company/candidates/:id, /company/settings.
+ *   - profiles (003): /onboarding, /app/profile, /app/profile/edit, /company/onboarding, /company/profile;
+ *   - student opportunities (004): /app/opportunities and /app/opportunities/:id. The student's old demo paths /app, /app/vacancies,
+ *     /app/applications, /app/saved redirect there, /app/vacancies/:id to /app/opportunities/:id (research R10); their
+ *     reference templates live on under /styleguide/templates/<id>.
+ * Still demos (reference templates): /, /employers, /vacancies, /vacancies/:id, /app/settings, /company/candidates/:id, /company/settings.
  * Every role page needs the account's profile: RequireRole sends an account without one to its onboarding (003 R3);
  * the onboarding pages sit behind RequireOnboarding (only accounts of their role without a profile).
  */
@@ -57,6 +58,13 @@ const guarded = (role: "student" | "employer", path: string, page: ComponentType
 const student = (path: string, page: ComponentType) => guarded("student", path, page);
 const employer = (path: string, page: ComponentType) => guarded("employer", path, page);
 
+/** Keeps the query string (and the id) when an old path moves to the opportunities. */
+function ToOpportunities({ withId }: { withId?: boolean }) {
+  const { search } = useLocation();
+  const { id } = useParams();
+  return <Navigate to={`/app/opportunities${withId && id ? `/${id}` : ""}${search}`} replace />;
+}
+
 const publicOnly = (path: string, page: ReactNode) => ({ path, element: <RedirectIfSignedIn>{page}</RedirectIfSignedIn> });
 
 export const router = createBrowserRouter([
@@ -74,11 +82,10 @@ export const router = createBrowserRouter([
   // S1: only for a signed-in student without a profile; the View has its own wizard bar
   { path: "/onboarding", element: <RequireOnboarding role="student"><StudentOnboardingPage /></RequireOnboarding> },
   // Student
-  student("/app", DashboardTemplate),
-  student("/app/vacancies", BrowseTemplate),
-  student("/app/vacancies/:id", DetailTemplate),
-  student("/app/applications", TrackerTemplate),
-  student("/app/saved", SavedTemplate),
+  { path: "/app/opportunities", element: <RequireRole role="student"><OpportunitiesPage /></RequireRole> },
+  { path: "/app/opportunities/:id", element: <RequireRole role="student"><OpportunityPage /></RequireRole> },
+  ...["/app", "/app/vacancies", "/app/applications", "/app/saved"].map((path) => ({ path, element: <ToOpportunities /> })),
+  { path: "/app/vacancies/:id", element: <ToOpportunities withId /> },
   // S2: the View renders StudentLayout itself
   { path: "/app/profile", element: <RequireRole role="student"><StudentProfilePage /></RequireRole> },
   // S3: the View renders StudentLayout itself
