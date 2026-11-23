@@ -30,6 +30,8 @@ export const SORT_OPTIONS: { value: OpportunitySort; label: string }[] = [
 ];
 
 export const PAGE_SIZE = 10;
+/** Upper bound for a page taken from the address: far past any real list, the server clamps it to the last page. */
+export const MAX_PAGE = 1_000_000;
 
 /** Everything the list address carries (R7). Defaults are left out of the address. */
 export type OpportunityQuery = {
@@ -66,7 +68,7 @@ export function parseQuery(params: URLSearchParams, catalog: OpportunityCatalog)
     city: known(params.getAll("city"), catalog.cities),
     field: known(params.getAll("field"), catalog.fields),
     sort: SORT_OPTIONS.some((o) => o.value === sort) ? sort : "newest",
-    page: Number.isFinite(page) && page > 1 ? page : 1,
+    page: Number.isFinite(page) && page > 1 ? Math.min(page, MAX_PAGE) : 1,
   };
 }
 

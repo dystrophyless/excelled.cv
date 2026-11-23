@@ -38,6 +38,8 @@ export type OpportunitiesListViewProps = {
   /** Router state the card link carries to the details page (the list's query, so Back restores it) */
   detailState?: unknown;
   onRetry: () => void;
+  /** Set to the history entry's key only when the address changed by browser Back / Forward: a pending keystroke is dropped then */
+  syncKey?: string;
   /** Opens the mobile filters sheet on first render (prototype state) */
   initialFiltersOpen?: boolean;
   /** Later feature — match percent per opportunity and the skills the student has. Never passed by the application. */
@@ -54,11 +56,22 @@ const SEARCH_MAX = 120;
  * filters, Back) replaces it: the address holds the trimmed text, so our own commit coming back must never overwrite what
  * is being typed (a trailing space, keys typed after the commit).
  */
-function useSearchDraft(value: string, onCommit: (v: string) => void) {
+function useSearchDraft(value: string, onCommit: (v: string) => void, syncKey?: string) {
   const [draft, setDraft] = useState(value);
   const [seen, setSeen] = useState(value);
   const [committed, setCommitted] = useState(value);
+  const [seenKey, setSeenKey] = useState(syncKey);
   const timer = useRef<number | undefined>(undefined);
+  // Back / Forward replaced the address: show it and drop a keystroke still waiting for its pause
+  if (seenKey !== syncKey) {
+    setSeenKey(syncKey);
+    if (syncKey) {
+      setSeen(value);
+      setDraft(value);
+      setCommitted(value);
+    }
+  }
+  useEffect(() => { if (syncKey) window.clearTimeout(timer.current); }, [syncKey]);
   if (seen !== value) {
     setSeen(value);
     if (value !== committed.trim()) {
@@ -75,7 +88,13 @@ function useSearchDraft(value: string, onCommit: (v: string) => void) {
       onCommit(next);
     }, SEARCH_DELAY);
   };
-  return [draft, change] as const;
+  /** Empties the field at once and cancels a pending commit (Clear filters) */
+  const clear = () => {
+    window.clearTimeout(timer.current);
+    setDraft("");
+    setCommitted("");
+  };
+  return [draft, change, clear] as const;
 }
 
 function summaryOf(o: OpportunityItem, p: OpportunitiesListViewProps): VacancySummary {
@@ -98,7 +117,11 @@ function summaryOf(o: OpportunityItem, p: OpportunitiesListViewProps): VacancySu
 export function OpportunitiesListView(p: OpportunitiesListViewProps) {
   const { query, catalog } = p;
   const [filtersOpen, setFiltersOpen] = useState(Boolean(p.initialFiltersOpen));
-  const [draft, setDraft] = useSearchDraft(query.q, (q) => p.onQueryChange({ q, page: 1 }));
+  const [draft, setDraft, clearDraft] = useSearchDraft(query.q, (q) => p.onQueryChange({ q, page: 1 }), p.syncKey);
+  const clearAll = () => {
+    clearDraft();
+    p.onClear();
+  };
   const loading = p.state === "loading";
   const updating = p.state === "updating";
   const total = p.data?.total ?? 0;
@@ -200,7 +223,7 @@ export function OpportunitiesListView(p: OpportunitiesListViewProps) {
                         <Chip key={`${c.group}-${c.id}`} onRemove={() => setFilters({ ...value, [c.group]: value[c.group].filter((x) => x !== c.id) })}>{c.label}</Chip>
                       ))}
                     </Show>
-                    {narrowed && !noResults && <Button variant="ghost" size="sm" onClick={p.onClear}>Clear filters</Button>}
+                    {narrowed && !noResults && <Button variant="ghost" size="sm" onClick={clearAll}>Clear filters</Button>}
                   </div>
                 )}
 
@@ -235,7 +258,7 @@ export function OpportunitiesListView(p: OpportunitiesListViewProps) {
                       icon={<Icon name="search" size={20} />}
                       title="No opportunities match these filters"
                       description="Try removing a filter or searching for a skill instead of a title."
-                      actions={<Button variant="secondary" size="sm" onClick={p.onClear}>Clear filters</Button>}
+                      actions={<Button variant="secondary" size="sm" onClick={clearAll}>Clear filters</Button>}
                     />
                   </Tray>
                 )}

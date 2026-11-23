@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { useSearchParams } from "react-router";
+import { useLocation, useNavigationType, useSearchParams } from "react-router";
 import { todayKz } from "@/features/company-vacancies/hooks";
 import { useProfileCatalog } from "@/features/profiles/hooks";
 import type { ProfileCatalog } from "@/features/profiles/model";
@@ -31,6 +31,8 @@ const isTyping = (patch: Partial<OpportunityQuery>) => "q" in patch && Object.ke
 
 export function OpportunitiesPage() {
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const navigationType = useNavigationType();
   const catalogQuery = useProfileCatalog();
   const catalog = useMemo(() => (catalogQuery.data ? toOpportunityCatalog(catalogQuery.data) : EMPTY_CATALOG), [catalogQuery.data]);
   const catalogReady = Boolean(catalogQuery.data);
@@ -79,6 +81,7 @@ export function OpportunitiesPage() {
       detailHref={(id) => `${LIST_PATH}/${id}`}
       detailState={{ list: toSearchParams(query).toString() }}
       onRetry={retry}
+      syncKey={navigationType === "POP" ? location.key : undefined}
     />
   );
 }
