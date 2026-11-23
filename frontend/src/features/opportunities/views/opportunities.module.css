@@ -1,0 +1,82 @@
+/* 004 Student opportunities — only what the layout primitives and kit do not cover. Tokens only. */
+
+.rowMain {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.rowMeta {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.results {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: var(--control-sm);
+}
+
+.count {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.empty {
+  padding: var(--space-24) 0;
+}
+
+/* ── Details ─────────────────────────────────────────── */
+.prose {
+  display: grid;
+  gap: var(--space-12);
+  font-size: var(--text-body);
+  line-height: var(--leading-reading);
+  color: var(--color-text);
+}
+
+.prose p {
+  margin: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-line-subtle);
+}
+
+.asideBlock {
+  display: grid;
+  gap: var(--space-14);
+}
+
+.company {
+  display: grid;
+  gap: var(--space-16);
+}
+
+.deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.deadline[data-soon] {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.deadline[data-soon] svg {
+  color: var(--color-warning);
+}
+
+.notFound {
+  padding-top: var(--space-48);
+}

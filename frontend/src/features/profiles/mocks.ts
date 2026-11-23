@@ -44,6 +44,7 @@ export const CATALOG: ProfileCatalog = {
   ],
   types: [
     { value: "internship", label: "Internship" }, { value: "full_time", label: "Full-time" }, { value: "part_time", label: "Part-time" },
+    { value: "research", label: "Research" },
   ],
   languageLevels: [
     { value: "native", label: "Native" }, { value: "fluent", label: "Fluent" }, { value: "intermediate", label: "Intermediate" },
@@ -75,7 +76,7 @@ export const STUDENT: StudentProfile = {
   graduated: false,
   gpa: "3.45",
   lookingForFields: ["backend", "data_engineering"],
-  positionTypes: ["internship", "part_time"],
+  positionTypes: ["internship", "part_time", "research"],
   city: "almaty",
   about:
     "Third-year CS student who likes building APIs. I interned at a local startup last summer and ship side projects in Python.\nLooking for a backend internship from June 2027.",

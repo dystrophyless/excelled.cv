@@ -1,5 +1,5 @@
 import { Cluster, Stack } from "@/components/layout";
-import { FactList, SkillChip, type Fact } from "@/components/domain";
+import { FactList, SkillChip, vacancyTypeTone, type Fact } from "@/components/domain";
 import { Icon } from "@/components/icons";
 import { Alert, Avatar, Button, Container, EmptyState, Skeleton, Stepper, Tag, Tray } from "@/components/ui";
 import { Logo } from "@/components/ui/app-shell";
@@ -164,7 +164,7 @@ function Preview({ values: v, catalog, company }: { values: VacancyDraft; catalo
           <h2 className={styles.previewTitle}>{v.title || "Untitled vacancy"}</h2>
           <span className={styles.rowMeta}>{company}{optionLabel(catalog.fields, v.field) ? ` · ${optionLabel(catalog.fields, v.field)}` : ""}</span>
         </div>
-        {typeLabel && <Tag tone={v.type === "internship" ? "accent" : "neutral"}>{typeLabel}</Tag>}
+        {typeLabel && <Tag tone={vacancyTypeTone(v.type)}>{typeLabel}</Tag>}
       </Cluster>
       {facts.length > 0 && <FactList facts={facts} />}
       <div className={styles.divider} />

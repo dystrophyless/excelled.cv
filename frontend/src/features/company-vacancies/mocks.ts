@@ -16,6 +16,7 @@ export const CATALOG: Catalog = {
     { value: "internship", label: "Internship" },
     { value: "full_time", label: "Full-time" },
     { value: "part_time", label: "Part-time" },
+    { value: "research", label: "Research" },
   ],
   // refined in 003-profiles (ui-spec §1 "Fields of work"): `data` split in three, + security; labels as in the catalog
   fields: [
@@ -90,6 +91,12 @@ export const VACANCIES: VacancyItem[] = [
     requiredSkills: ["Python", "FastAPI"], niceSkills: ["Git", "Linux"], closedOn: "2026-10-15", closedBy: "deadline", version: 3, updatedOn: "2026-10-15",
   }),
   base({ id: "v7", title: "Frontend Intern (React)", status: "draft", updatedOn: "2026-10-20" }),
+  // 004: Research is a fourth type; it behaves like every other type
+  base({
+    id: "v8", title: "Research Intern, Recommendation Models", status: "open", type: "research", field: "data_science", city: "almaty", format: "hybrid",
+    description: "Test new ranking ideas for the marketplace with a data scientist and write up what works.", duration: "4 months", applyBy: "2026-12-20",
+    requiredSkills: ["Python", "Machine learning"], niceSkills: ["Statistics"], version: 1, updatedOn: "2026-10-29",
+  }),
 ];
 
 export const withApplicants = (items: VacancyItem[]): VacancyItem[] =>

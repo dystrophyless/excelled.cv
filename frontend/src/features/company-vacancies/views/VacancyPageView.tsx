@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { EmployerLayout } from "@/app/layouts";
 import { Cluster, PageBody, Section, Stack, TwoColumn } from "@/components/layout";
-import { FactList, SkillChip, type Fact } from "@/components/domain";
+import { FactList, SkillChip, vacancyTypeTone, type Fact } from "@/components/domain";
 import { Icon } from "@/components/icons";
 import { BackLink, Button, Card, Container, DropdownMenu, EmptyState, PageHeader, SectionLabel, Skeleton, Tag, Tray } from "@/components/ui";
 import {
@@ -166,7 +166,7 @@ export function VacancyPageView(p: VacancyPageViewProps) {
                 data-testid="vacancy-summary"
                 header={
                   <>
-                    {v.type ? <Tag tone={v.type === "internship" ? "accent" : "neutral"}>{optionLabel(p.catalog.types, v.type)}</Tag> : <Tag>No type yet</Tag>}
+                    {v.type ? <Tag tone={vacancyTypeTone(v.type)}>{optionLabel(p.catalog.types, v.type)}</Tag> : <Tag>No type yet</Tag>}
                     <span className={styles.rowMeta}>{optionLabel(p.catalog.fields, v.field) ?? "No field yet"}</span>
                   </>
                 }

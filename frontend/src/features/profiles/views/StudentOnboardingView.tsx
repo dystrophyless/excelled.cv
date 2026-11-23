@@ -120,8 +120,8 @@ export function StudentOnboardingView(p: StudentOnboardingViewProps) {
             hint="Choose all that suit you"
             name="positionTypes"
             size="sm"
-            min={88}
-            columns={3}
+            min={104}
+            columns={Math.min(4, p.catalog.types.length)}
             options={p.catalog.types}
             value={p.values.positionTypes}
             error={p.errors?.positionTypes}
@@ -137,7 +137,7 @@ export function StudentOnboardingView(p: StudentOnboardingViewProps) {
               columns={2}
               options={[
                 { value: "known", label: "I know which field", description: `Pick up to ${MAX_FIELDS} of ${p.catalog.fields.length} fields, each explained`, icon: "match" },
-                { value: "unsure", label: "I'm not sure yet", description: "Show me vacancies from every field. I'll decide later", icon: "search" },
+                { value: "unsure", label: "I'm not sure yet", description: "Show me opportunities from every field. I'll decide later", icon: "search" },
               ]}
               value={p.values.fieldChoice}
               error={p.errors?.fieldChoice}

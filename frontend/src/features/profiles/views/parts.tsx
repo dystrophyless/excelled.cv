@@ -208,7 +208,7 @@ export function LookingForFields({ values, errors, onChange, catalog }: StudentF
         />
         <Checkbox
           label="I'm not sure yet"
-          description="Show me vacancies from every field"
+          description="Show me opportunities from every field"
           name="fieldChoice"
           checked={unsure}
           onChange={(e) => onChange({ fieldChoice: e.target.checked ? "unsure" : "known" })}

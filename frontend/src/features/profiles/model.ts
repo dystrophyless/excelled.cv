@@ -23,7 +23,7 @@ export type ProfileCatalog = {
   degrees: DegreeOption[];
   /** vacancy fields of work (refined in round 14): Backend … Other, each with a description */
   fields: FieldOption[];
-  /** vacancy position types: Internship, Full-time, Part-time */
+  /** vacancy position types: Internship, Full-time, Part-time, Research */
   types: Option[];
   languageLevels: Option[];
 };
