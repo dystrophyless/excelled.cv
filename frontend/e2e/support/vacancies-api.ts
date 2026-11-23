@@ -17,11 +17,64 @@ export type ApiVacancy = {
 export type Sink = Record<string, unknown>[];
 type Status = ApiVacancy["status"];
 
+/** GET /api/catalog as the backend serves it (src/catalog/router.py): 002's lists + 003's profile lists. */
 export const CATALOG = {
-  types: [{ value: "internship", label: "Internship" }, { value: "junior", label: "Junior job" }],
-  fields: [{ value: "backend", label: "Backend" }, { value: "frontend", label: "Frontend" }, { value: "design", label: "Design" }],
-  cities: [{ value: "almaty", label: "Almaty" }, { value: "astana", label: "Astana" }, { value: "remote", label: "Remote" }],
-  formats: [{ value: "onsite", label: "On-site" }, { value: "hybrid", label: "Hybrid" }, { value: "remote", label: "Remote" }],
+  types: [{ value: "internship", label: "Internship" }, { value: "full_time", label: "Full-time" }, { value: "part_time", label: "Part-time" }],
+  // refined in 003 (data → data_analytics / data_science / data_engineering, + security), each with a description
+  fields: [
+    { value: "backend", label: "Backend", description: "Builds the server side: APIs, databases, business logic" },
+    { value: "frontend", label: "Frontend", description: "Builds the web pages and apps people see and click" },
+    { value: "mobile", label: "Mobile", description: "Builds apps for iPhone and Android" },
+    { value: "data_analytics", label: "Data Analytics", description: "Turns data into reports and dashboards that answer business questions" },
+    { value: "data_science", label: "Data Science (incl. ML)", description: "Builds models that predict and recommend, including machine learning" },
+    { value: "data_engineering", label: "Data Engineering", description: "Builds the pipelines and storage that collect and clean data" },
+    { value: "qa", label: "QA", description: "Tests software and finds bugs before users do" },
+    { value: "design", label: "UI/UX Design", description: "Designs screens and flows that are clear and easy to use" },
+    { value: "devops", label: "DevOps", description: "Keeps apps running: servers, cloud, releases, monitoring" },
+    { value: "security", label: "Cybersecurity", description: "Protects systems and data from attacks and leaks" },
+    { value: "product", label: "Product", description: "Decides what to build and why, with users and the team" },
+    { value: "other", label: "Other", description: "Support, IT, business analysis and other roles" },
+  ],
+  cities: [
+    { value: "almaty", label: "Almaty" }, { value: "astana", label: "Astana" }, { value: "shymkent", label: "Shymkent" },
+    { value: "karaganda", label: "Karaganda" }, { value: "aktobe", label: "Aktobe" }, { value: "other", label: "Other" },
+  ],
+  formats: [{ value: "on_site", label: "On-site" }, { value: "hybrid", label: "Hybrid" }, { value: "remote", label: "Remote" }],
+  industries: [
+    { value: "it", label: "IT & software" }, { value: "finance", label: "Finance & banking" }, { value: "education", label: "Education" },
+    { value: "healthcare", label: "Healthcare" }, { value: "retail", label: "Retail & e-commerce" }, { value: "manufacturing", label: "Manufacturing" },
+    { value: "media", label: "Media & marketing" }, { value: "government", label: "Government & public sector" },
+    { value: "consulting", label: "Consulting" }, { value: "other", label: "Other" },
+  ],
+  company_sizes: [
+    { value: "1_10", label: "1–10 employees" }, { value: "11_50", label: "11–50 employees" }, { value: "51_200", label: "51–200 employees" },
+    { value: "201_1000", label: "201–1000 employees" }, { value: "1000_plus", label: "1000+ employees" },
+  ],
+  degrees: [
+    { value: "college", label: "College (TVE)", max_year: 4 }, { value: "bachelor", label: "Bachelor's", max_year: 4 },
+    { value: "master", label: "Master's", max_year: 2 }, { value: "doctoral", label: "Doctoral (PhD)", max_year: 3 },
+    { value: "residency", label: "Residency", max_year: 4 },
+  ],
+  language_levels: [
+    { value: "native", label: "Native" }, { value: "fluent", label: "Fluent" }, { value: "intermediate", label: "Intermediate" },
+    { value: "basic", label: "Basic" },
+  ],
+};
+
+/** GET /api/company/profile (contracts/profiles-api.md → CompanyProfile). */
+export const companyProfileFixture = (overrides: Record<string, unknown> = {}) => ({
+  name: "Kaspi.kz", industry: "finance", size: "1000_plus", website: "https://kaspi.kz", city: "almaty",
+  description: "Payments, marketplace and banking in one app.", version: 4,
+  created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-18T10:00:00Z",
+  ...overrides,
+});
+
+/** The vacancy pages' EmployerLayout reads the company profile for the account menu name (003-profiles). */
+export const mockCompanyProfile = {
+  ok: (page: Page, profile = companyProfileFixture()) =>
+    page.route("**/api/company/profile", (r) => (r.request().method() === "GET" ? json(r, 200, profile) : r.fallback())),
+  notFound: (page: Page) =>
+    page.route("**/api/company/profile", (r) => (r.request().method() === "GET" ? err(r, 404, "profile_not_found") : r.fallback())),
 };
 
 /** An API-shaped Vacancy (an Open internship with a far-future deadline by default). */

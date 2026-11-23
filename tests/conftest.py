@@ -24,10 +24,13 @@ from src.auth.utils import hash_password  # noqa: E402
 from src.config import settings  # noqa: E402
 from src.database import Base, SessionMaker, async_engine  # noqa: E402
 from src.main import app  # noqa: E402
+from src.profiles import models as profile_models  # noqa: F401, E402
 from src.skills import models as skill_models  # noqa: F401, E402
 from src.users import models as user_models  # noqa: F401, E402
 from src.vacancies import models as vacancy_models  # noqa: F401, E402
 from src.users.models import User, UserRole  # noqa: E402
+from src.catalog.enums import CompanySize, Degree, Industry, VacancyField, VacancyType  # noqa: E402
+from src.profiles.models import CompanyProfile, StudentProfile  # noqa: E402
 
 CODE_RE = re.compile(r"<h2>(\d{6})</h2>")
 
@@ -105,18 +108,73 @@ async def _signed_in(make_user, make_session, email: str, role: UserRole) -> Acc
 
 
 @pytest.fixture
-async def employer(make_user, make_session) -> Account:
-    return await _signed_in(make_user, make_session, "hr@kaspi.kz", UserRole.employer)
+def make_company_profile(db):
+    """A company profile for an employer (003): vacancy actions need one (FR-015)."""
+
+    async def _make(user: User, **overrides):
+        profile = CompanyProfile(
+            user_id=user.id,
+            **({"name": "Acme", "industry": Industry.it, "size": CompanySize.s11_50} | overrides),
+        )
+        db.add(profile)
+        await db.commit()
+        return profile
+
+    return _make
 
 
 @pytest.fixture
-async def other_employer(make_user, make_session) -> Account:
-    return await _signed_in(make_user, make_session, "hr@halyk.kz", UserRole.employer)
+def make_student_profile(db):
+    """A complete student profile (003): Bachelor's, 3rd year, looking for a backend internship."""
+
+    async def _make(user: User, **overrides):
+        values = {
+            "full_name": "Maya Akhmetova",
+            "university": "Suleyman Demirel University",
+            "degree": Degree.bachelor,
+            "major": "Computer Science",
+            "study_year": 3,
+            "graduated": False,
+            "looking_for_fields": [VacancyField.backend],
+            "position_types": [VacancyType.internship],
+        } | overrides
+        profile = StudentProfile(user_id=user.id, **values)
+        db.add(profile)
+        await db.commit()
+        return profile
+
+    return _make
+
+
+@pytest.fixture
+async def employer(make_user, make_session, make_company_profile) -> Account:
+    account = await _signed_in(make_user, make_session, "hr@kaspi.kz", UserRole.employer)
+    await make_company_profile(account.user, name="Acme")
+    return account
+
+
+@pytest.fixture
+async def other_employer(make_user, make_session, make_company_profile) -> Account:
+    account = await _signed_in(make_user, make_session, "hr@halyk.kz", UserRole.employer)
+    await make_company_profile(account.user, name="Other Co")
+    return account
+
+
+@pytest.fixture
+async def employer_without_profile(make_user, make_session) -> Account:
+    return await _signed_in(make_user, make_session, "new-hr@company.kz", UserRole.employer)
 
 
 @pytest.fixture
 async def student(make_user, make_session) -> Account:
     return await _signed_in(make_user, make_session, "maya@sdu.edu.kz", UserRole.student)
+
+
+@pytest.fixture
+async def student_with_profile(make_user, make_session, make_student_profile) -> Account:
+    account = await _signed_in(make_user, make_session, "aru@sdu.edu.kz", UserRole.student)
+    await make_student_profile(account.user)
+    return account
 
 
 @pytest.fixture

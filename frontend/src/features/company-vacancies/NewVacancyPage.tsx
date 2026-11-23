@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "@/components/ui";
+import { useCompanyProfile } from "@/features/profiles/hooks";
 import { ApiError } from "@/lib/api";
 import { DEADLINE_ERROR, EMPTY_CATALOG, ROUTES, TITLE_ERROR, errorsFor, incompleteFields, isApiError, titleOk } from "./form";
 import { focusHeading } from "./focus";
@@ -13,13 +14,12 @@ const EMPTY_DRAFT: VacancyDraft = {
   requiredSkills: [], niceSkills: [],
 };
 
-/** There is no company profile yet (a later feature); the preview card uses a neutral name. */
-const COMPANY = "Your company";
-
 /** S2 - Post a vacancy (wizard). Everything typed lives in this component until a save succeeds. */
 export function NewVacancyPage() {
   const navigate = useNavigate();
   const catalog = useCatalog();
+  // the preview card shows the real company name (003-profiles); RequireRole guarantees the profile exists here
+  const companyProfile = useCompanyProfile();
   const [skillQuery, setSkillQuery] = useState("");
   const skills = useSkillSuggestions(skillQuery);
   const create = useCreateVacancy();
@@ -51,7 +51,7 @@ export function NewVacancyPage() {
     setAttempt((n) => n + 1);
   };
 
-  const state = catalog.isPending ? "loading" : catalog.isError ? "error" : "ready";
+  const state = catalog.isPending || companyProfile.isPending ? "loading" : catalog.isError || companyProfile.isError ? "error" : "ready";
   const skillOptions = skills.data ?? [];
 
   const onChange = (patch: Partial<VacancyDraft>) => {
@@ -124,7 +124,7 @@ export function NewVacancyPage() {
       errors={errors}
       formAlert={alert}
       busy={busy}
-      company={COMPANY}
+      company={companyProfile.data?.name ?? ""}
       catalog={catalog.data ?? EMPTY_CATALOG}
       skillOptions={skillOptions}
       suggestions={skillOptions}
@@ -138,7 +138,10 @@ export function NewVacancyPage() {
       onGoToStep={(s) => { setAlert(undefined); goTo(s); }}
       onSaveExit={() => void save(false)}
       onPublish={() => void save(true)}
-      onRetry={() => void catalog.refetch()}
+      onRetry={() => {
+        void catalog.refetch();
+        void companyProfile.refetch();
+      }}
     />
   );
 }

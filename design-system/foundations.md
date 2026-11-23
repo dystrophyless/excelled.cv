@@ -112,9 +112,16 @@ Borders are 1px hairlines; shadows stay barely visible (`--shadow-raised`).
 - **Stroke rule:** the wrapper keeps the rendered line at ≈ 1.3px (20px → 1.5, 16 → 2, 14 → 2.25). Never pass a custom `strokeWidth` except checkmarks inside 20px boxes.
 - **Sizes:** 14 inline meta (`FactList`), **16 default** (buttons, menus, rows), 18 toolbar / header icon buttons, 20 nav sheet, empty-state tiles, menu rows in ProfileMenu.
 - **Semantic names:** use the dictionary (`ICONS` in `icons.tsx`): `vacancy`, `company`, `application`, `saved`, `skill`, `match`, `interview`, `offer`, `location`, `remote`, `salary`, … The same concept always uses the same glyph. Need a new concept? Add it to `ICONS` first.
+- **Industries:** `industryIt` CodeXml · `industryFinance` Banknote · `industryEducation` School · `industryHealthcare` Stethoscope · `industryRetail` ShoppingBag · `industryManufacturing` Factory · `industryMedia` Clapperboard · `industryGovernment` Landmark · `industryConsulting` Presentation · `industryOther` Shapes. Map a catalog value with `industryIcon(value)` (`INDUSTRY_ICONS`); shown 18px in a 32px `--color-fill` tile (ChoiceCard).
 - Icons are decorative (`aria-hidden`); icon-only buttons need `aria-label` and a `Tooltip`.
 - Colour: `--color-muted-strong` by default, `currentColor` inside buttons, status colours only for status icons.
 - No filled icons (one exception: a toggled-on Save/bookmark fills with `currentColor`), no emoji in UI, no second icon family.
+- **Brand logos (exception, round 15 of 003):** third-party channels people recognise by their mark (GitHub, Telegram,
+  WhatsApp, LinkedIn) use `<BrandIcon name>` from `@/components/icons` (`brand-icons.tsx`): filled 24-grid marks with the
+  same `size` API as `<Icon>`, decorative (`aria-hidden`; the visible label names the channel). Sources: Simple Icons
+  (CC0) for GitHub / Telegram / WhatsApp, LinkedIn's "in" bug per its brand guidelines. `tone="brand"` (default) uses the
+  `--color-brand-*` tokens ([novio] in tokens.css), `tone="mono"` uses `currentColor`. Only for contact links; phone,
+  email and website stay Lucide. Never as decoration or in navigation.
 
 ## 7. Illustration and imagery
 

@@ -6,8 +6,13 @@ export class ApiError extends Error {
   attemptsLeft?: number;
   /** The whole `detail` object, for codes that carry extra data (`fields`, `vacancy`, `status`). */
   detail?: Record<string, unknown>;
+  /** FastAPI's default 422 list (`code` "validation"): which fields were refused, by `loc`. */
+  validation?: { loc: (string | number)[]; msg: string; type: string }[];
 
-  constructor(init: { status: number; code: string; message: string; retryAfter?: number; attemptsLeft?: number; detail?: Record<string, unknown> }) {
+  constructor(init: {
+    status: number; code: string; message: string; retryAfter?: number; attemptsLeft?: number; detail?: Record<string, unknown>;
+    validation?: { loc: (string | number)[]; msg: string; type: string }[];
+  }) {
     super(init.message);
     this.name = "ApiError";
     this.status = init.status;
@@ -15,6 +20,7 @@ export class ApiError extends Error {
     this.retryAfter = init.retryAfter;
     this.attemptsLeft = init.attemptsLeft;
     this.detail = init.detail;
+    this.validation = init.validation;
   }
 }
 
@@ -41,7 +47,10 @@ function toApiError(status: number, body: unknown): ApiError {
     });
   }
   // Non-contract body, e.g. FastAPI's default 422 shape.
-  if (status === 422) return new ApiError({ status: 422, code: "validation", message: "Check the highlighted fields." });
+  if (status === 422) {
+    const validation = Array.isArray(detail) ? (detail as ApiError["validation"]) : undefined;
+    return new ApiError({ status: 422, code: "validation", message: "Check the highlighted fields.", validation });
+  }
   return new ApiError({ status, code: "unknown", message: "Something went wrong." });
 }
 

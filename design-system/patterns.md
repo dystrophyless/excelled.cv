@@ -130,3 +130,40 @@ Scrollbars are thin and themed globally.
 
 - Profile completeness lives in two places only: `ProfileMenu setup` and the dashboard `ProgressTracker`.
 - One nudge per page at most (an `Alert` or a `SmartRecommendation`), never a modal on page load.
+
+## 16. Choosing one answer — cards, radio, select or segmented?
+
+| Situation | Use | Why |
+|---|---|---|
+| A wizard / onboarding step that asks one question with 2–12 ready-made answers | `ChoiceCardGroup` | one tap, big targets, reads like a choice, not a questionnaire |
+| Same question in an edit form or settings (S3/S5-style forms, many fields on one page) | `SelectField` (≤ 12) / `Combobox` (long list) | compact; the cards would dominate the form |
+| 2–4 short answers inside a regular form or a modal | `Radio` in a `ChoiceGroup` | quiet, no extra weight |
+| Several answers allowed in a step ("work formats") | `ChoiceCardGroup type="checkbox"` | same look, checkbox semantics |
+| Switching views of the same content, status tabs, toolbar splits | `SegmentedControl` | it changes what is shown, it is not a form answer; > 6 options don't fit at 390 px |
+| More than ~12 answers or answers the user types (university, city, skills) | `Combobox` (with `allowCreate` when free values are allowed) | cards would scroll for pages |
+| A neutral long list where any "popular" subset would rank people (universities) | `Combobox` over the full A–Z list, object options with `description` (city) and `keywords` (aliases), `createLabel` "Use “…”" | no option looks preferred; short names still find the entry |
+
+**Ready-made answers in a wizard step (recipe)**
+
+- One question per step; the step `h1` asks it, so the group gets `hideLegend` (the legend stays for screen readers)
+  — or a visible `legend` when a step holds two questions.
+- Size by content: text-only answers → `size="sm"` (`columns={3}` for six years → 3 × 2 on every width; `min={140}`
+  for "11–50 employees"); answers that need a second line or an icon → `md` (`min` 220 → 2 columns at form width, 1 on mobile).
+  The grid never scrolls horizontally: below `min` everything drops to one column.
+- Icons only when they help recognition (industries: `industryIcon(value)` from `@/components/icons`). Never mix cards with
+  and without icons in one group.
+- Nothing is preselected unless the system genuinely knows the answer; a required step validates on Continue:
+  `error="Choose …"` (all cards get the error edge + the message under the grid; the page moves focus to the first card, as for any invalid field).
+- "Other" / "Not in the list": pass an extra `<ChoiceCard value="other" … checked={otherOn} onChange={…} />` as a child
+  and show a `TextField` under the group when it is selected (focus it); the typed text becomes the value.
+- Optional step: no error, the tray footer says it can be skipped / changed later.
+- **A list never covers the step's primary action.** A suggestion list that could open over Continue / Save would turn a
+  click on the button into a click on an option (a wrong answer, silently). Comboboxes with an action below them use
+  `inFlow` (single; multiple mode always does): the list pushes the button down, and a press that blurs the field closes
+  the list only after the press, so the click still lands. Overlay lists (default single mode) only where nothing
+  actionable sits under the field. E2E: `elementFromPoint` at the button's centre returns the button with the list open.
+- **Combobox in a step:** the full list opens on focus and scrolls (no cap); Arrow / PageUp / PageDown / Ctrl+Home / Ctrl+End move,
+  Enter picks. In edit forms make optional — or required but editable — single values `clearable`, so the user can empty
+  the field and see the required error instead of the field snapping back.
+- Testing: `getByRole("radio" | "checkbox", { name: label })` — the name is the label only; the description is the
+  accessible description. Click the role, not the text (the native input covers the card).

@@ -35,7 +35,11 @@ export function PageHeader({ title, description, eyebrow, actions, className, ..
       <div className={styles.headerText}>
         {eyebrow && <div className={styles.eyebrow}>{eyebrow}</div>}
         <h1 className={styles.title}>{title}</h1>
-        {description && <p className={styles.description}>{description}</p>}
+        {/* plain text is a paragraph; anything richer (e.g. a FactList, which is a <ul>) cannot live inside a <p> */}
+        {description &&
+          (typeof description === "string" || typeof description === "number"
+            ? <p className={styles.description}>{description}</p>
+            : <div className={styles.description}>{description}</div>)}
       </div>
       {actions && <div className={styles.actions}>{actions}</div>}
     </header>

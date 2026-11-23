@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.dependencies import CurrentAccount, require_role
 from src.auth.exceptions import api_error
 from src.database import get_session
+from src.profiles.repository import has_profile
 from src.vacancies import repository, rules
 from src.vacancies.deadlines import closes_at_for, is_future_deadline, now_utc
 from src.vacancies.models import ClosedBy, Vacancy, VacancyStatus
@@ -29,11 +30,17 @@ Now = Annotated[datetime, Depends(now_utc)]
 
 
 async def vacancy_db(
-    _: Employer,
+    account: Employer,
     db: Annotated[AsyncSession, Depends(get_session)],
     now: Now,
 ) -> AsyncSession:
-    """The session, after the role check and after expired vacancies were closed."""
+    """The session, after the role check, the company-profile check (003 FR-015) and the deadline sweep."""
+    if not await has_profile(db, account.user):
+        raise api_error(
+            status.HTTP_403_FORBIDDEN,
+            "company_profile_required",
+            "Add your company profile before working with vacancies.",
+        )
     await rules.sweep_expired(db, now)
     return db
 

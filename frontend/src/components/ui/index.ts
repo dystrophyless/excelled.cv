@@ -24,6 +24,7 @@ export * from "./grid-background";
 // Novio primitives
 export * from "./field";
 export * from "./choice";
+export * from "./choice-card";
 export * from "./surface";
 export * from "./tag";
 export * from "./avatar";

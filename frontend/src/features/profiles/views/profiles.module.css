@@ -1,0 +1,500 @@
+/* Layout helpers of the profile views. Tokens only; same structure as the reference templates (wizard, profile, form). */
+
+.rowMeta {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.trayLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--color-muted-strong);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-line-subtle);
+}
+
+.charCount {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Wizard (onboarding) ─────────────────────────────── */
+.wizardPage {
+  min-height: 100dvh;
+  background: var(--color-page);
+}
+
+.wizardBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+}
+
+.wizardBody {
+  display: grid;
+  gap: var(--space-24);
+  padding: var(--space-24) 0 var(--space-64);
+}
+
+.wizardHead {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.wizardTitle {
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h2);
+}
+
+.wizardSub {
+  color: var(--color-muted);
+}
+
+.wizardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.wizardForm {
+  display: grid;
+  gap: var(--space-24);
+}
+
+/* City under the university search (hint line) */
+.cityHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* ── My profile (S2) ─────────────────────────────────
+ * Measured rhythm: identity 56 = avatar lg = name 28 + 8 + facts 20 · education entry 40 = tile = title 20 + meta 20 ·
+ * every list icon sits in a 20px box = one text line, so it aligns with the first line of its item.
+ */
+.identity {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-16);
+  min-width: 0;
+}
+
+.identityText {
+  display: grid;
+  flex: 1;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.identityName {
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h2);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.about {
+  margin: 0;
+  font-size: var(--text-reading);
+  line-height: var(--leading-reading);
+  color: var(--color-text);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.emptyPrompt {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-12);
+}
+
+.emptyText {
+  margin: 0;
+  max-width: 60ch;
+  font-size: var(--text-reading);
+  line-height: var(--leading-reading);
+  color: var(--color-muted-strong);
+}
+
+.entry {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  min-width: 0;
+}
+
+.entryText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.entryTitle {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.entryMeta {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
+
+.iconTile {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--control-md);
+  height: var(--control-md);
+  border-radius: var(--radius-control);
+  background: var(--color-tray);
+  color: var(--color-muted-strong);
+}
+
+.groupLabel {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
+
+.lineIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--space-20);
+  height: var(--leading-body);
+  color: var(--color-muted);
+}
+
+.lineIcon[data-tone="success"] {
+  color: var(--color-success);
+}
+
+.completeLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.checkHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin: 0;
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.checkList,
+.soonList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checkList {
+  gap: var(--space-4);
+}
+
+.soonList {
+  gap: var(--space-12);
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: var(--control-sm);
+  color: var(--color-text);
+}
+
+.checkRow[data-done] {
+  color: var(--color-muted);
+}
+
+.checkLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.soonRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.soonTitle {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+/* Education title row: university left, GPA right (owner, round 13) */
+.entryHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
+  min-width: 0;
+}
+
+.entryAside {
+  flex: none;
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.entryAside strong {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.entryBody {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.entryLink {
+  justify-self: start;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  overflow-wrap: anywhere;
+}
+
+/* Languages and contacts: label → value pairs */
+.pairs {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-16);
+  row-gap: var(--space-8);
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.pairs dt {
+  color: var(--color-muted);
+}
+
+.pairs dd {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+/* ── Edit profile: repeatable rows (projects, languages) ── */
+.rowList {
+  display: grid;
+}
+
+.rowItem {
+  display: grid;
+  gap: var(--space-14);
+  padding: var(--space-16) 0;
+  border-top: 1px solid var(--color-line-subtle);
+}
+
+.rowItem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.rowTitle {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-muted-strong);
+}
+
+.langList {
+  display: grid;
+  gap: var(--space-14);
+}
+
+.langRow {
+  display: grid;
+  /* 3 : 2 — the kit Combobox needs ≈ 224px (its input keeps the default size=20 width and does not shrink) */
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) auto;
+  gap: var(--space-14);
+  align-items: start;
+}
+
+/* the 32px remove button sits on the 40px field line: label 20 + gap 6 + (40 − 32) / 2 */
+.langRemove {
+  margin-top: calc(var(--leading-sm) + var(--space-6) + var(--space-4));
+}
+
+@media (max-width: 639.98px) {
+  .langRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--space-8);
+  }
+
+  .langRow > :nth-child(2) {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  /* one language = two lines here, so rows get the projects' hairline between them */
+  .langRow + .langRow {
+    padding-top: var(--space-14);
+    border-top: 1px solid var(--color-line-subtle);
+  }
+
+  .langRemove {
+    grid-row: 1;
+    grid-column: 2;
+  }
+}
+
+.pair {
+  display: contents;
+}
+
+/* Languages: the language is the fact, the level its detail */
+.pairs[data-lead="term"] dt {
+  color: var(--color-ink);
+}
+
+.pairs[data-lead="term"] dd {
+  color: var(--color-muted);
+}
+
+/* Contacts: one block (round 15) — a hairline-bordered list, one link row per channel */
+.contacts {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-line-subtle);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+}
+
+.contactItem + .contactItem {
+  border-top: 1px solid var(--color-line-subtle);
+}
+
+.contactRow {
+  display: grid;
+  /* fixed label column so every value starts on one line across rows */
+  grid-template-columns: var(--space-20) calc(var(--space-40) * 2) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-12);
+  padding: var(--space-10) var(--space-14);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) ease;
+}
+
+.contactRow:hover {
+  background: var(--color-tray);
+}
+
+.contactRow:hover .contactValue {
+  text-decoration: underline;
+  text-decoration-color: var(--color-line-strong);
+  text-underline-offset: 3px;
+}
+
+.contactRow:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: calc(var(--focus-offset) * -1);
+  border-radius: var(--radius-control);
+}
+
+.contactGlyph {
+  display: grid;
+  place-items: center;
+}
+
+.contactLucide {
+  color: var(--color-muted-strong);
+}
+
+.contactLabel {
+  min-width: 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.contactValue {
+  min-width: 0;
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.contactIcon {
+  flex: none;
+  color: var(--color-muted);
+  transition: color var(--duration-fast) ease;
+}
+
+.contactRow:hover .contactIcon,
+.contactLink:hover .contactIcon {
+  color: var(--color-ink);
+}
+
+/* the project link keeps round 14's inline look */
+.contactLink {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: var(--space-8);
+  max-width: 100%;
+}
+
+@media (max-width: 639.98px) {
+  .contactRow {
+    grid-template-columns: var(--space-20) minmax(0, 1fr) auto;
+    grid-template-areas: "glyph label ext" "glyph value ext";
+    row-gap: var(--space-2);
+  }
+
+  .contactGlyph { grid-area: glyph; }
+  .contactLabel { grid-area: label; }
+  .contactValue { grid-area: value; }
+  .contactRow > .contactIcon { grid-area: ext; }
+}
+
+/* a project link: the contact-link look at the entry's meta size */
+.contactLink.entryLink {
+  min-height: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}

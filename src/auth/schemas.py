@@ -13,6 +13,8 @@ class AccountOut(BaseModel):
     id: int
     email: str
     role: UserRole
+    # 003 research R2: the SPA sends an account without a profile to its onboarding first.
+    has_profile: bool = False
 
 
 class AccountResponse(BaseModel):
