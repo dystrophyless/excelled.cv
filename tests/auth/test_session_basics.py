@@ -47,7 +47,7 @@ async def test_me_with_valid_session(client, make_user, make_session):
 
     assert response.status_code == 200
     assert response.json() == {
-        "account": {"id": user.id, "email": "maya@sdu.edu.kz", "role": "student"}
+        "account": {"id": user.id, "email": "maya@sdu.edu.kz", "role": "student", "has_profile": False}
     }
 
 

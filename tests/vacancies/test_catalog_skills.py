@@ -10,12 +10,29 @@ async def test_the_catalog_is_public_and_complete(client):
 
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"types", "fields", "cities", "formats"}
+    assert set(body) == {
+        "types", "fields", "cities", "formats", "industries", "company_sizes", "degrees", "language_levels",
+    }
     assert {"value": "full_time", "label": "Full-time"} in body["types"]
     assert {"value": "on_site", "label": "On-site"} in body["formats"]
     assert [o["value"] for o in body["types"]] == ["internship", "full_time", "part_time"]
     assert {"value": "almaty", "label": "Almaty"} in body["cities"]
-    assert {"value": "qa", "label": "QA"} in body["fields"]
+    assert {"value": "1_10", "label": "1–10 employees"} in body["company_sizes"]
+    assert {"value": "bachelor", "label": "Bachelor's", "max_year": 4} in body["degrees"]
+    assert [o["value"] for o in body["language_levels"]] == ["native", "fluent", "intermediate", "basic"]
+
+
+async def test_fields_are_refined_and_explained(client):
+    fields = (await client.get("/api/catalog")).json()["fields"]
+
+    values = [field["value"] for field in fields]
+    assert values == [
+        "backend", "frontend", "mobile", "data_analytics", "data_science", "data_engineering",
+        "qa", "design", "devops", "security", "product", "other",
+    ]
+    assert "data" not in values  # migrated to data_analytics; no longer offered
+    assert all(field["description"] for field in fields)
+    assert {"value": "qa", "label": "QA", "description": "Tests software and finds bugs before users do"} in fields
 
 
 async def test_skill_suggestions_need_a_session(client):
@@ -63,3 +80,14 @@ async def test_one_skill_in_different_spellings_is_stored_once(db):
     assert rows[0].key == skill_key("Python") == "python"
     assert list(first) == list(second) == ["python"]
     assert first["python"].id == second["python"].id
+
+
+async def test_a_vacancy_with_the_retired_data_field_is_refused(client, employer):
+    from .helpers import URL, complete
+
+    refused = await client.post(URL, json=complete(field="data"), headers=employer.headers)
+    accepted = await client.post(URL, json=complete(field="data_engineering"), headers=employer.headers)
+
+    assert refused.status_code == 422
+    assert accepted.status_code == 201
+    assert accepted.json()["field"] == "data_engineering"

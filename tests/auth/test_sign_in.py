@@ -37,7 +37,7 @@ async def test_sign_in_sets_a_session_cookie(client, make_user):
     response = await sign_in(client)
 
     assert response.status_code == 200
-    assert response.json() == {"account": {"id": user.id, "email": "maya@sdu.edu.kz", "role": "student"}}
+    assert response.json() == {"account": {"id": user.id, "email": "maya@sdu.edu.kz", "role": "student", "has_profile": False}}
     header = response.headers["set-cookie"].lower()
     assert "httponly" in header and "path=/api" in header and "max-age=2592000" in header
 
