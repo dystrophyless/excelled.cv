@@ -739,6 +739,46 @@ test.describe("US3 search and filters (S1)", () => {
     await expect.poll(() => titles(page)).toEqual(["Data Science Research Assistant"]);
   });
 
+  test("Clear filters cancels a keystroke still waiting for its pause", async ({ page }) => {
+    const requests: string[] = [];
+    await mockOpportunities.serve(page, DATA, { requests });
+    await page.goto(`${LIST}?type=internship`);
+    await expect(cards(page)).toHaveCount(2);
+    await searchbox(page).fill("python");
+    await page.getByRole("button", { name: "Clear filters" }).click(); // before the 250 ms pause is over
+    await page.waitForTimeout(700);
+    await expect(searchbox(page)).toHaveValue("");
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
+    await expect(cards(page)).toHaveCount(5);
+    expect(requests.some((r) => r.includes("q=python"))).toBe(false);
+  });
+
+  test("browser Back during a pending keystroke is not overwritten by it", async ({ page }) => {
+    const requests: string[] = [];
+    await mockOpportunities.serve(page, DATA, { requests });
+    await page.goto(LIST);
+    await expect(cards(page)).toHaveCount(5);
+    await page.getByRole("radio", { name: "Internships" }).click();
+    await expect(page).toHaveURL(/\?type=internship$/);
+    await searchbox(page).fill("python");
+    await page.goBack(); // before the 250 ms pause is over
+    await page.waitForTimeout(700);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
+    await expect(searchbox(page)).toHaveValue("");
+    await expect(page.getByRole("radio", { name: "All" })).toBeChecked();
+    expect(requests.some((r) => r.includes("q=python"))).toBe(false);
+  });
+
+  test("an absurdly large page number is capped so the server clamps it to the last page", async ({ page }) => {
+    const requests: string[] = [];
+    await mockOpportunities.serve(page, manyOpportunities(23), { requests });
+    await page.goto(`${LIST}?page=99999999999999999999999`);
+    await expect(cards(page)).toHaveCount(3);
+    await expect(page.getByText("Couldn't load opportunities")).toHaveCount(0);
+    await expect(page).toHaveURL(/\?page=3$/);
+    expect(requests[0]).toBe("page=1000000");
+  });
+
   test("the search field holds 120 characters at most", async ({ page }) => {
     await mockOpportunities.serve(page, DATA);
     await page.goto(LIST);
