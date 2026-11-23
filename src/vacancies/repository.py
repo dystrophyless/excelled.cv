@@ -70,7 +70,7 @@ async def out_for(db: AsyncSession, vacancy: Vacancy) -> VacancyOut:
     return to_out(vacancy, required, nice)
 
 
-def _escape_like(text: str) -> str:
+def escape_like(text: str) -> str:
     return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
@@ -84,7 +84,7 @@ async def list_own(
     if status is not None:
         statement = statement.where(Vacancy.status == status)
     if query.strip():
-        statement = statement.where(Vacancy.title.ilike(f"%{_escape_like(query.strip())}%", escape="\\"))
+        statement = statement.where(Vacancy.title.ilike(f"%{escape_like(query.strip())}%", escape="\\"))
     vacancies = (
         await db.execute(
             statement.order_by(Vacancy.updated_at.desc(), Vacancy.id.desc()).execution_options(populate_existing=True)
