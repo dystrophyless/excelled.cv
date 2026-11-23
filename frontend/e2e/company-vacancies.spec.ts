@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { expectNoA11yViolations } from "./support/a11y";
 import { signedInAs } from "./support/auth-api";
+import { mockOpportunities } from "./support/opportunities-api";
 import {
   mockCatalog,
   mockCompanyProfile,
@@ -236,8 +237,9 @@ test.describe("US1 - employer posts a vacancy (S2 wizard)", () => {
 
   test("a student cannot open the wizard", async ({ page }) => {
     await signedInAs(page, "student");
+    await mockOpportunities.empty(page); // the student home is the opportunities list (004)
     await page.goto(WIZARD);
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
   });
 
   test("axe: every step passes; no horizontal scroll at 390 px", async ({ page }) => {

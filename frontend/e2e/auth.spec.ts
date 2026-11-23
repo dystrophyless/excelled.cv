@@ -12,6 +12,8 @@ import {
   signedInAs,
   signedOut,
 } from "./support/auth-api";
+import { mockOpportunities } from "./support/opportunities-api";
+import { mockCatalog } from "./support/vacancies-api";
 
 /*
  * Feature 001-user-auth - screens S1 (sign in), S2 (sign up), S3 (verify email) and the route guards.
@@ -23,6 +25,9 @@ const PASSWORD = "correct horse";
 
 test.beforeEach(async ({ page }) => {
   await signedOut(page);
+  // the student home is the opportunities list (004): serve it empty, so a signed-in student lands on a quiet page
+  await mockCatalog.ok(page);
+  await mockOpportunities.empty(page);
 });
 
 async function expectNoHorizontalScroll(page: Page) {
@@ -58,13 +63,13 @@ async function reachVerify(page: Page, resendIn = 60) {
 }
 
 test.describe("US1 - student creates an account", () => {
-  test("sign-up happy path: form -> code -> /app", async ({ page }) => {
+  test("sign-up happy path: form -> code -> /app/opportunities", async ({ page }) => {
     await mockVerifyEmail.ok(page, "student");
     await reachVerify(page);
     await expect(page.getByText(EMAIL)).toBeVisible();
     await expect(page.getByLabel("Verification code")).toBeFocused();
     await enterCode(page, "123456");
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
@@ -189,7 +194,7 @@ test.describe("US1 - student creates an account", () => {
     await mockVerifyEmail.ok(page, "student");
     await reachVerify(page);
     await enterCode(page, "123456");
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
   });
 
   test("verify without an email in navigation state goes back to S2", async ({ page }) => {
@@ -218,11 +223,11 @@ test.describe("US2 - returning user signs in", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
   }
 
-  test("student signs in and lands on /app", async ({ page }) => {
+  test("student signs in and lands on /app/opportunities", async ({ page }) => {
     await mockSignIn.ok(page, "student");
     await page.goto("/sign-in");
     await signInWith(page);
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
   });
 
   test("employer signs in and lands on the company home", async ({ page }) => {
@@ -241,7 +246,7 @@ test.describe("US2 - returning user signs in", () => {
     });
     await page.goto("/sign-in");
     await signInWith(page);
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
     expect(new URLSearchParams(body).get("username")).toBe(EMAIL);
     expect(new URLSearchParams(body).get("password")).toBe(PASSWORD);
   });
@@ -303,23 +308,24 @@ test.describe("US2 - returning user signs in", () => {
     await mockSignIn.ok(page);
     await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
   });
 
-  test("signed-out visit to /app/applications -> sign in -> back to /app/applications", async ({ page }) => {
+  // 004: /app/applications now redirects to the opportunities, so the deep link is an opportunities address
+  test("signed-out visit to /app/opportunities?type=research -> sign in -> back to the same address", async ({ page }) => {
     await mockSignIn.ok(page, "student");
-    await page.goto("/app/applications");
-    await expect(page).toHaveURL(/\/sign-in\?next=%2Fapp%2Fapplications$/);
+    await page.goto("/app/opportunities?type=research");
+    await expect(page).toHaveURL(/\/sign-in\?next=%2Fapp%2Fopportunities%3Ftype%3Dresearch$/);
     await signInWith(page);
-    await expect(page).toHaveURL(/\/app\/applications$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Applications" })).toBeVisible();
+    await expect(page).toHaveURL(/\/app\/opportunities\?type=research$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Opportunities" })).toBeVisible();
   });
 
   test("an off-site next is ignored", async ({ page }) => {
     await mockSignIn.ok(page, "student");
     await page.goto("/sign-in?next=%2F%2Fevil.example%2Fx");
     await signInWith(page);
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
   });
 
   test("Log out returns to /sign-in and protected pages ask for sign-in again", async ({ page }) => {
@@ -332,7 +338,7 @@ test.describe("US2 - returning user signs in", () => {
     await page.getByRole("menuitem", { name: "Log out" }).click();
     await expect(page).toHaveURL(/\/sign-in$/);
     await page.goto("/app");
-    await expect(page).toHaveURL(/\/sign-in\?next=%2Fapp$/);
+    await expect(page).toHaveURL(/\/sign-in\?next=%2Fapp%2Fopportunities$/);
   });
 
   test("the account menu shows the real email", async ({ page }) => {
@@ -345,7 +351,7 @@ test.describe("US2 - returning user signs in", () => {
   test("signed-in visit to /sign-in goes to the role's home", async ({ page }) => {
     await signedInAs(page, "student");
     await page.goto("/sign-in");
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
     await signedInAs(page, "employer");
     await page.goto("/sign-in");
     await expect(page).toHaveURL(/\/company\/vacancies$/);
@@ -392,10 +398,10 @@ test.describe("US3 - employer account", () => {
     await expect(page).toHaveURL(/\/company(\/vacancies)?$/);
   });
 
-  test("a signed-in student opening /company/vacancies is sent to /app", async ({ page }) => {
+  test("a signed-in student opening /company/vacancies is sent to /app/opportunities", async ({ page }) => {
     await signedInAs(page, "student");
     await page.goto("/company/vacancies");
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
   });
 });
 
@@ -437,7 +443,7 @@ test.describe("US4 - reset a forgotten password", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Password updated" })).toBeVisible();
     await expect(page).toHaveURL(/\/reset-password\/confirm$/);
     await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
     expect(body).toEqual({ reset_token: "mock-reset-token", password: NEW_PASSWORD });
   });
 
