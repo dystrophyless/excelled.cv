@@ -19,7 +19,7 @@ type Status = ApiVacancy["status"];
 
 /** GET /api/catalog as the backend serves it (src/catalog/router.py): 002's lists + 003's profile lists. */
 export const CATALOG = {
-  types: [{ value: "internship", label: "Internship" }, { value: "full_time", label: "Full-time" }, { value: "part_time", label: "Part-time" }],
+  types: [{ value: "internship", label: "Internship" }, { value: "full_time", label: "Full-time" }, { value: "part_time", label: "Part-time" }, { value: "research", label: "Research" }],
   // refined in 003 (data → data_analytics / data_science / data_engineering, + security), each with a description
   fields: [
     { value: "backend", label: "Backend", description: "Builds the server side: APIs, databases, business logic" },
