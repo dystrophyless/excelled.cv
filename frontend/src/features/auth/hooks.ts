@@ -25,6 +25,16 @@ export function homeFor(role: Role): string {
   return role === "student" ? "/app" : "/company";
 }
 
+/** Where an account without a profile goes first (003-profiles research R3). */
+export function profileHomeFor(role: Role): string {
+  return role === "student" ? "/onboarding" : "/company/onboarding";
+}
+
+/** The profile page of an account that already has one. */
+export function profilePageFor(role: Role): string {
+  return role === "student" ? "/app/profile" : "/company/profile";
+}
+
 /** `next` from the sign-in URL: only a same-origin path ("/x", never "//host" or "/\host"). */
 export function safeNext(next: string | null | undefined): string | null {
   if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return null;

@@ -1,7 +1,8 @@
 import { api } from "@/lib/api";
 
 export type Role = "student" | "employer";
-export type Account = { id: number; email: string; role: Role };
+/** `has_profile`: the profile of the account's role exists (003-profiles research R2). */
+export type Account = { id: number; email: string; role: Role; has_profile: boolean };
 export type CodePurpose = "sign_up" | "password_reset";
 
 /** The only client auth state (research R4). `null` data = signed out. */

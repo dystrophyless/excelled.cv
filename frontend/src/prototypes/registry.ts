@@ -6,6 +6,10 @@ import {
 import {
   EDIT_STATES, LIST_STATES, NEW_STATES, PAGE_STATES, VacancyEditPrototype, VacancyListPrototype, VacancyNewPrototype, VacancyPagePrototype,
 } from "./002-employer-vacancies";
+import {
+  CompanyOnboardingPrototype, CompanyProfilePrototype, EDIT_STATES as PROFILE_EDIT_STATES, COMPANY_ONBOARDING_STATES, PROFILE_STATES, STUDENT_ONBOARDING_STATES,
+  StudentEditPrototype, StudentOnboardingPrototype, StudentProfilePrototype,
+} from "./003-profiles";
 
 /*
  * Feature prototypes, added by the ui-designer during /speckit-design.
@@ -40,6 +44,17 @@ export const PROTOTYPES: PrototypeEntry[] = [
       new: { title: "Post a vacancy", states: NEW_STATES, Component: VacancyNewPrototype },
       edit: { title: "Edit vacancy", states: EDIT_STATES, Component: VacancyEditPrototype },
       vacancy: { title: "Vacancy page", states: PAGE_STATES, Component: VacancyPagePrototype },
+    },
+  },
+  {
+    id: "003-profiles",
+    title: "Student and company profiles",
+    screens: {
+      onboarding: { title: "Student onboarding: profile", states: STUDENT_ONBOARDING_STATES, Component: StudentOnboardingPrototype },
+      profile: { title: "My profile", states: PROFILE_STATES, Component: StudentProfilePrototype },
+      "profile-edit": { title: "Edit profile", states: PROFILE_EDIT_STATES, Component: StudentEditPrototype },
+      "company-onboarding": { title: "Company onboarding", states: COMPANY_ONBOARDING_STATES, Component: CompanyOnboardingPrototype },
+      "company-profile": { title: "Company profile", states: PROFILE_EDIT_STATES, Component: CompanyProfilePrototype },
     },
   },
 ];

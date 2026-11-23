@@ -17,10 +17,13 @@ export const CATALOG: Catalog = {
     { value: "full_time", label: "Full-time" },
     { value: "part_time", label: "Part-time" },
   ],
+  // refined in 003-profiles (ui-spec §1 "Fields of work"): `data` split in three, + security; labels as in the catalog
   fields: [
     { value: "backend", label: "Backend" }, { value: "frontend", label: "Frontend" }, { value: "mobile", label: "Mobile" },
-    { value: "data", label: "Data" }, { value: "qa", label: "QA" }, { value: "design", label: "Design" },
-    { value: "devops", label: "DevOps" }, { value: "product", label: "Product" }, { value: "other", label: "Other" },
+    { value: "data_analytics", label: "Data Analytics" }, { value: "data_science", label: "Data Science (incl. ML)" },
+    { value: "data_engineering", label: "Data Engineering" }, { value: "qa", label: "QA" }, { value: "design", label: "UI/UX Design" },
+    { value: "devops", label: "DevOps" }, { value: "security", label: "Cybersecurity" }, { value: "product", label: "Product" },
+    { value: "other", label: "Other" },
   ],
   cities: [
     { value: "almaty", label: "Almaty" }, { value: "astana", label: "Astana" }, { value: "shymkent", label: "Shymkent" },
@@ -68,7 +71,7 @@ export const VACANCIES: VacancyItem[] = [
     applyBy: "2026-11-20", requiredSkills: ["Swift", "Git"], niceSkills: ["Figma"], version: 2, updatedOn: "2026-10-26",
   }),
   base({
-    id: "v3", title: "Junior Data Engineer", status: "draft", type: "full_time", field: "data", city: "astana",
+    id: "v3", title: "Junior Data Engineer", status: "draft", type: "full_time", field: "data_engineering", city: "astana",
     requiredSkills: ["Python", "SQL"], updatedOn: "2026-10-29",
   }),
   base({
@@ -123,7 +126,7 @@ export const COMPLETE_DRAFT: VacancyDraft = {
 
 /** A half-finished post: enough for a draft, not for publishing. */
 export const PARTIAL_DRAFT: VacancyDraft = {
-  ...EMPTY_DRAFT, title: "Junior Data Engineer", type: "full_time", field: "data", city: "astana", requiredSkills: ["Python"],
+  ...EMPTY_DRAFT, title: "Junior Data Engineer", type: "full_time", field: "data_engineering", city: "astana", requiredSkills: ["Python"],
 };
 
 export const PAST_DEADLINE = "2026-10-12";

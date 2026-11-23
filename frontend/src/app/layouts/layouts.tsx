@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { Icon } from "@/components/icons";
 import { AppShell, Avatar, Button, NotificationCenter, ProfileMenu, type NavItem } from "@/components/ui";
 import { useMe, useSignOut } from "@/features/auth/hooks";
+import { useCompanyProfile, useStudentProfile } from "@/features/profiles/hooks";
 import { EMPLOYER_NOTIFICATIONS, STUDENT_NOTIFICATIONS } from "@/mocks/data";
 import styles from "./layouts.module.css";
 
@@ -85,11 +86,23 @@ export function AccountMenu({ account, items }: { account: Account; items: { id:
 }
 
 
-const STUDENT: Account = { name: "Maya Akhmetova", email: "maya@sdu.edu.kz", setup: { done: 3, total: 5, next: "Add your CV" } };
+// Mock account shown when nobody of the layout's role is signed in (styleguide templates / prototypes). Signed in: name = the
+// profile name (["student-profile"] / ["company-profile"]), the sign-in email while it loads or if it fails
+// (003-profiles ui-spec § Account menu). No setup progress until a real checklist exists.
+const STUDENT: Account = { name: "Maya Akhmetova", email: "maya@sdu.edu.kz" };
 const EMPLOYER: Account = { name: "Aruzhan Bekova", email: "aruzhan@kaspi.kz" };
+
+/** The account menu's name and email: profile name → sign-in email (loading / failed) → the mock account (signed out). */
+function menuAccount(me: { email: string } | null | undefined, profileName: string | undefined, mock: Account): Account {
+  if (!me) return mock;
+  return { name: profileName || me.email, email: me.email };
+}
 
 export function StudentLayout({ children }: { children: ReactNode }) {
   const { data: me } = useMe();
+  // only a student with a profile has one to read (the layout also renders in the styleguide and prototypes)
+  const profile = useStudentProfile({ enabled: me?.role === "student" && me.has_profile });
+  const account = menuAccount(me, me?.role === "student" ? profile.data?.fullName : undefined, STUDENT);
   const signOut = useSignOut();
   return (
     <AppShell
@@ -99,7 +112,7 @@ export function StudentLayout({ children }: { children: ReactNode }) {
         <>
           <NotificationCenter items={STUDENT_NOTIFICATIONS} settingsTo="/app/settings" />
           <AccountMenu
-            account={{ ...STUDENT, email: me?.email ?? STUDENT.email }}
+            account={account}
             items={[
               { id: "profile", label: "Profile", icon: <Icon name="profile" size={20} />, to: "/app/profile" },
               { id: "settings", label: "Settings", icon: <Icon name="settings" size={20} />, to: "/app/settings" },
@@ -116,6 +129,8 @@ export function StudentLayout({ children }: { children: ReactNode }) {
 
 export function EmployerLayout({ children }: { children: ReactNode }) {
   const { data: me } = useMe();
+  const profile = useCompanyProfile({ enabled: me?.role === "employer" && me.has_profile });
+  const account = menuAccount(me, me?.role === "employer" ? profile.data?.name : undefined, EMPLOYER);
   const signOut = useSignOut();
   return (
     <AppShell
@@ -125,7 +140,7 @@ export function EmployerLayout({ children }: { children: ReactNode }) {
         <>
           <NotificationCenter items={EMPLOYER_NOTIFICATIONS} settingsTo="/company/settings" />
           <AccountMenu
-            account={{ ...EMPLOYER, email: me?.email ?? EMPLOYER.email }}
+            account={account}
             items={[
               { id: "company", label: "Company profile", icon: <Icon name="company" size={20} />, to: "/company/profile" },
               { id: "settings", label: "Settings", icon: <Icon name="settings" size={20} />, to: "/company/settings" },

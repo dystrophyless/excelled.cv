@@ -1,5 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { meKey, type Account } from "@/features/auth/api";
+import { ApiError } from "@/lib/api";
 import {
   catalog, catalogKey, changeStatus, create, get, kzDate, list, remove, skills, skillsKey, update, vacanciesKey, vacancyKey,
   type StatusBody,
@@ -31,12 +33,32 @@ export function useSkillSuggestions(q: string) {
   return useQuery({ queryKey: skillsKey(debounced), queryFn: () => skills(debounced), staleTime: 5 * 60_000, placeholderData: (prev) => prev });
 }
 
+/**
+ * 403 `company_profile_required` (003-profiles FR-015) from any vacancy call: the cached account is stale (no company
+ * profile any more), so mark it — RequireRole then sends the employer to /company/onboarding?next=<this page>.
+ */
+function useProfileGate() {
+  const queryClient = useQueryClient();
+  return (error: unknown) => {
+    if (error instanceof ApiError && error.code === "company_profile_required") {
+      queryClient.setQueryData<Account | null>(meKey, (me) => (me ? { ...me, has_profile: false } : me));
+    }
+  };
+}
+
+/** A query function that applies the profile gate to its failure. */
+function gated<T>(gate: (error: unknown) => void, fn: () => Promise<T>) {
+  return () => fn().catch((error: unknown) => { gate(error); throw error; });
+}
+
 export function useVacancyList(status: StatusFilter, q: string) {
-  return useQuery({ queryKey: vacanciesKey(status, q), queryFn: () => list(status, q), retry: false, placeholderData: keepPreviousData });
+  const gate = useProfileGate();
+  return useQuery({ queryKey: vacanciesKey(status, q), queryFn: gated(gate, () => list(status, q)), retry: false, placeholderData: keepPreviousData });
 }
 
 export function useVacancy(id: string) {
-  return useQuery({ queryKey: vacancyKey(id), queryFn: () => get(id), retry: false });
+  const gate = useProfileGate();
+  return useQuery({ queryKey: vacancyKey(id), queryFn: gated(gate, () => get(id)), retry: false });
 }
 
 /** Every successful write refreshes the lists and puts the server's copy (new `version`) in the vacancy cache. */
@@ -50,34 +72,42 @@ function useAfterWrite() {
 
 export function useCreateVacancy() {
   const afterWrite = useAfterWrite();
+  const gate = useProfileGate();
   return useMutation({
     mutationFn: ({ draft, publish }: { draft: VacancyDraft; publish: boolean }) => create(draft, publish),
     onSuccess: afterWrite,
+    onError: gate,
   });
 }
 
 export function useUpdateVacancy() {
   const afterWrite = useAfterWrite();
+  const gate = useProfileGate();
   return useMutation({
     mutationFn: ({ id, draft, version }: { id: string; draft: VacancyDraft; version: number }) => update(id, draft, version),
     onSuccess: afterWrite,
+    onError: gate,
   });
 }
 
 export function useVacancyStatusAction() {
   const afterWrite = useAfterWrite();
+  const gate = useProfileGate();
   return useMutation({
     mutationFn: ({ id, action, version, applyBy }: { id: string; action: StatusBody["action"]; version: number; applyBy?: string }) =>
       changeStatus(id, action, version, applyBy),
     onSuccess: afterWrite,
+    onError: gate,
   });
 }
 
 /** Deleting a draft drops its cached copy and refreshes every list. */
 export function useDeleteVacancy() {
   const queryClient = useQueryClient();
+  const gate = useProfileGate();
   return useMutation({
     mutationFn: ({ id, version }: { id: string; version: number }) => remove(id, version),
+    onError: gate,
     onSuccess: (_data, { id }) => {
       queryClient.removeQueries({ queryKey: vacancyKey(id) });
       void queryClient.invalidateQueries({ queryKey: ["vacancies"] });
