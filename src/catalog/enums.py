@@ -13,6 +13,7 @@ class VacancyType(enum.StrEnum):
     internship = "internship"
     full_time = "full_time"
     part_time = "part_time"
+    research = "research"
 
 
 class WorkFormat(enum.StrEnum):
@@ -132,6 +133,7 @@ LABELS: dict[enum.StrEnum, str] = {
     VacancyType.internship: "Internship",
     VacancyType.full_time: "Full-time",
     VacancyType.part_time: "Part-time",
+    VacancyType.research: "Research",
     WorkFormat.on_site: "On-site",
     WorkFormat.hybrid: "Hybrid",
     WorkFormat.remote: "Remote",

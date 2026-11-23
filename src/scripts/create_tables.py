@@ -43,6 +43,7 @@ async def create_tables(*, reset_auth: bool = False) -> None:
         await connection.run_sync(Base.metadata.create_all)
 
     await refine_vacancy_fields()
+    await add_research_type()
     await async_engine.dispose()
 
 
@@ -59,6 +60,13 @@ async def refine_vacancy_fields() -> None:
         for label in NEW_FIELD_LABELS:
             await connection.execute(text(f"ALTER TYPE vacancy_field ADD VALUE IF NOT EXISTS '{label}'"))
         await connection.execute(text("UPDATE vacancies SET field = 'data_analytics' WHERE field = 'data'"))
+
+
+async def add_research_type() -> None:
+    """004: the `research` vacancy type on an existing database. Idempotent; no row changes."""
+    async with async_engine.connect() as connection:
+        connection = await connection.execution_options(isolation_level="AUTOCOMMIT")
+        await connection.execute(text("ALTER TYPE vacancy_type ADD VALUE IF NOT EXISTS 'research'"))
 
 
 def main() -> None:

@@ -113,7 +113,7 @@ Open <http://localhost:5173/sign-up>, choose a role and register. The verificati
 | `FRONTEND_ORIGIN` | origin allowed to make state-changing requests (default `http://localhost:5173`) |
 
 Upgrading from an older checkout: `uv run python -m src.scripts.create_tables` adds new tables and migrates data
-(0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"); it is safe to run again. Add
+(0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"; 0.5.0: the "Research" opportunity type); it is safe to run again. Add
 `--reset-auth` only if the auth tables changed and you can lose development accounts.
 
 ## Tests and checks
