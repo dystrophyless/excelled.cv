@@ -5,7 +5,34 @@ and the project uses [Semantic Versioning](https://semver.org/) (pre-1.0: each d
 
 ## [Unreleased]
 
-Planned: applying to a vacancy, the applicant pipeline for employers, student profile and skills, skill-based matching.
+Planned (backlog iterations 4–5): students browse, open and filter opportunities; the "research" opportunity type; the
+public landing page; CV upload, replace and remove.
+
+## [0.4.0] - 2026-11-23
+
+Feature `003-profiles` (backlog US-05 Create Student Profile, US-06 Create HR Profile, US-07 Edit Profile).
+
+### Added
+- Student profile API (`/api/student/profile`): name, university, degree (College, Bachelor's, Master's, PhD,
+  Residency), major, year of study or graduated, optional GPA (0.00–4.00), what the student is looking for (up to 3
+  fields of work or "not sure yet", position types), city, about, projects, languages and contacts (phone, WhatsApp,
+  Telegram, LinkedIn, GitHub, website).
+- Company profile API (`/api/company/profile`): name, industry, size, website, city, description.
+- `has_profile` on the account; students and employers without a profile are sent to a 5-step onboarding first.
+- Employers need a company profile before any vacancy action (403 `company_profile_required`).
+- Onboarding wizards with ready-made answers, a searchable university list (83 universities of Kazakhstan, short
+  names such as KBTU or SDU), My profile, Edit profile and the company profile page; the vacancy preview shows the real
+  company name.
+- Kit: `ChoiceCard` / `ChoiceCardGroup`; Combobox with descriptions, alias search, "Use …" for typed values, no 50-item
+  cap, clearable, in-flow single mode, Tab accepts the highlighted option; real brand logos for contact links.
+- 60 API tests and about 100 browser tests for the feature.
+
+### Changed
+- Fields of work refined: "Data" split into Data Analytics, Data Science (incl. ML) and Data Engineering, plus
+  Cybersecurity; every field has a one-line description. Existing `data` vacancies move to Data Analytics when
+  `create_tables` runs.
+- Stepper: done steps are faded, the current step is the only full-ink mark.
+- Page header renders rich descriptions in a `<div>` (valid HTML).
 
 ## [0.3.0] - 2026-11-02
 
