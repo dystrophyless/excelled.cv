@@ -13,6 +13,7 @@ from src.auth.models import (
     SignInThrottle,
 )
 from src.database import Base, async_engine
+from src.profiles import models as profile_models  # noqa: F401
 from src.skills import models as skill_models  # noqa: F401
 from src.users import models as user_models  # noqa: F401
 from src.vacancies import models as vacancy_models  # noqa: F401
@@ -41,7 +42,23 @@ async def create_tables(*, reset_auth: bool = False) -> None:
 
         await connection.run_sync(Base.metadata.create_all)
 
+    await refine_vacancy_fields()
     await async_engine.dispose()
+
+
+NEW_FIELD_LABELS = ("data_analytics", "data_science", "data_engineering", "security")
+
+
+async def refine_vacancy_fields() -> None:
+    """003: `data` was split. Adds the new enum labels to an existing database and moves old rows to data_analytics.
+
+    Idempotent. `ALTER TYPE … ADD VALUE` cannot run inside a transaction block, hence AUTOCOMMIT.
+    """
+    async with async_engine.connect() as connection:
+        connection = await connection.execution_options(isolation_level="AUTOCOMMIT")
+        for label in NEW_FIELD_LABELS:
+            await connection.execute(text(f"ALTER TYPE vacancy_field ADD VALUE IF NOT EXISTS '{label}'"))
+        await connection.execute(text("UPDATE vacancies SET field = 'data_analytics' WHERE field = 'data'"))
 
 
 def main() -> None:
