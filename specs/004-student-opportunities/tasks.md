@@ -75,8 +75,8 @@ after them. Every story with UI gets an e2e block (Playwright + axe, API mocked)
 
 - [X] T021 [P] Docs: `CHANGELOG.md` 0.5.0, `README.md` (status, API overview, upgrading), versions in `pyproject.toml`, `frontend/package.json` and lock files, `specs/backlog.md` statuses
 - [ ] T022 Run every check in quickstart.md and report real output; measure the list with 1,000 active vacancies (SC-004)
-- [ ] T023 Run the quickstart manual scenarios against the real backend
-- [ ] T024 `/speckit-design-qa`
+- [X] T023 Run the quickstart manual scenarios against the real backend
+- [X] T024 `/speckit-design-qa`
 
 ---
 
