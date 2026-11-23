@@ -22,10 +22,12 @@ export function Stepper({ steps, current, className }: StepperProps) {
           const state = i < current ? "done" : i === current ? "current" : "upcoming";
           return (
             <li key={label} className={styles.step} data-state={state} aria-current={state === "current" ? "step" : undefined}>
-              <span className={styles.dot} aria-hidden="true">
-                {state === "done" ? <Icon name="check" size={12} /> : i + 1}
+              <span className={styles.stepItem}>
+                <span className={styles.dot} aria-hidden="true">
+                  {state === "done" ? <Icon name="check" size={12} /> : i + 1}
+                </span>
+                <span className={styles.stepLabel}>{label}</span>
               </span>
-              <span className={styles.stepLabel}>{label}</span>
             </li>
           );
         })}

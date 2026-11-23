@@ -13,7 +13,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-8);
-  flex: 1;
+  /* grow from the content size, so every connector gets the same share of the free space (equal lengths) */
+  flex: 1 1 auto;
   min-width: 0;
   font-size: var(--text-sm);
   color: var(--color-muted);
@@ -50,8 +51,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Done = reached but behind you: a faded version of the current step's ink (filled, check), so the current step stays
+   the only full-ink mark in the row. */
 .step[data-state="done"] .dot {
-  background: var(--color-ink);
+  background: var(--color-muted);
   box-shadow: none;
   color: var(--color-surface);
 }
@@ -61,13 +64,28 @@
   font-weight: var(--weight-medium);
 }
 
+/* "You are here" = where the ink path ends: reached steps (done + current) have a filled dot, the connectors behind
+   the current step are ink, the ones ahead stay hairline. Current differs from done only by its number (not finished)
+   and its ink label — no extra chrome, same size as every other dot. */
 .step[data-state="current"] .dot {
-  box-shadow: var(--field-focus);
-  color: var(--color-ink);
+  background: var(--color-ink);
+  box-shadow: none;
+  color: var(--color-surface);
+}
+
+.step[data-state="done"]::after {
+  background: var(--color-muted);
 }
 
 .stepLabel {
   white-space: nowrap;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-width: 0;
 }
 
 /* Compact (mobile): "Step 2 of 4 · Skills" + bar */

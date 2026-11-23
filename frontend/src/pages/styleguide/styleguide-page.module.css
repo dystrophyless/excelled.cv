@@ -56,6 +56,10 @@
   grid-column: 1 / -1;
 }
 
+.formWidth {
+  max-width: var(--width-form);
+}
+
 .row {
   display: flex;
   flex-wrap: wrap;

@@ -82,6 +82,27 @@
   cursor: pointer;
 }
 
+.clear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--color-muted-strong);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.clear:hover {
+  background: var(--color-row-hover);
+  color: var(--color-ink);
+}
+
 .chipRemove:hover {
   background: var(--color-fill-hover);
   color: var(--color-ink);
@@ -117,6 +138,24 @@
   font-size: var(--text-body);
   color: var(--color-text);
   cursor: pointer;
+}
+
+.optionText {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  padding-block: var(--space-6);
+}
+
+.optionDescription {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: var(--weight-regular);
+  color: var(--color-muted);
+}
+
+.option svg {
+  flex: none;
 }
 
 .option[data-active] {

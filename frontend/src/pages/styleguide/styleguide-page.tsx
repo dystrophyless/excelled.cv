@@ -1,11 +1,12 @@
 import { useState, type ReactNode } from "react";
-import { Icon } from "@/components/icons";
+import { Icon, industryIcon } from "@/components/icons";
 import {
-  Avatar, Button, Card, ChangeSummary, Checkbox, Chip, ChoiceGroup, Container, Count, DecisionInbox, EmptyState,
+  Avatar, Button, Card, ChangeSummary, Checkbox, ChoiceCard, Combobox, type ComboboxOption, ChoiceCardGroup, Chip, ChoiceGroup, Container, Count, DecisionInbox, EmptyState,
   FilterMenu, Modal, NotificationStack, NumberTicker, OtpInput, PageHeader, PasswordField, ProfileMenu,
   ProgressTracker, Radio, SectionLabel, SectionTitle, SegmentedControl, SelectField, ShimmerText, Skeleton,
   SmartRecommendation, Switch, Tag, TextareaField, TextField, TextLink, ThinkingLoader, TipsPanel, Tray, toast,
 } from "@/components/ui";
+import { Stack } from "@/components/layout";
 import styles from "./styleguide-page.module.css";
 
 /*
@@ -36,12 +37,114 @@ const SECTIONS = [
   ["foundations", "Foundations"],
   ["buttons", "Buttons"],
   ["forms", "Forms"],
+  ["choice-cards", "Choice cards"],
   ["display", "Display"],
   ["surfaces", "Surfaces"],
   ["feedback", "Feedback"],
   ["affect", "affect-ui components"],
   ["examples", "Novio examples"],
 ] as const;
+
+const YEARS = ["1st", "2nd", "3rd", "4th", "5th", "6th"].map((y, i) => ({ value: String(i + 1), label: `${y} year` }));
+const SIZES = [
+  ["1_10", "1–10"], ["11_50", "11–50"], ["51_200", "51–200"], ["201_1000", "201–1000"], ["1000_plus", "1000+"],
+].map(([value, label]) => ({ value, label: `${label} employees` }));
+const UNIVERSITIES = [
+  { value: "sdu", label: "Suleyman Demirel University", description: "Almaty" },
+  { value: "kbtu", label: "Kazakh-British Technical University", description: "Almaty" },
+  { value: "nu", label: "Nazarbayev University", description: "Astana" },
+  { value: "aitu", label: "Astana IT University", description: "Astana" },
+];
+const INDUSTRIES = [
+  ["it", "IT & software"], ["finance", "Finance & banking"], ["education", "Education"], ["healthcare", "Healthcare"],
+  ["retail", "Retail & e-commerce"], ["manufacturing", "Manufacturing"], ["media", "Media & marketing"],
+  ["government", "Government & public sector"], ["consulting", "Consulting"], ["other", "Other"],
+].map(([value, label]) => ({ value, label, icon: industryIcon(value) }));
+const FORMATS = [
+  { value: "onsite", label: "On-site", description: "At the office every day" },
+  { value: "hybrid", label: "Hybrid", description: "Some days at home" },
+  { value: "remote", label: "Remote", description: "From anywhere in Kazakhstan" },
+];
+
+function ChoiceCardsDemo() {
+  const [year, setYear] = useState("3");
+  const [industry, setIndustry] = useState("it");
+  const [uni, setUni] = useState("");
+  const [otherOn, setOtherOn] = useState(false);
+  const [formats, setFormats] = useState<string[]>(["hybrid"]);
+  const [tried, setTried] = useState(false);
+  const [errYear, setErrYear] = useState("");
+
+  return (
+    <>
+      <div className={styles.grid}>
+        <Demo label="sm · compact answers, columns={3}">
+          <Tray padding="lg">
+            <ChoiceCardGroup legend="Year of study" name="sg-year" size="sm" columns={3} options={YEARS} value={year} onChange={setYear} data-testid="cc-year" />
+          </Tray>
+        </Demo>
+        <Demo label="sm · longer labels, min={140}">
+          <Tray padding="lg">
+            <ChoiceCardGroup legend="Company size" name="sg-size" size="sm" min={140} columns={3} options={SIZES} defaultValue="11_50" />
+          </Tray>
+        </Demo>
+        <Demo label="md · description, + typed Other (children)">
+          <Tray padding="lg">
+            <Stack gap={16}>
+              <ChoiceCardGroup
+                legend="University"
+                hint="Pick yours or type it in."
+                name="sg-uni"
+                options={UNIVERSITIES}
+                value={otherOn ? "" : uni}
+                onChange={(v) => { setOtherOn(false); setUni(v); }}
+                data-testid="cc-university"
+              >
+                <ChoiceCard value="other" label="Other" description="Not in the list" checked={otherOn} onChange={() => setOtherOn(true)} />
+              </ChoiceCardGroup>
+              {otherOn && <TextField label="Your university" placeholder="e.g. Narxoz University" />}
+            </Stack>
+          </Tray>
+        </Demo>
+        <Demo label="Checkbox type · several answers">
+          <Tray padding="lg">
+            <ChoiceCardGroup type="checkbox" legend="Work format" name="sg-format" options={FORMATS} value={formats} onChange={setFormats} data-testid="cc-format" />
+          </Tray>
+        </Demo>
+        <Demo label="Error · aria-invalid + message">
+          <Tray padding="lg" footer={<Button size="sm" onClick={() => setTried(true)}>Continue</Button>}>
+            <ChoiceCardGroup
+              legend="Year of study"
+              name="sg-year-error"
+              size="sm"
+              columns={3}
+              options={YEARS}
+              value={errYear}
+              onChange={(v) => { setErrYear(v); setTried(false); }}
+              error={tried && !errYear ? "Choose your year of study" : undefined}
+              data-testid="cc-error"
+            />
+          </Tray>
+        </Demo>
+        <Demo label="Disabled · one option, and the whole group">
+          <Tray padding="lg">
+            <Stack gap={20}>
+              <ChoiceCardGroup legend="Looking for" name="sg-look" size="sm" columns={2} defaultValue="internship" options={[{ value: "internship", label: "Internship" }, { value: "job", label: "Full-time job", disabled: true }]} />
+              <ChoiceCardGroup legend="Industry" name="sg-ind-off" disabled defaultValue="finance" options={INDUSTRIES.slice(1, 3)} data-testid="cc-disabled" />
+            </Stack>
+          </Tray>
+        </Demo>
+      </div>
+      <Demo label="md · icon tile — a wizard step at form width (560): 2 columns, 1 below 520" wide>
+        <div className={styles.formWidth}>
+          <Tray padding="lg" footer={<span>You can change this later in your company profile.</span>}>
+            <ChoiceCardGroup legend="Industry" name="sg-industry" options={INDUSTRIES} value={industry} onChange={setIndustry} data-testid="cc-industry" />
+          </Tray>
+        </div>
+      </Demo>
+    </>
+  );
+}
 
 function Section({ id, title, note, children }: { id: string; title: string; note?: ReactNode; children: ReactNode }) {
   return (
@@ -52,6 +155,69 @@ function Section({ id, title, note, children }: { id: string; title: string; not
       </div>
       {children}
     </section>
+  );
+}
+
+/* Combobox demo data (styleguide-local; features keep their own lists) */
+const SG_UNIVERSITIES: ComboboxOption[] = [
+  ["Al-Farabi Kazakh National University", "Almaty", ["KazNU", "Al-Farabi"]],
+  ["Astana IT University", "Astana", ["AITU"]],
+  ["International Information Technology University", "Almaty", ["IITU"]],
+  ["Kazakh-British Technical University", "Almaty", ["KBTU"]],
+  ["KIMEP University", "Almaty", []],
+  ["L.N. Gumilyov Eurasian National University", "Astana", ["ENU", "Gumilyov"]],
+  ["Nazarbayev University", "Astana", ["NU"]],
+  ["Satbayev University", "Almaty", ["KazNTU"]],
+  ["Suleyman Demirel University", "Kaskelen", ["SDU"]],
+].map(([label, city, keywords]) => ({ value: label as string, label: label as string, description: city as string, keywords: keywords as string[] }));
+
+const SG_CITIES: ComboboxOption[] = [
+  "Aksu", "Aktau", "Aktobe", "Almaty", "Aral", "Arkalyk", "Arys", "Astana", "Atbasar", "Atyrau", "Ayagoz", "Baikonur",
+  "Balkhash", "Ekibastuz", "Esik", "Kandyagash", "Karaganda", "Karatau", "Kaskelen", "Kentau", "Khromtau", "Kokshetau",
+  "Konaev", "Kostanay", "Kulsary", "Kyzylorda", "Lisakovsk", "Oral", "Oskemen", "Pavlodar", "Petropavl", "Ridder",
+  "Rudny", "Saran", "Sarkand", "Satbayev", "Semey", "Shakhtinsk", "Shchuchinsk", "Shu", "Shymkent", "Stepnogorsk",
+  "Talgar", "Taldykorgan", "Taraz", "Temirtau", "Turkistan", "Ushtobe", "Zaisan", "Zhanaozen", "Zharkent", "Zhezkazgan",
+  "Zhitikara", "Zyryanovsk",
+].map((c) => ({
+  value: c,
+  label: c,
+  keywords: ({ Astana: ["Nur-Sultan", "Akmola"], Almaty: ["Alma-Ata"], Oral: ["Uralsk"], Oskemen: ["Ust-Kamenogorsk"],
+    Petropavl: ["Petropavlovsk"], Semey: ["Semipalatinsk"], Konaev: ["Kapchagay"] } as Record<string, string[]>)[c],
+}));
+
+function ComboboxDemo() {
+  const [university, setUniversity] = useState("Kazakh-British Technical University");
+  const [city, setCity] = useState("");
+  const [continued, setContinued] = useState("");
+  return (
+    <div className={styles.stack}>
+      <Combobox
+        label="University"
+        value={university}
+        onChange={setUniversity}
+        options={SG_UNIVERSITIES}
+        allowCreate
+        createLabel={(t) => <>Use <strong>“{t}”</strong></>}
+        clearable
+        inFlow
+        placeholder="Search, e.g. KBTU"
+        hint="Objects with a city line and aliases · createLabel “Use” · clearable · inFlow: the list pushes Continue down"
+        data-testid="sg-combobox-university"
+      />
+      <div className={styles.row}>
+        <Button size="sm" onClick={() => setContinued(university)} data-testid="sg-combobox-continue">Continue</Button>
+        <span role="status">{continued && `Continued with ${continued}`}</span>
+      </div>
+      <Combobox
+        label="City"
+        value={city}
+        onChange={setCity}
+        options={SG_CITIES}
+        placeholder="Choose a city"
+        hint={`${SG_CITIES.length} options, all reachable by scrolling and keys · former names find the city`}
+        data-testid="sg-combobox-city"
+      />
+    </div>
   );
 }
 
@@ -183,12 +349,23 @@ export function StyleguidePage() {
               <Switch label="Email me new matches" defaultChecked />
             </div>
           </Demo>
+          <Demo label="Combobox — single, searchable">
+            <ComboboxDemo />
+          </Demo>
           <Demo label="OTP (affect-ui) — email verification">
             <Tray>
               <OtpInput label="Verification code" length={6} separator={3} onResend={() => toast("Code sent")} resendIn={30} />
             </Tray>
           </Demo>
         </div>
+      </Section>
+
+      <Section
+        id="choice-cards"
+        title="Choice cards"
+        note="Ready-made answers in a wizard step: a radio or checkbox drawn as a tile. Arrow keys move inside a radio group; Space toggles a checkbox. See patterns.md §16 for cards vs radio vs select vs SegmentedControl."
+      >
+        <ChoiceCardsDemo />
       </Section>
 
       <Section id="display" title="Display">

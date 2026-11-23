@@ -45,6 +45,12 @@
   --color-success-tint: #e8f5e6;
   --color-online: #34c46a;
 
+  /* [novio] brand logos of contact channels (profile contacts only; Simple Icons hex, LinkedIn brand guide) */
+  --color-brand-github: #181717;
+  --color-brand-telegram: #26a5e4;
+  --color-brand-whatsapp: #25d366;
+  --color-brand-linkedin: #0a66c2;
+
   /* affect has two reds and uses both on purpose: */
   --color-danger: #e5484d;          /* field errors: icon, edge, halo (otp-input) */
   --color-danger-line: rgba(229, 72, 77, 0.6);
@@ -96,6 +102,7 @@
   --shadow-focus-halo: 0 0 0 4px var(--focus-ring);               /* drop zone focus */
   --shadow-hover-ring: 0 0 0 3px var(--color-tray);               /* avatar button hover */
   --shadow-badge-ring: 0 0 0 2px var(--color-page);               /* count badge over an icon */
+  --shadow-selected: inset 0 0 0 1.5px var(--color-ink);           /* [novio] selected ChoiceCard (= --field-focus edge, no halo) */
   --shadow-field-open: var(--shadow-field-filled), 0 0 0 4px var(--color-tint-hover); /* select / date while its list is open */
 
   /* ── Typography ──────────────────────────────────────────────── */

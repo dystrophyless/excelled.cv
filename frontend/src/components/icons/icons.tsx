@@ -1,11 +1,12 @@
 import type { SVGProps } from "react";
 import {
-  ArrowLeft, ArrowRight, ArrowUpDown, BadgeCheck, Bell, Bookmark, Briefcase, Building2, CalendarClock, CalendarDays,
-  ChartNoAxesColumn, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleHelp, CircleX,
-  Clock, Copy, Download, Ellipsis, ExternalLink, Eye, EyeOff, FileText, FolderGit2, Globe, GraduationCap, Handshake,
-  History, House, Inbox, Info, Languages, LayoutDashboard, Link, Lock, LogOut, Mail, MapPin, Megaphone, Menu,
-  MessageSquare, Pencil, Phone, Plus, Puzzle, RotateCcw, Search, Send, Settings, SlidersHorizontal, Sparkles,
-  SquareKanban, Target, Trash2, TriangleAlert, Upload, UserRound, Users, Wallet, X, type LucideIcon,
+  ArrowLeft, ArrowRight, ArrowUpDown, BadgeCheck, Banknote, Bell, Bookmark, Briefcase, Building2, CalendarClock,
+  CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleHelp,
+  CircleX, Clapperboard, Clock, CodeXml, Copy, Download, Ellipsis, ExternalLink, Eye, EyeOff, Factory, FileText,
+  FolderGit2, Globe, GraduationCap, Handshake, History, House, Inbox, Info, Landmark, Languages, LayoutDashboard, Link,
+  Lock, LogOut, Mail, MapPin, Megaphone, Menu, MessageSquare, Pencil, Phone, Plus, Presentation, Puzzle, RotateCcw,
+  School, Search, Send, Settings, Shapes, ShoppingBag, SlidersHorizontal, Sparkles, SquareKanban, Stethoscope, Target,
+  Trash2, TriangleAlert, Upload, UserRound, Users, Wallet, X, type LucideIcon,
 } from "lucide-react";
 
 /*
@@ -90,9 +91,39 @@ export const ICONS = {
   email: Mail,
   phone: Phone,
   link: Link,
+  website: Globe,              // a personal site; brand channels (GitHub, Telegram…) use <BrandIcon> (brand-icons.tsx)
+  // ── Company industries (catalog values → INDUSTRY_ICONS below) ──
+  industryIt: CodeXml,
+  industryFinance: Banknote,
+  industryEducation: School,        // the sector; a student's own education stays `education`
+  industryHealthcare: Stethoscope,
+  industryRetail: ShoppingBag,
+  industryManufacturing: Factory,
+  industryMedia: Clapperboard,      // not Megaphone — that is `postVacancy`
+  industryGovernment: Landmark,
+  industryConsulting: Presentation,
+  industryOther: Shapes,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
+
+/** Icon for a company industry (catalog value from GET /api/catalog). Unknown values fall back to `industryOther`. */
+export const INDUSTRY_ICONS: Record<string, IconName> = {
+  it: "industryIt",
+  finance: "industryFinance",
+  education: "industryEducation",
+  healthcare: "industryHealthcare",
+  retail: "industryRetail",
+  manufacturing: "industryManufacturing",
+  media: "industryMedia",
+  government: "industryGovernment",
+  consulting: "industryConsulting",
+  other: "industryOther",
+};
+
+export function industryIcon(value: string): IconName {
+  return INDUSTRY_ICONS[value] ?? "industryOther";
+}
 
 const STROKE_BY_SIZE: Record<number, number> = { 12: 2.5, 13: 2.4, 14: 2.25, 16: 2, 18: 1.75, 20: 1.5, 24: 1.3 };
 

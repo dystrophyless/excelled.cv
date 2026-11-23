@@ -55,7 +55,8 @@ No app header. Column 400. Verify = `OtpInput` (6 digits, separator after 3, res
 States: `default` `empty` `saving`
 Minimal bar (logo · "Skip for now") → `Stepper` → question as h2 + one-line why → one `Tray` with the step's fields
 (tray footer = progress hint) → footer row: ghost "Back" (left) · primary "Continue →" (right). Width `form`.
-One topic per step, ≤ 5 steps; later steps skippable.
+One topic per step, ≤ 5 steps; later steps skippable. Questions with ready-made answers use `ChoiceCardGroup` in the
+step's tray (patterns.md §16); typed answers use the normal fields.
 
 ### Dashboard — `/styleguide/templates/dashboard`
 States: `default` `loading` `empty` `error` — per block (see patterns.md § Loading)
