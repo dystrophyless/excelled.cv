@@ -3,7 +3,7 @@ from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, Field, StringConstraints
 
-from src.catalog.enums import City, VacancyField, VacancyType, WorkFormat
+from src.catalog.enums import ACCEPTED_FIELDS, City, VacancyField, VacancyType, WorkFormat
 from src.vacancies.models import ClosedBy, VacancyStatus
 
 # The database hands timestamps back in the connection's zone; the API always speaks UTC.
@@ -11,12 +11,22 @@ UtcDatetime = Annotated[datetime, AfterValidator(lambda moment: moment.astimezon
 SkillName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]
 
 
+def _accepted_field(value: VacancyField | None) -> VacancyField | None:
+    """`data` was split in 003 (data_analytics / data_science / data_engineering) and is no longer accepted."""
+    if value is not None and value not in ACCEPTED_FIELDS:
+        raise ValueError("This field of work is no longer offered; pick one of the current fields.")
+    return value
+
+
+AcceptedField = Annotated[VacancyField | None, AfterValidator(_accepted_field)]
+
+
 class VacancyInput(BaseModel):
     """Create / edit body. Everything but the title is optional so a draft can be saved at any point (research R7)."""
 
     title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=120)]
     type: VacancyType | None = None
-    field: VacancyField | None = None
+    field: AcceptedField = None
     city: City | None = None
     format: WorkFormat | None = None
     description: str | None = Field(default=None, max_length=5000)

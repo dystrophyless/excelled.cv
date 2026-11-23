@@ -38,6 +38,7 @@ from src.auth.utils import (
     verify_password_dummy,
 )
 from src.database import get_session
+from src.profiles.repository import has_profile
 from src.users.models import User
 from src.users.repository import (
     add_user,
@@ -50,8 +51,15 @@ router = APIRouter()
 DbSession = Annotated[AsyncSession, Depends(get_session)]
 
 
-def account_response(user: User) -> AccountResponse:
-    return AccountResponse(account=AccountOut(id=user.id, email=user.email, role=user.role))
+async def account_response(db: AsyncSession, user: User) -> AccountResponse:
+    return AccountResponse(
+        account=AccountOut(
+            id=user.id,
+            email=user.email,
+            role=user.role,
+            has_profile=await has_profile(db, user),
+        )
+    )
 
 
 def resend_too_soon(retry_after: int):
@@ -244,7 +252,7 @@ async def verify_email(
         )
 
     sessions.set_cookie(response, raw)
-    return account_response(user)
+    return await account_response(db, user)
 
 
 # ---- sign-in and sign-out --------------------------------------------------------------------
@@ -298,7 +306,7 @@ async def sign_in(
     await db.commit()
 
     sessions.set_cookie(response, raw)
-    return account_response(user)
+    return await account_response(db, user)
 
 
 @router.post("/sign-out", status_code=status.HTTP_204_NO_CONTENT)
@@ -321,8 +329,8 @@ async def sign_out(
 
 
 @router.get("/me", response_model=AccountResponse)
-async def me(account: Annotated[CurrentAccount, Depends(current_account)]):
-    return account_response(account.user)
+async def me(account: Annotated[CurrentAccount, Depends(current_account)], db: DbSession):
+    return await account_response(db, account.user)
 
 
 # ---- password reset --------------------------------------------------------------------------
@@ -481,4 +489,4 @@ async def password_reset_confirm(
     await db.commit()
 
     sessions.set_cookie(response, raw)
-    return account_response(user)
+    return await account_response(db, user)
