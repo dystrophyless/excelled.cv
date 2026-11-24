@@ -77,3 +77,8 @@ Most visible first. None is a defect.
 3. N3: prevent the browser from opening a file dropped outside the zone.
 4. N6: document `FactList` `trailing` in `design-system/components.md`.
 5. N4: remove the dead `.swapArrow` and `splitFileName`.
+
+## Follow-up
+
+All five listed fixes were applied after this report. The close button uses a separate `busy` prop instead of
+`dismissible`, which only governs the backdrop. Every browser suite, including company-vacancies, was then run to the end.
