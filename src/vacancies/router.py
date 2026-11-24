@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import CurrentAccount, require_role
 from src.auth.exceptions import api_error
+from src.catalog.enums import Currency
 from src.database import get_session
 from src.profiles.repository import has_profile
 from src.vacancies import repository, rules
@@ -120,6 +121,14 @@ def require_future_deadline(apply_by, now: datetime) -> None:
         )
 
 
+def salary_values(data: VacancyInput) -> dict:
+    """No amounts means the currency goes back to the default as well (research R12)."""
+    salary = data.salary
+    if salary is None or (salary.min is None and salary.max is None):
+        return {"salary_min": None, "salary_max": None, "salary_currency": Currency.KZT}
+    return {"salary_min": salary.min, "salary_max": salary.max, "salary_currency": salary.currency}
+
+
 def content_values(data: VacancyInput) -> dict:
     """The columns an input controls (skills are stored separately)."""
     return {
@@ -130,7 +139,7 @@ def content_values(data: VacancyInput) -> dict:
         "format": data.format,
         "description": data.description,
         "duration": data.duration,
-        "salary": data.salary,
+        **salary_values(data),
         "apply_by": data.apply_by,
         "closes_at": closes_at_for(data.apply_by) if data.apply_by else None,
     }

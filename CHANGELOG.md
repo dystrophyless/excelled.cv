@@ -23,17 +23,22 @@ Filter Opportunities, and the research type of US-08).
   sort and page are kept in the address, and Back returns to the same list.
 - Skill requirements show "x of y" only when at least one skill matches, never a bare count.
 - Match, Apply and Save exist only in the design prototype; they arrive with later features.
+- Salary as monthly amounts "from" and "to" (whole numbers 1 to 999 999 999) with a currency (KZT by default, also USD,
+  EUR, RUB); `GET /api/catalog` lists `currencies` with their symbols.
 - Contract: `specs/004-student-opportunities/contracts/opportunities-api.md`.
-- 63 API tests and about 130 browser tests for the feature.
+- 63 API tests and about 130 browser tests for the feature, plus 69 API tests for the salary change.
 
 ### Changed
 - The student menu has a single item, Opportunities. The demo pages Home, Applications and Saved redirect to it, and
   the demo notification bell is removed for students.
 - Vacancy cards show the deadline and pass router state to the details page; work formats are exposed to the kit.
 - Student browser scenarios moved from demo routes to the page templates.
+- `salary` in the vacancy API and in both student endpoints is an object `{min, max, currency}` or `null` instead of free
+  text; an amount outside the range, a non-integer or from above to is refused with 422 (from above to at `salary.max`).
 
 ### Upgrade
-- Run `uv run python -m src.scripts.create_tables` to add the Research type.
+- Run `uv run python -m src.scripts.create_tables` to add the Research type and the salary columns. Old text salaries that
+  are a plain amount become that amount in tenge; other texts stay in the old column and are printed. Safe to run again.
 
 ## [0.4.0] - 2026-11-23
 

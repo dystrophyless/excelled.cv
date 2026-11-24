@@ -120,7 +120,7 @@ Open <http://localhost:5173/sign-up>, choose a role and register. The verificati
 | `FRONTEND_ORIGIN` | origin allowed to make state-changing requests (default `http://localhost:5173`) |
 
 Upgrading from an older checkout: `uv run python -m src.scripts.create_tables` adds new tables and migrates data
-(0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"; 0.5.0: the "Research" opportunity type); it is safe to run again. Add
+(0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"; 0.5.0: the "Research" opportunity type; vacancy salaries become monthly amounts with a currency, and an old text salary that is a plain number such as "200 000 ₸" becomes that amount in tenge, other texts stay in the old column and are listed in the output); it is safe to run again. Add
 `--reset-auth` only if the auth tables changed and you can lose development accounts.
 
 ## Tests and checks
@@ -135,7 +135,7 @@ npm run build && npm run lint && npm run lint:css
 npm run test:e2e                # Playwright + axe; builds and serves the app itself
 ```
 
-Current baseline: 320 API tests and about 580 browser tests (every flow on desktop and on a phone, including
+Current baseline: 389 API tests and about 580 browser tests (every flow on desktop and on a phone, including
 accessibility checks).
 
 ## API overview

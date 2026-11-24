@@ -22,6 +22,7 @@ from src.skills.models import Skill
 from src.vacancies import rules
 from src.vacancies.models import Vacancy, VacancySkill
 from src.vacancies.repository import escape_like, load_skills
+from src.vacancies.schemas import salary_out
 
 PAGE_SIZE = 10
 MAX_WORDS = 8
@@ -96,7 +97,7 @@ def _common(vacancy: Vacancy, skills: dict[int, tuple[list[str], list[str]]]) ->
         "city": vacancy.city,
         "format": vacancy.format,
         "duration": vacancy.duration,
-        "salary": vacancy.salary,
+        "salary": salary_out(vacancy.salary_min, vacancy.salary_max, vacancy.salary_currency),
         "apply_by": vacancy.apply_by,
         "published_at": vacancy.published_at,
         "required_skills": required,

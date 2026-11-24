@@ -3,6 +3,7 @@ from datetime import date, datetime
 
 from sqlalchemy import (
     Date,
+    CheckConstraint,
     DateTime,
     Enum,
     ForeignKey,
@@ -15,10 +16,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from src.catalog.enums import (
     City,
+    Currency,
     VacancyField,
     VacancyType,
     WorkFormat,
     city_enum,
+    currency_enum,
     vacancy_field_enum,
     vacancy_type_enum,
     work_format_enum,
@@ -50,6 +53,16 @@ closed_by_enum = Enum(ClosedBy, name="closed_by")
 skill_kind_enum = Enum(SkillKind, name="skill_kind")
 
 
+SALARY_MAX = 999_999_999
+
+# Name -> condition; `create_tables` adds the same checks to databases that were created before them.
+SALARY_CHECKS = {
+    "ck_vacancies_salary_min_range": f"salary_min IS NULL OR salary_min BETWEEN 1 AND {SALARY_MAX}",
+    "ck_vacancies_salary_max_range": f"salary_max IS NULL OR salary_max BETWEEN 1 AND {SALARY_MAX}",
+    "ck_vacancies_salary_order": "salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max",
+}
+
+
 class Vacancy(Base):
     """A job or internship posted by one employer. The status lifecycle is in data-model.md / rules.py."""
 
@@ -57,6 +70,7 @@ class Vacancy(Base):
     __table_args__ = (
         Index("ix_vacancies_employer_status", "employer_id", "status"),
         Index("ix_vacancies_status_closes_at", "status", "closes_at"),
+        *(CheckConstraint(condition, name=name) for name, condition in SALARY_CHECKS.items()),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -72,7 +86,15 @@ class Vacancy(Base):
     format: Mapped[WorkFormat | None] = mapped_column(work_format_enum, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     duration: Mapped[str | None] = mapped_column(String(60), nullable=True)
-    salary: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    # Monthly amounts (research R12); the currency stays KZT while there are no amounts.
+    salary_min: Mapped[int | None] = mapped_column(nullable=True)
+    salary_max: Mapped[int | None] = mapped_column(nullable=True)
+    salary_currency: Mapped[Currency] = mapped_column(
+        currency_enum,
+        nullable=False,
+        default=Currency.KZT,
+        server_default=Currency.KZT.value,
+    )
 
     apply_by: Mapped[date | None] = mapped_column(Date, nullable=True)
     # End of `apply_by` in Kazakhstan time (UTC+5), as UTC — the instant applications stop (research R1/R2).

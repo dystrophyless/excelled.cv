@@ -3,10 +3,12 @@ from fastapi import APIRouter
 from src.catalog.enums import (
     City,
     CompanySize,
+    Currency,
     Industry,
     LanguageLevel,
     VacancyType,
     WorkFormat,
+    currency_options,
     degree_options,
     field_options,
     options,
@@ -27,4 +29,5 @@ async def catalog():
         "company_sizes": options(CompanySize),
         "degrees": degree_options(),
         "language_levels": options(LanguageLevel),
+        "currencies": currency_options(),
     }

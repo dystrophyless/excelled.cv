@@ -6,7 +6,7 @@ from datetime import date
 from pydantic import BaseModel
 
 from src.catalog.enums import City, CompanySize, Industry, VacancyField, VacancyType, WorkFormat
-from src.vacancies.schemas import UtcDatetime
+from src.vacancies.schemas import SalaryOut, UtcDatetime
 
 
 class OpportunityKind(enum.StrEnum):
@@ -49,7 +49,7 @@ class _Opportunity(BaseModel):
     city: City
     format: WorkFormat
     duration: str | None
-    salary: str | None
+    salary: SalaryOut | None
     apply_by: date
     published_at: UtcDatetime
     required_skills: list[str]
