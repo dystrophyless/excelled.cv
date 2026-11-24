@@ -86,7 +86,7 @@ and get a section on `/styleguide`.
 
 | Component | Origin | Use |
 |---|---|---|
-| `Modal` | N | confirmations, short forms (≤ 4 fields), filters on mobile. Footer buttons on the tray. A footer button with `data-autofocus` takes the first focus (confirmations: the safe "Keep …" button) instead of the Close X |
+| `Modal` | N | confirmations, short forms (≤ 4 fields), filters on mobile. Footer buttons on the tray. A footer button with `data-autofocus` takes the first focus (confirmations: the safe "Keep …" button) instead of the Close X. `busy` (default false): a request is running, so the Close X is disabled and Esc and the backdrop do nothing (`dismissible={false}` alone only stops the backdrop) |
 | `toast()` / `Toaster` | N | short confirmation after an action; `action: { label: "Undo", onClick }` for reversible changes |
 | `Alert` | N | inline message that must stay visible (form summary error, important notice) |
 | `EmptyState` | N | empty list / first run / load error inside a card |
@@ -105,7 +105,7 @@ and get a section on `/styleguide`.
 | `VacancyCard` | a vacancy in lists (tray: identity + facts + skills; footer: match + deadline + actions). `deadline={{ label, soon }}` = the apply-by line (muted; last 7 days: ink text + warning icon, "Closes in 3 days"); without match / actions the footer reads deadline · posted ago. Types: Internship · Full-time · Part-time · Research |
 | `CandidateCard` | a candidate in pipeline columns (white card) |
 | `StatusTag`, `APPLICATION_STATUS` | the only way to show an application status |
-| `FactList` | location · format · duration · salary with icons; `layout="list"` in asides |
+| `FactList` | location · format · duration · salary with icons; `layout="list"` in asides; optional `trailing` = one extra `<li>` after the facts (the CV jump link on My profile) |
 
 ## Not built yet (build by recipe when a feature needs it)
 

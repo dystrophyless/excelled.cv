@@ -81,7 +81,12 @@
   transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
 }
 
-.close:hover {
+.close:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.close:hover:not(:disabled) {
   background: var(--color-row-hover);
   color: var(--color-ink);
 }
