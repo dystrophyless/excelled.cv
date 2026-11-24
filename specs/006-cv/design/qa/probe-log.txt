@@ -1,0 +1,127 @@
+[desktop] zone input describedby: _r_0_-message _r_0_-zonehint invalid: true
+[desktop] zone aria: - button "CV file"
+- text: Choose a file or drop it here PDF or DOCX, up to 5 MB.
+[desktop] focus after choose: Upload CV
+[desktop] after upload-failed focus on: Upload CV
+[desktop] uploading block aria-busy=true cancel disabled=true
+[desktop] uploading focus on: Upload CV
+[desktop] uploading btn aria-busy/disabled: true/false
+[desktop] after upload focus on: Your CV: Maya_Akhmetova_CV.pdf
+[desktop] toast: CV uploaded role=null
+[desktop] long cyrillic scrollWidth/innerWidth 1440,1440
+[desktop] visible name: Резюме_Ахметова_Ма…ировки.docx
+[desktop] block ariasnap:
+- region "CV":
+  - heading "CV" [level=2]
+  - 'group "Your CV: Резюме_Ахметова_Майя_Бауржановна_backend_разработчик_Satbayev_University_2026_финальная_версия_для_стажировки.docx"':
+    - text: Резюме_Ахметова_Майя_Бауржановна_backend_разработчик_Satbayev_University_2026_финальная_версия_для_стажировки.docx DOCX · 482 KB Uploaded 25 Nov 2026
+    - button "Download"
+    - button "Replace"
+    - button "Remove"
+[desktop] replace dialog initial focus: Keep current CV
+[desktop] dialog ariasnap:
+- dialog "Replace your CV?":
+  - heading "Replace your CV?" [level=2]
+  - button "Close"
+  - paragraph: The new file becomes your only CV. The current file is deleted and can't be restored.
+  - text: Current Резюме_Ахметова_Майя_Бауржановна_backend_разработчик_Satbayev_University_2026_финальная_версия_для_стажировки.docx DOCX · 482 KB · Uploaded 25 Nov 2026 New Maya_Akhmetova_curriculum_vitae_backend_developer_internship_application_final_version_2026.pdf PDF · 2 KB
+  - button "Keep current CV"
+  - button "Replace CV"
+[desktop] dialog scroll/client width 440,440
+[desktop] replace-failed alert role=alert focus on: Replace CV
+[desktop] replacing: keep disabled=true closeX disabled=false replace aria-busy=true
+[desktop] replacing focus on: Replace CV
+[desktop] after Esc while busy dialog open=true
+[desktop] after X click while busy dialog open=true
+[desktop] after backdrop click while busy dialog open=true
+[desktop] after replace focus: Your CV: Maya_Akhmetova_CV.docx
+[desktop] remove dialog initial focus: Keep CV
+[desktop] remove dialog tab order from Keep: Remove CV > 
+    NovioOpportunitiesMAAccount menuNovioOpportunitiesMy profileEdit profileMAMaya AkhmetovaComputer Science · Bachelor's, 3rd yearCV uploadedLooking forBackendInternshipAboutSay what you study, what you enjoy and what you're looking for. Two or three sentences are enough.Write about yourselfEducationSatbayev UniversityAlmatyOnly you can see your profile for nowComplete your profile0 of 6 addedCityAddAbout meAddGPAAddProjectsAddLanguagesAddContactsAddCVMaya_Akhmetova_CV.pdfMaya_Akhmetova_CV.pdfPDF · 482 KBUploaded 25 Nov 2026DownloadReplaceRemoveRemove your CV?The file is deleted from your profile and can't be restored. The rest of your profile stays as it is.Maya_Akhmetova_CV.pdfPDF · 482 KB · Uploaded 25 Nov 2026Keep CVRemove CVComing soonSkillsGet matched with vacanciesUpdated 22 Nov 2026
+
+  
+
+ > Close > Keep CV
+[desktop] focus after Esc on: Remove
+[desktop] removing keep disabled=true closeX disabled=false
+[desktop] after remove focus is zone input: file
+[desktop] load-error text: Couldn't load your CV |  | Check your connection and try again. | Try again
+[desktop] loading aria-busy=true
+[desktop] notice role=alert
+[desktop] stored group focus boxShadow: rgba(23, 23, 23, 0.22) 0px 0px 0px 4px
+[desktop] stored tab order: Download > Replace > Remove
+[desktop] button focus boxShadow: none
+[desktop] heading level of CV: H2
+[desktop] headings: My profile | Looking for | About | Education | CV
+[desktop] Enter on a Replace/Download-adjacent button -> filechooser: true active=Replace
+[desktop] zone focus ring: rgba(23, 23, 23, 0.22) 0px 0px 0px 4px
+[desktop] Enter on zone -> filechooser true
+[desktop] Space on zone -> filechooser true
+[desktop] dragging attr: true
+[desktop] drop -> chosen shown; focus on: Upload CV
+[desktop] file dropped on page body (outside the zone) drop/dragover defaultPrevented=false,false (false = browser would navigate to the file)
+[mobile] zone input describedby: _r_0_-message _r_0_-zonehint invalid: true
+[mobile] zone aria: - button "CV file"
+- text: Choose a file PDF or DOCX, up to 5 MB.
+[mobile] focus after choose: Upload CV
+[mobile] after upload-failed focus on: Upload CV
+[mobile] uploading block aria-busy=true cancel disabled=true
+[mobile] uploading focus on: Upload CV
+[mobile] uploading btn aria-busy/disabled: true/false
+[mobile] after upload focus on: Your CV: Maya_Akhmetova_CV.pdf
+[mobile] toast: CV uploaded role=null
+[mobile] long cyrillic scrollWidth/innerWidth 390,390
+[mobile] visible name: Резюме_Ахметова_Ма…ировки.docx
+[mobile] block ariasnap:
+- region "CV":
+  - heading "CV" [level=2]
+  - 'group "Your CV: Резюме_Ахметова_Майя_Бауржановна_backend_разработчик_Satbayev_University_2026_финальная_версия_для_стажировки.docx"':
+    - text: Резюме_Ахметова_Майя_Бауржановна_backend_разработчик_Satbayev_University_2026_финальная_версия_для_стажировки.docx DOCX · 482 KB Uploaded 25 Nov 2026
+    - button "Download"
+    - button "Replace"
+    - button "Remove"
+[mobile] replace dialog initial focus: Keep current CV
+[mobile] dialog ariasnap:
+- dialog "Replace your CV?":
+  - heading "Replace your CV?" [level=2]
+  - button "Close"
+  - paragraph: The new file becomes your only CV. The current file is deleted and can't be restored.
+  - text: Current Резюме_Ахметова_Майя_Бауржановна_backend_разработчик_Satbayev_University_2026_финальная_версия_для_стажировки.docx DOCX · 482 KB · Uploaded 25 Nov 2026 New Maya_Akhmetova_curriculum_vitae_backend_developer_internship_application_final_version_2026.pdf PDF · 2 KB
+  - button "Keep current CV"
+  - button "Replace CV"
+[mobile] dialog scroll/client width 356,356
+[mobile] replace-failed alert role=alert focus on: Replace CV
+[mobile] replacing: keep disabled=true closeX disabled=false replace aria-busy=true
+[mobile] replacing focus on: Replace CV
+[mobile] after Esc while busy dialog open=true
+[mobile] after X click while busy dialog open=true
+[mobile] after backdrop click while busy dialog open=true
+[mobile] after replace focus: Your CV: Maya_Akhmetova_CV.docx
+[mobile] remove dialog initial focus: Keep CV
+[mobile] remove dialog tab order from Keep: Remove CV > 
+    NovioOpportunitiesMAAccount menuNovioOpportunitiesMy profileEdit profileMAMaya AkhmetovaComputer Science · Bachelor's, 3rd yearCV uploadedLooking forBackendInternshipAboutSay what you study, what you enjoy and what you're looking for. Two or three sentences are enough.Write about yourselfEducationSatbayev UniversityAlmatyOnly you can see your profile for nowComplete your profile0 of 6 addedCityAddAbout meAddGPAAddProjectsAddLanguagesAddContactsAddCVMaya_Akhmetova_CV.pdfMaya_Akhmetova_CV.pdfPDF · 482 KBUploaded 25 Nov 2026DownloadReplaceRemoveRemove your CV?The file is deleted from your profile and can't be restored. The rest of your profile stays as it is.Maya_Akhmetova_CV.pdfPDF · 482 KB · Uploaded 25 Nov 2026Keep CVRemove CVComing soonSkillsGet matched with vacanciesUpdated 22 Nov 2026
+
+  
+
+ > Close > Keep CV
+[mobile] focus after Esc on: Remove
+[mobile] removing keep disabled=true closeX disabled=false
+[mobile] after remove focus is zone input: file
+[mobile] load-error text: Couldn't load your CV |  | Check your connection and try again. | Try again
+[mobile] loading aria-busy=true
+[mobile] notice role=alert
+[mobile] stored group focus boxShadow: rgba(23, 23, 23, 0.22) 0px 0px 0px 4px
+[mobile] stored tab order: Download > Replace > Remove
+[mobile] button focus boxShadow: none
+[mobile] heading level of CV: H2
+[mobile] headings: My profile | Looking for | About | Education | CV
+[mobile] Enter on a Replace/Download-adjacent button -> filechooser: true active=Replace
+[mobile] zone focus ring: rgba(23, 23, 23, 0.22) 0px 0px 0px 4px
+[mobile] Enter on zone -> filechooser true
+[mobile] Space on zone -> filechooser true
+[mobile] dragging attr: true
+[mobile] drop -> chosen shown; focus on: Upload CV
+[mobile] file dropped on page body (outside the zone) drop/dragover defaultPrevented=false,false (false = browser would navigate to the file)
+[mobile] jump: focus is block=cv-block scrollY=677
+[mobile] jump link tap target h=20 w=67.015625
+[mobile] block focus ring: none
