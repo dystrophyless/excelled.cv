@@ -84,7 +84,7 @@ after them. Every story with UI gets an e2e block (Playwright + axe, API mocked)
 
 - [X] T025 [US5] Write failing tests (`tests/vacancies/test_salary.py`, update existing salary assertions): the contract's salary rules on create, edit, draft, publish and in both student endpoints; currencies in the catalog; upgrade of text salaries (convertible, not convertible, twice, after the employer cleared it)
 - [X] T026 [US5] Implement research R12 in `src/catalog/`, `src/vacancies/`, `src/opportunities/`, `src/scripts/create_tables.py`; `README.md` "Upgrading", `CHANGELOG.md`
-- [ ] T027 [US5] Design round 3 (ui-designer): salary from / to / currency in the 002 wizard and edit form, salary display; owner approval
+- [X] T027 [US5] Design round 3 (ui-designer): salary from / to / currency in the 002 wizard and edit form, salary display; owner approval
 - [ ] T028 [US5] (ui-builder) Wire the approved salary field and display in `frontend/src/features/company-vacancies/` and `frontend/src/features/opportunities/`, `features/*/api.ts` mapping, 422 errors at the field
 - [ ] T029 [US5] (ui-builder) e2e: US5 scenarios 1–4 (wizard, edit, list, page, student card and details), paste, currency kept, axe, 390 px; update mocks
 - [ ] T030 Run all checks again

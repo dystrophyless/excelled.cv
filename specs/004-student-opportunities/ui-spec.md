@@ -11,6 +11,7 @@
 | S1 | Browse (`list`) | `/app/opportunities` | Student / `StudentLayout` | Browse | `/styleguide/templates/browse` | US1, US3 |
 | S2 | Detail (`details`) | `/app/opportunities/:id` | Student / `StudentLayout` | Detail | `/styleguide/templates/detail` | US2 |
 | S3 | Research type in existing views | 002 wizard, edit, list, page · 003 onboarding, profile edit, profile | Employer / Student | unchanged | — | US4 |
+| S4 | Salary: from – to and currency | 002 wizard Details step and edit form; shown on the employer page, wizard preview, student card and details | Employer / Student | Wizard step and Form (unchanged) + display | — | US5 |
 
 Shell (all student pages): nav = **Opportunities** only, rendered as a plain label in ink colour with `aria-current` (one section needs no gray track: a lone
 white thumb reads as a button); no demo notification bell; the logo links to `/app/opportunities`; no menu button on mobile.
@@ -132,11 +133,57 @@ button and no placeholder. Copy link copies the page address and shows the toast
 Prototype mocks: catalogs gained `research`; 002 has an open Research vacancy (v8); the 003 student looks for
 internship, part-time or research.
 
+### S4 — Salary (from – to, currency, readable numbers)
+
+**Goal**: an employer enters a monthly salary as readable amounts with a currency; everyone sees it grouped, with the currency.
+
+**Field** (`SalaryField`, in the wizard "Details" step and the edit form "Details", under Duration):
+```
+Salary (optional)
+[ From  1 000 000 ] [ To  1 500 000 ] [ ₸ KZT ▾ ]   <- wide (group 452px+); From | To then currency from 352px; all stacked below
+Per month. Fill one or both amounts           <- hint; replaced by the error
+```
+Digits group while typing ("1000000" becomes "1 000 000"); the caret stays after the same digit when typing, deleting in the
+middle (Backspace / Delete over a space removes the neighbouring digit) and pasting "1,000,000 ₸" (non-digits dropped,
+leading zeros dropped). Numeric keyboard on mobile (`inputMode="numeric"`), no number spinners. "From" and "To" stay visible inside each amount as a muted prefix (the input keeps its accessible name); the text inset is 12px like the neighbouring fields. Currency: custom select
+showing "₸ KZT"; list rows "₸ KZT · Tenge", "$ USD · US dollar", "€ EUR · Euro", "₽ RUB · Russian ruble"; default ₸ KZT,
+kept when editing. Either amount may be empty; both empty = no salary (a currency alone is not a salary). Always "/ month":
+no period choice. 999 999 999 shows whole at 1440, 390 and 360 px.
+
+**Display** (one formatter, `formatSalary()`): `200 000 – 300 000 ₸ / month` · `From 200 000 ₸ / month` ·
+`Up to 300 000 ₸ / month` · equal amounts `150 000 ₸ / month` · `$1 500 – 2 200 / month` · `From €600 / month` ·
+`70 000 – 90 000 ₽ / month` · `1 000 000 – 999 999 999 ₸ / month`. Non-breaking spaces between thousands and before the
+symbol; only the spaces around the en dash may wrap. Shown on: student card (facts), student details (aside facts), employer
+vacancy page (aside facts), wizard preview. The employer list shows no salary today and still does not. GPA, counts and
+applicant numbers are small and unaffected.
+
+**Copy**:
+| Element | Text |
+|---|---|
+| Group label | "Salary (optional)" |
+| Amount prefixes / accessible names | "From", "To" |
+| Currency control name | "Currency" |
+| Hint | "Per month. Fill one or both amounts" |
+| Amount error | "Enter a whole amount from 1 to 999 999 999" |
+| Range error | "“From” can’t be more than “To”" |
+
+**States** (prototype `?state=`): wizard `details` (empty), `details-filled` (1 000 000 – 1 500 000 ₸), `salary-range-error`,
+`salary-amount-error` (10 digits, USD), `preview`; edit `default` (200 000 – 300 000 ₸), `salary-error`; employer page
+(`vacancy?id=v1` range, `v6` up to, `v2` equal); student list and details `long-numbers` (1 000 000 – 999 999 999 ₸); details
+`?id=o23` USD, `o7` From €600, `o13` RUB, `o8` From, `o10` Up to. Continue, Publish and Save are refused while the message
+shows; what was typed is kept; the offending amounts have the error edge.
+
+**Responsive** (container queries on the field): 452px+ one row; 352px+ From | To with the currency on the next line (edit form on desktop, 390 px wide tray at 640+); below that From, To and the currency each on their own line (390 and 360 mobile). No horizontal scroll. The long range stays on one line on the card at 390.
+
+**Test hooks**: `getByRole("group", {name: "Salary"})`, `getByRole("textbox", {name: "From" | "To"})`,
+`getByRole("combobox", {name: "Currency"})`, `data-testid="vacancy-salary"`.
+
 ## 3. Components
 
 - Existing: `Toolbar`, `SearchField`, `SegmentedControl`, `SelectField`, `FilterMenu`, `Modal`, `Pagination`, `VacancyCard`,
   `SkillBreakdown`, `FactList`, `Tray`, `Card`, `Section`, `EmptyState`, `Skeleton`, `Chip`, `BackLink`, `ExternalLink`.
-- **Kit changes (no new components)**: `VacancyCard` gains `deadline` and type "Research"; `SkillBreakdown` works without
+- **New component**: `SalaryField` (`components/ui/salary-field`), composed from the field recipe and `SelectField`; section "Salary field" in `/styleguide`; documented in `components.md`. Pure helpers in `lib/money.ts`; the Money row of `content.md` is updated.
+- **Kit changes**: `VacancyCard` gains `deadline` and type "Research"; `SkillBreakdown` works without
   `have`; `vacancyTypeTone()`; `AppShell` renders a single nav item as a label; `StudentLayout` nav and no bell.
   Documented in `design-system/components.md` and `ia.md`.
 
@@ -152,6 +199,8 @@ type OpportunitiesListViewProps = {
   match?: { have: string[]; scores: Record<string, number> };   // later feature, prototype only
   save?: { saved: ReadonlySet<string>; onToggle(item): void };  // later feature, prototype only
 };
+// salary is an object everywhere, never a string: { min: number | null, max: number | null, currency } | null.
+// The vacancy form value is SalaryDraft { min: string, max: string, currency: string } (digits only); catalog.currencies = [{ value, label, symbol }].
 type OpportunityDetailsViewProps = {
   state: "ready" | "loading" | "unavailable" | "error";
   opportunity?: OpportunityDetail; catalog: OpportunityCatalog; today: string; backTo: string;
@@ -173,8 +222,10 @@ Types, `parseQuery` / `toSearchParams` (address ⇄ query, unknown values droppe
 |---|---|---|---|
 | 1 | 2026-11-24 | — (first review) | — |
 | 2 | 2026-11-24 | «Поправь, дизайн утверждаю только вот убрать как будто надо количество скиллов когда нет матчей (допустим оппортюнити требует 4 скилла, а у пользователя нет ни одного из них, тогда показывает просто количество скиллов - 4).» Also accepted: none-yet shows only header + message without unverified claims; unavailable loses "Other opportunities are still open"; no duplicate "Filters" heading on mobile; onboarding "Show me opportunities from every field"; the single nav item reads as active. | `SkillBreakdown`: "x of y" only when x > 0, no bare counts (shipped and zero-match). none-yet: toolbar, filters and count hidden; copy "Active internships, vacancies and research projects will appear here." Unavailable copy shortened. Mobile sheet: menu header = "None selected" / "n selected" (via the port's existing `title` prop, port untouched), footer "Clear all" removed (the menu has its own). Onboarding and profile-edit copy "opportunities". Single nav label: ink colour, `aria-current`. |
+| 3 | 2026-11-24 | «отображение крупных чисел сделай нормальным, сейчас например 1000000 слипнутый и не понятно что это - миллион, десять миллионов или вообще сто тысяч. Так-же добавь выбор валюты (по дефолту тенге) и показывай её.» Owner chose: two amounts from / to (either may be empty) + currency ₸ KZT (default), USD, EUR, RUB; always "/ month"; no period choice. | New S4: `SalaryField` in the vacancy wizard and edit form; one formatter for card, details, employer page and preview; `salary` is an object in models and mocks; currencies in the catalog type; prototype states and a styleguide section. Status back to In review. |
+| 4 | 2026-11-24 | Owner approved round 3 («да») with three fixes: keep From / To visible inside the amount fields; text inset equal to neighbouring fields; on narrow screens the currency on its own line so 9-digit amounts show whole at 390 px (check 360). | Muted "From" / "To" prefix inside the inputs; inset 12px; container-query layout (one row / From | To + currency / stacked); the currency select shows "₸ KZT". Caret, grouping and paste unchanged. |
 
 ## 7. Approval
 
-- Approved by the product owner on: 2026-11-24 (round 2, with the fixes in the revision log)
+- Approved by the product owner on 2026-11-24 (rounds 1–2, round 3 S4 Salary with the fixes of round 4).
 - Approved screenshots: `design/screens/` (list-*, details-*, research-*; desktop and mobile)
