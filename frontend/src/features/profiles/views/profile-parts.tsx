@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { Stack } from "@/components/layout";
 import { BrandIcon, Icon, type IconName } from "@/components/icons";
@@ -174,9 +175,9 @@ const COMING: { id: string; label: string; detail: string; icon: IconName }[] = 
 /**
  * Owner panel content: "Complete your profile · n of 6 added" + every optional item (added = muted with a check,
  * missing = "Add" → its Edit profile section) while anything is missing. A finished profile shows no completeness
- * block at all (FR-006a) — only "Coming soon".
+ * block at all (FR-006a) — only "Coming soon". With `cv` (006) the CV block sits between the two and leaves "Coming soon".
  */
-export function ProfileChecklist({ profile, editTo }: ProfileBlockProps) {
+export function ProfileChecklist({ profile, editTo, cv }: ProfileBlockProps & { cv?: ReactNode }) {
   const navigate = useNavigate();
   const items = optionalItems(profile);
   const done = items.filter((i) => i.done).length;
@@ -210,10 +211,17 @@ export function ProfileChecklist({ profile, editTo }: ProfileBlockProps) {
           <div className={styles.divider} />
         </>
       )}
+      {/* 006: the CV block takes the CV's place (below the checklist, so the checklist never jumps); without it "Coming soon: CV" stays */}
+      {cv && (
+        <>
+          {cv}
+          <div className={styles.divider} />
+        </>
+      )}
       <Stack gap={12}>
         <span className={styles.groupLabel}>Coming soon</span>
         <ul className={styles.soonList}>
-          {COMING.map((c) => (
+          {COMING.filter((c) => !(cv && c.id === "cv")).map((c) => (
             <li key={c.id} className={styles.soonRow}>
               <span className={styles.lineIcon} aria-hidden="true"><Icon name={c.icon} size={16} /></span>
               <span className={styles.entryText}>

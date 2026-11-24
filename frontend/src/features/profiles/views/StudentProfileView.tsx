@@ -5,6 +5,7 @@ import { PageBody, Section, Stack, TwoColumn } from "@/components/layout";
 import { FactList, type Fact } from "@/components/domain";
 import { Icon } from "@/components/icons";
 import { Avatar, Button, Card, Container, EmptyState, PageHeader, Skeleton, Tray } from "@/components/ui";
+import { CvBlock, CvJump, type CvBlockProps } from "@/features/cv/views/CvBlock";
 import { formatDate, optionLabel, studyHeadline, type LoadState, type ProfileCatalog, type StudentProfile } from "../model";
 import {
   AboutBlock, ContactList, EducationEntry, LanguageList, LinesSkeleton, LookingForEntry, PrivateNote, ProfileChecklist, ProjectList,
@@ -21,6 +22,8 @@ export type StudentProfileViewProps = {
   catalog: ProfileCatalog;
   routes: { edit: string };
   onRetry?: () => void;
+  /** 006: the CV block of the owner panel. Without it the panel keeps "Coming soon: CV". */
+  cv?: CvBlockProps;
 };
 
 /** The line under the name: "{Major} · {Degree}, {n} year" + the student's city. University and GPA live in Education. */
@@ -91,7 +94,7 @@ export function StudentProfileView(p: StudentProfileViewProps) {
                   header={<PrivateNote />}
                   footer={loading || !pr ? <Skeleton width={140} height={12} /> : <span>Updated {formatDate(pr.updatedAt)}</span>}
                 >
-                  {loading || !pr ? <LinesSkeleton lines={4} /> : <ProfileChecklist profile={pr} editTo={p.routes.edit} />}
+                  {loading || !pr ? <LinesSkeleton lines={4} /> : <ProfileChecklist profile={pr} editTo={p.routes.edit} cv={p.cv && <CvBlock {...p.cv} />} />}
                 </Tray>
               }
               main={
@@ -135,7 +138,10 @@ export function StudentProfileView(p: StudentProfileViewProps) {
                         <Avatar name={pr.fullName} size="lg" />
                         <span className={styles.identityText}>
                           <span className={styles.identityName}>{pr.fullName}</span>
-                          <FactList facts={identityFacts(pr, p.catalog)} />
+                          <FactList
+                            facts={identityFacts(pr, p.catalog)}
+                            trailing={p.cv && <CvJump state={p.cv.state} hasCv={Boolean(p.cv.cv)} />}
+                          />
                         </span>
                       </div>
                       {profileSections(pr, p.catalog, p.routes.edit).map((block, i) => (
