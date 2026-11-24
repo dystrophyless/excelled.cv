@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-25
 
-**Status**: Draft
+**Status**: Approved
 
 **Input**: User description: "006 CV: upload, replace and remove the student's CV (US-14, US-15, US-16)."
 
