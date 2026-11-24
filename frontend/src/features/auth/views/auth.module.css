@@ -63,3 +63,30 @@
   line-height: var(--leading-sm);
   color: var(--color-muted);
 }
+
+/* 005: the chosen role on the account details step */
+.roleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-12);
+  border-radius: var(--radius-control);
+  background: var(--color-fill);
+}
+
+.roleText {
+  display: grid;
+  min-width: 0;
+}
+
+.roleLabel {
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  color: var(--color-muted);
+}
+
+.roleName {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
