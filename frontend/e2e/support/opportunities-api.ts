@@ -1,4 +1,5 @@
 import type { Page, Route } from "@playwright/test";
+import type { ApiSalary } from "./vacancies-api";
 import { signedInAs } from "./auth-api";
 import { mockStudentProfile } from "./profiles-api";
 import { mockCatalog } from "./vacancies-api";
@@ -10,7 +11,7 @@ import { mockCatalog } from "./vacancies-api";
  */
 
 export type ApiOpportunity = {
-  id: number; title: string; type: string; field: string; city: string; format: string; duration: string | null; salary: string | null;
+  id: number; title: string; type: string; field: string; city: string; format: string; duration: string | null; salary: ApiSalary | null;
   apply_by: string; published_at: string; required_skills: string[]; nice_skills: string[]; company: { name: string };
 };
 export type ApiCompanyDetail = { name: string; industry: string | null; size: string | null; city: string | null; website: string | null; description: string | null };
@@ -23,7 +24,7 @@ const err = (route: Route, status: number, code: string) => json(route, status, 
 /** A far-future deadline keeps "Apply by …" (not "Closes in …") stable; the clock is not mocked. */
 export const opportunityFixture = (overrides: Partial<ApiOpportunity> = {}): ApiOpportunity => ({
   id: 1, title: "Backend Intern (Python)", type: "internship", field: "backend", city: "almaty", format: "hybrid",
-  duration: "3 months", salary: "200 000 ₸ / month", apply_by: "2099-12-15", published_at: "2026-11-20T08:00:00Z",
+  duration: "3 months", salary: { min: 200000, max: 300000, currency: "KZT" }, apply_by: "2099-12-15", published_at: "2026-11-20T08:00:00Z",
   required_skills: ["Python", "SQL", "Git"], nice_skills: ["Docker"], company: { name: "Kaspi.kz" },
   ...overrides,
 });

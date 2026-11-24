@@ -343,7 +343,7 @@ test.describe("US2 details (S2)", () => {
     expect((await skills.textContent())!).not.toMatch(/\d/);
     await expect(panel).toContainText("Almaty · Hybrid");
     await expect(panel).toContainText("3 months");
-    await expect(panel).toContainText("200 000 ₸ / month");
+    await expect(panel).toContainText("200 000 – 300 000 ₸ / month");
     await expect(page.getByTestId("opportunity-deadline")).toHaveText("Apply by 15 Dec 2099");
 
     const company = page.getByTestId("company-card");
@@ -1052,5 +1052,68 @@ test.describe("US4 research type (S3)", () => {
     await mockStudentProfile.ok(page, studentProfileFixture({ position_types: ["research"] }));
     await page.goto("/app/profile");
     await expect(page.getByTestId("profile-looking-for")).toContainText("Research");
+  });
+});
+
+/* ── 004 US5 · salary on the student's card and page ─────────────────────── */
+
+test.describe("004 US5 salary (student)", () => {
+  type Money = { min: number | null; max: number | null; currency: string } | null;
+  const SHOWN: [string, Money, string | null][] = [
+    ["range", { min: 200000, max: 300000, currency: "KZT" }, "200 000 – 300 000 ₸ / month"],
+    ["from only", { min: 200000, max: null, currency: "KZT" }, "From 200 000 ₸ / month"],
+    ["up to only", { min: null, max: 300000, currency: "KZT" }, "Up to 300 000 ₸ / month"],
+    ["equal amounts", { min: 250000, max: 250000, currency: "KZT" }, "250 000 ₸ / month"],
+    ["dollars", { min: 2000, max: 3000, currency: "USD" }, "$2 000 – 3 000 / month"],
+    ["euro from", { min: 1500, max: null, currency: "EUR" }, "From €1 500 / month"],
+    ["rubles", { min: 100000, max: 150000, currency: "RUB" }, "100 000 – 150 000 ₽ / month"],
+    ["none", null, null],
+  ];
+
+  for (const [name, salary, text] of SHOWN) {
+    test(`QA 2 / 3: card and page show ${name}${text ? `: ${text}` : " (no salary row)"}`, async ({ page }) => {
+      await mockOpportunities.serve(page, [opportunityFixture({ id: 7, salary })]);
+      await mockOpportunity.ok(page, detailFixture({ id: 7, salary }));
+      await page.goto(LIST);
+      const card = cards(page).first();
+      await expect(card).toBeVisible();
+      await page.goto(`${LIST}/7`);
+      const panel = page.getByTestId("decision-panel");
+      await expect(panel).toContainText("Almaty · Hybrid");
+      if (text) {
+        await expect(panel).toContainText(text);
+        await page.goBack();
+        await expect(cards(page).first()).toContainText(text);
+      } else {
+        await expect(panel).not.toContainText("/ month");
+        await page.goBack();
+        await expect(cards(page).first()).not.toContainText("/ month");
+      }
+    });
+  }
+
+  test("the salary uses non-breaking spaces on the card and on the page", async ({ page }) => {
+    await mockOpportunities.serve(page, [opportunityFixture({ id: 7 })]);
+    await mockOpportunity.ok(page, detailFixture({ id: 7 }));
+    await page.goto(LIST);
+    const expected = "200 000 – 300 000 ₸ / month";
+    expect(await cards(page).first().getByText(/200.000 – 300.000/).textContent()).toBe(expected);
+    await page.goto(`${LIST}/7`);
+    expect(await page.getByTestId("decision-panel").getByText(/200.000 – 300.000/).textContent()).toBe(expected);
+  });
+
+  test("390 px: 999 999 999 fits on the card and on the page without sideways scroll, axe passes", async ({ page }) => {
+    await page.setViewportSize(PHONE);
+    const salary = { min: 1000000, max: 999999999, currency: "KZT" };
+    await mockOpportunities.serve(page, [opportunityFixture({ id: 7, salary })]);
+    await mockOpportunity.ok(page, detailFixture({ id: 7, salary }));
+    await page.goto(LIST);
+    await expect(cards(page).first()).toContainText("1 000 000 – 999 999 999 ₸ / month");
+    await expectNoHorizontalScroll(page);
+    await expectNoA11yViolations(page);
+    await page.goto(`${LIST}/7`);
+    await expect(page.getByTestId("decision-panel")).toContainText("1 000 000 – 999 999 999 ₸ / month");
+    await expectNoHorizontalScroll(page);
+    await expectNoA11yViolations(page);
   });
 });

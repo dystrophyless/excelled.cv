@@ -3,6 +3,7 @@ import { expectNoA11yViolations } from "./support/a11y";
 import { signedInAs } from "./support/auth-api";
 import { mockOpportunities } from "./support/opportunities-api";
 import {
+  CATALOG,
   mockCatalog,
   mockCompanyProfile,
   mockSkills,
@@ -63,7 +64,8 @@ async function fillBasics(page: Page) {
 async function fillDetails(page: Page) {
   await page.getByLabel("Description").fill("Join the Payments team and ship real features.");
   await page.getByLabel("Duration").fill("3 months");
-  await page.getByLabel("Salary").fill("200 000 ₸ / month");
+  await page.getByRole("textbox", { name: "From" }).fill("200000");
+  await page.getByRole("textbox", { name: "To" }).fill("300000");
   await page.getByRole("button", { name: /Apply by/ }).click();
   const calendar = page.getByRole("dialog", { name: "Choose a date" });
   await calendar.getByRole("button", { name: "Next month" }).click();
@@ -119,7 +121,7 @@ test.describe("US1 - employer posts a vacancy (S2 wizard)", () => {
       format: "hybrid",
       description: "Join the Payments team and ship real features.",
       duration: "3 months",
-      salary: "200 000 ₸ / month",
+      salary: { min: 200000, max: 300000, currency: "KZT" },
       required_skills: ["Python", "SQL"],
       nice_skills: ["Docker"],
       publish: true,
@@ -1438,4 +1440,390 @@ test("390 px: five skill chips pass axe (remove buttons are at least 24 px)", as
   }
   await expectNoA11yViolations(page);
   await expectNoHorizontalScroll(page, 390);
+});
+
+/* ── 004 US5 - salary: grouped amounts and a currency (FR-020..022) ───────── */
+
+const NBSP = "\u00a0";
+const from = (page: Page) => page.getByRole("textbox", { name: "From" });
+const to = (page: Page) => page.getByRole("textbox", { name: "To" });
+const currency = (page: Page) => page.getByRole("combobox", { name: /Currency/ });
+const salaryGroup = (page: Page) => page.getByTestId("vacancy-salary");
+const nb = (text: string) => text.replaceAll(" ", NBSP);
+const RANGE_MESSAGE = "“From” can’t be more than “To”";
+const AMOUNT_MESSAGE = "Enter a whole amount from 1 to 999 999 999";
+
+type Money = { min: number | null; max: number | null; currency: string } | null;
+const open17WithSalary = (salary: Money) => vacancyFixture({ id: 17, title: "Backend Intern (Python)", status: "open", version: 3, salary });
+const draftWith = (salary: Money) =>
+  vacancyFixture({ id: 17, status: "draft", version: 2, published_at: null, apply_by: "2099-11-30", closes_at: null, salary });
+
+/** The wizard on its Details step (title only: the earlier steps accept it). */
+async function toDetails(page: Page) {
+  await page.goto(WIZARD);
+  await page.getByLabel("Title").fill("Backend Intern (Python)");
+  await cont(page).click();
+  await cont(page).click();
+  await expect(page.getByTestId("wizard-step-details")).toBeVisible();
+}
+
+test.describe("004 US5 salary (wizard and employer pages)", () => {
+  test("QA 1: typing 1000000 shows '1 000 000' with non-breaking spaces and the currency is ₸", async ({ page }) => {
+    await toDetails(page);
+    await from(page).fill("1000000");
+    await expect(from(page)).toHaveValue(nb("1 000 000"));
+    // the separator really is U+00A0, so a number never wraps in the middle
+    expect(await from(page).inputValue()).toBe(`1${NBSP}000${NBSP}000`);
+    await expect(currency(page)).toContainText("₸");
+    await expect(currency(page)).toContainText("KZT");
+    await expectNoA11yViolations(page);
+  });
+
+  test("QA 1: the currency list comes from the catalog and offers all four", async ({ page }) => {
+    await toDetails(page);
+    await currency(page).click();
+    await expect(page.getByRole("option")).toHaveCount(4);
+    for (const code of ["KZT", "USD", "EUR", "RUB"]) await expect(page.getByRole("option", { name: new RegExp(code) })).toBeVisible();
+  });
+
+  test("an older API without currencies in the catalog still offers the default four", async ({ page }) => {
+    const { currencies: _currencies, ...older } = CATALOG;
+    await page.route("**/api/catalog", (r) => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(older) }));
+    await toDetails(page);
+    await currency(page).click();
+    await expect(page.getByRole("option")).toHaveCount(4);
+  });
+
+  test("QA 2: the preview shows a range, one amount, equal amounts, and nothing for no salary", async ({ page }) => {
+    await toDetails(page);
+    const preview = page.getByTestId("vacancy-preview");
+    const goPreview = async () => {
+      await cont(page).click();
+      await expect(preview).toBeVisible();
+    };
+    const back = async () => {
+      await page.getByRole("button", { name: "Back", exact: true }).click();
+      await expect(page.getByTestId("wizard-step-details")).toBeVisible();
+    };
+    await from(page).fill("200000");
+    await to(page).fill("300000");
+    await goPreview();
+    await expect(preview).toContainText("200 000 – 300 000 ₸ / month");
+    await back();
+    await to(page).fill("");
+    await goPreview();
+    await expect(preview).toContainText("From 200 000 ₸ / month");
+    await back();
+    await from(page).fill("");
+    await to(page).fill("300000");
+    await goPreview();
+    await expect(preview).toContainText("Up to 300 000 ₸ / month");
+    await back();
+    await from(page).fill("300000");
+    await goPreview();
+    await expect(preview).toContainText("300 000 ₸ / month");
+    await expect(preview).not.toContainText("–");
+    await expect(preview).not.toContainText("From 300");
+    await back();
+    await from(page).fill("");
+    await to(page).fill("");
+    await goPreview();
+    await expect(preview).not.toContainText("/ month");
+  });
+
+  test("QA 3: another currency is sent, shown in the preview and kept", async ({ page }) => {
+    const sink: Sink = [];
+    await mockVacancyCreate.ok(page, sink);
+    await toDetails(page);
+    await from(page).fill("2000");
+    await to(page).fill("3000");
+    await currency(page).click();
+    await page.getByRole("option", { name: /USD/ }).click();
+    await page.getByLabel("Description").fill("Join the Payments team.");
+    await cont(page).click();
+    await expect(page.getByTestId("vacancy-preview")).toContainText("$2 000 – 3 000 / month");
+    await page.getByRole("button", { name: "Publish vacancy" }).click();
+    await expect(page).toHaveURL(/\/company\/vacancies$/);
+    expect(sink[0]).toMatchObject({ salary: { min: 2000, max: 3000, currency: "USD" } });
+  });
+
+  test("clearing both amounts sends no salary (a currency alone is not a salary)", async ({ page }) => {
+    const sink: Sink = [];
+    await mockVacancyCreate.ok(page, sink);
+    await toDetails(page);
+    await currency(page).click();
+    await page.getByRole("option", { name: /EUR/ }).click();
+    await page.getByRole("button", { name: "Save and exit" }).click();
+    await expect(page).toHaveURL(/\/company\/vacancies$/);
+    expect(sink[0]).toMatchObject({ salary: null, publish: false });
+  });
+
+  const SHOWN: [string, Money, string][] = [
+    ["tenge range", { min: 200000, max: 300000, currency: "KZT" }, "200 000 – 300 000 ₸ / month"],
+    ["tenge from", { min: 200000, max: null, currency: "KZT" }, "From 200 000 ₸ / month"],
+    ["tenge up to", { min: null, max: 300000, currency: "KZT" }, "Up to 300 000 ₸ / month"],
+    ["equal amounts", { min: 250000, max: 250000, currency: "KZT" }, "250 000 ₸ / month"],
+    ["dollar range", { min: 2000, max: 3000, currency: "USD" }, "$2 000 – 3 000 / month"],
+    ["dollar from", { min: 2000, max: null, currency: "USD" }, "From $2 000 / month"],
+    ["euro up to", { min: null, max: 1500, currency: "EUR" }, "Up to €1 500 / month"],
+    ["euro equal", { min: 1500, max: 1500, currency: "EUR" }, "€1 500 / month"],
+    ["ruble range", { min: 100000, max: 150000, currency: "RUB" }, "100 000 – 150 000 ₽ / month"],
+    ["ruble from", { min: 100000, max: null, currency: "RUB" }, "From 100 000 ₽ / month"],
+  ];
+  for (const [name, salary, text] of SHOWN) {
+    test(`QA 2 / 3: the employer's vacancy page shows ${name}: ${text}`, async ({ page }) => {
+      await mockVacancyGet.ok(page, open17WithSalary(salary));
+      await page.goto("/company/vacancies/17");
+      await expect(page.getByRole("main")).toContainText(text);
+    });
+  }
+
+  test("QA 2: no salary shows no salary", async ({ page }) => {
+    await mockVacancyGet.ok(page, open17WithSalary(null));
+    await page.goto("/company/vacancies/17");
+    await expect(page.getByRole("heading", { level: 1, name: "Backend Intern (Python)" })).toBeVisible();
+    await expect(page.getByRole("main")).not.toContainText("/ month");
+  });
+
+  test("the employer page uses non-breaking spaces inside a salary", async ({ page }) => {
+    await mockVacancyGet.ok(page, open17WithSalary({ min: 200000, max: 300000, currency: "KZT" }));
+    await page.goto("/company/vacancies/17");
+    const fact = page.getByText(/200.000 – 300.000/);
+    await expect(fact).toBeVisible();
+    expect(await fact.textContent()).toBe(`200${NBSP}000 – 300${NBSP}000${NBSP}₸${NBSP}/${NBSP}month`);
+  });
+
+  test("QA 4: 'from' above 'to' is refused at the field, what was typed stays, focus goes to the amount", async ({ page }) => {
+    await toDetails(page);
+    await from(page).fill("300000");
+    await to(page).fill("200000");
+    await cont(page).click();
+    await expect(page.getByTestId("wizard-step-details")).toBeVisible();
+    await expect(salaryGroup(page)).toContainText(RANGE_MESSAGE);
+    await expect(from(page)).toHaveValue(nb("300 000"));
+    await expect(to(page)).toHaveValue(nb("200 000"));
+    await expect(from(page)).toHaveAttribute("aria-invalid", "true");
+    await expect(from(page)).toBeFocused();
+    await expectNoA11yViolations(page);
+    await to(page).fill("400000"); // typing clears the message
+    await expect(salaryGroup(page)).not.toContainText(RANGE_MESSAGE);
+    await cont(page).click();
+    await expect(page.getByTestId("vacancy-preview")).toContainText("300 000 – 400 000 ₸ / month");
+  });
+
+  test("QA 4: an amount outside 1–999 999 999 is refused at its field; Save and exit refuses it and sends nothing", async ({ page }) => {
+    const sink: Sink = [];
+    await mockVacancyCreate.ok(page, sink);
+    await toDetails(page);
+    await to(page).fill("0");
+    await page.getByRole("button", { name: "Save and exit" }).click();
+    await expect(salaryGroup(page)).toContainText(AMOUNT_MESSAGE);
+    await expect(to(page)).toHaveAttribute("aria-invalid", "true");
+    await expect(to(page)).toBeFocused();
+    await expect(from(page)).not.toHaveAttribute("aria-invalid", "true");
+    expect(sink).toHaveLength(0);
+    await to(page).fill("1000000000"); // 10 digits: above the maximum
+    await cont(page).click();
+    await expect(salaryGroup(page)).toContainText(AMOUNT_MESSAGE);
+    await expect(page.getByTestId("wizard-step-details")).toBeVisible();
+    await to(page).fill("999999999");
+    await cont(page).click();
+    await expect(page.getByTestId("vacancy-preview")).toContainText("Up to 999 999 999 ₸ / month");
+  });
+
+  test("a refused salary sends Save and exit back to the Details step and sends nothing", async ({ page }) => {
+    const sink: Sink = [];
+    await mockVacancyCreate.ok(page, sink);
+    await toDetails(page);
+    await from(page).fill("5");
+    await to(page).fill("1");
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(page.getByTestId("wizard-step-basics")).toBeVisible();
+    await page.getByRole("button", { name: "Save and exit" }).click();
+    await expect(page.getByTestId("wizard-step-details")).toBeVisible();
+    await expect(salaryGroup(page)).toContainText(RANGE_MESSAGE);
+    expect(sink).toHaveLength(0);
+  });
+
+  const PASTES: [string, string][] = [
+    ["200000.50", "200 000"],
+    ["1 000,50", "1 000"],
+    ["1,000,000", "1 000 000"],
+    ["1.000.000", "1 000 000"],
+    ["1,000", "1 000"],
+    ["200 000 ₸", "200 000"],
+    ["300000.5", "300 000"],
+    ["200000.50 ₸", "200 000"],
+    ["$1,500.00", "1 500"],
+    ["1 000,50 KZT", "1 000"],
+    ["200000.50 / month", "200 000"],
+    ["1.000.000 ₸", "1 000 000"],
+    ["1,000 $", "1 000"],
+  ];
+  for (const [pasted, shown] of PASTES) {
+    test(`paste '${pasted}' gives ${shown}, not a number 100 times larger`, async ({ page }) => {
+      await toDetails(page);
+      await from(page).fill(pasted);
+      await expect(from(page)).toHaveValue(nb(shown));
+    });
+  }
+
+  for (const pasted of ["-500", "1234567890123", "99999999999999"]) {
+    test(`paste '${pasted}' is refused with the amount error, never cut into a valid smaller number`, async ({ page }) => {
+      await toDetails(page);
+      await from(page).fill(pasted);
+      await cont(page).click();
+      await expect(salaryGroup(page)).toContainText(AMOUNT_MESSAGE);
+      await expect(page.getByTestId("wizard-step-details")).toBeVisible();
+      await expect(from(page)).toHaveAttribute("aria-invalid", "true");
+    });
+  }
+
+  test("390 px: 1 000 000 and 999 999 999 fit in the form, the preview and the vacancy page without sideways scroll", async ({ page }) => {
+    await page.setViewportSize(PHONE);
+    await toDetails(page);
+    await from(page).fill("1000000");
+    await to(page).fill("999999999");
+    await expectNoHorizontalScroll(page, 390);
+    await expectNoA11yViolations(page);
+    await cont(page).click();
+    await expect(page.getByTestId("vacancy-preview")).toContainText("1 000 000 – 999 999 999 ₸ / month");
+    await expectNoHorizontalScroll(page, 390);
+    await mockVacancyGet.ok(page, open17WithSalary({ min: 1000000, max: 999999999, currency: "USD" }));
+    await page.goto("/company/vacancies/17");
+    await expect(page.getByRole("main")).toContainText("$1 000 000 – 999 999 999 / month");
+    await expectNoHorizontalScroll(page, 390);
+    await expectNoA11yViolations(page);
+  });
+
+  test("a 422 for an amount maps onto the salary field and keeps what was typed (wizard)", async ({ page }) => {
+    await mockVacancyCreate.validation(page, ["body", "salary", "max"]);
+    await toDetails(page);
+    await from(page).fill("100");
+    await to(page).fill("200");
+    await page.getByLabel("Description").fill("Join the team.");
+    await cont(page).click();
+    await page.getByRole("button", { name: "Publish vacancy" }).click();
+    await expect(page.getByTestId("wizard-step-details")).toBeVisible();
+    await expect(salaryGroup(page)).toContainText(AMOUNT_MESSAGE);
+    await expect(from(page)).toHaveValue("100");
+    await expect(to(page)).toHaveValue("200");
+    await expect(page.getByRole("alert").filter({ hasText: "Couldn't save" })).toHaveCount(0);
+  });
+
+  test("a 422 for the currency says so at the salary field (wizard)", async ({ page }) => {
+    await mockVacancyCreate.validation(page, ["body", "salary", "currency"]);
+    await toDetails(page);
+    await from(page).fill("100");
+    await page.getByRole("button", { name: "Save and exit" }).click();
+    await expect(salaryGroup(page)).toContainText("Choose a currency");
+  });
+});
+
+test.describe("004 US5 salary (edit)", () => {
+  test("QA 3: an existing salary keeps its currency and shows grouped amounts; saving sends the same object", async ({ page }) => {
+    const d = draftWith({ min: 1500, max: null, currency: "EUR" });
+    const puts: Sink = [];
+    await mockVacancyGet.ok(page, d);
+    await mockVacancyUpdate.ok(page, d, puts);
+    await page.goto("/company/vacancies/17/edit");
+    await expect(from(page)).toHaveValue(nb("1 500"));
+    await expect(to(page)).toHaveValue("");
+    await expect(currency(page)).toContainText("EUR");
+    await page.getByLabel("Title").fill("Backend Intern (Python) v2");
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByText("Draft saved")).toBeVisible();
+    expect(puts[0]).toMatchObject({ salary: { min: 1500, max: null, currency: "EUR" } });
+    await expectNoA11yViolations(page);
+  });
+
+  test("clearing both amounts sends null; the form is then clean, not 'unsaved'", async ({ page }) => {
+    const d = draftWith({ min: 200000, max: 300000, currency: "KZT" });
+    const puts: Sink = [];
+    await mockVacancyGet.ok(page, d);
+    await mockVacancyUpdate.ok(page, d, puts);
+    await page.goto("/company/vacancies/17/edit");
+    await from(page).fill("");
+    await to(page).fill("");
+    await expect(page.getByText("Unsaved changes")).toBeVisible();
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByText("Draft saved")).toBeVisible();
+    expect(puts[0]).toMatchObject({ salary: null });
+    await expect(page.getByText("Draft · not visible to students")).toBeVisible();
+  });
+
+  test("the salary counts as changed by value: only picking a currency with no amounts, or retyping the same, is not a change", async ({ page }) => {
+    await mockVacancyGet.ok(page, draftWith(null));
+    await page.goto("/company/vacancies/17/edit");
+    await expect(page.getByText("Draft · not visible to students")).toBeVisible();
+    await currency(page).click();
+    await page.getByRole("option", { name: /USD/ }).click();
+    await expect(page.getByText("Draft · not visible to students")).toBeVisible();
+    await from(page).fill("100");
+    await expect(page.getByText("Unsaved changes")).toBeVisible();
+    await from(page).fill("");
+    await expect(page.getByText("Draft · not visible to students")).toBeVisible();
+  });
+
+  test("QA 4: 'from' above 'to' is refused at the field with the typed values kept, focus on the amount; nothing is sent", async ({ page }) => {
+    const d = draftWith({ min: 200000, max: 300000, currency: "KZT" });
+    const puts: Sink = [];
+    await mockVacancyGet.ok(page, d);
+    await mockVacancyUpdate.ok(page, d, puts);
+    await page.goto("/company/vacancies/17/edit");
+    await from(page).fill("500000");
+    for (const name of ["Save draft", "Publish"]) {
+      await page.getByRole("button", { name, exact: true }).click();
+      await expect(salaryGroup(page)).toContainText(RANGE_MESSAGE);
+      await expect(from(page)).toBeFocused();
+      await expect(from(page)).toHaveValue(nb("500 000"));
+      await expect(to(page)).toHaveValue(nb("300 000"));
+      await to(page).fill("300000"); // typing clears the message; the next click validates again
+      await expect(salaryGroup(page)).not.toContainText(RANGE_MESSAGE);
+    }
+    expect(puts).toHaveLength(0);
+    await expectNoA11yViolations(page);
+  });
+
+  test("a salary error together with another field error is summarised like the others", async ({ page }) => {
+    const d = draftWith({ min: 200000, max: 300000, currency: "KZT" });
+    await mockVacancyGet.ok(page, d);
+    await mockVacancyUpdate.ok(page, d);
+    await page.goto("/company/vacancies/17/edit");
+    await from(page).fill("500000");
+    await page.getByLabel("Title").fill("QA");
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "Fix 2 fields to save" })).toContainText("Title · Salary");
+  });
+
+  test("a 422 for the salary from the server maps onto the field (edit)", async ({ page }) => {
+    const d = draftWith({ min: 100, max: 200, currency: "KZT" });
+    await mockVacancyGet.ok(page, d);
+    await mockVacancyUpdate.validation(page, ["body", "salary", "min"]);
+    await page.goto("/company/vacancies/17/edit");
+    await page.getByLabel("Title").fill("Backend Intern (Python) v2");
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(salaryGroup(page)).toContainText(AMOUNT_MESSAGE);
+    await expect(from(page)).toHaveValue("100");
+    await expect(page.getByRole("alert").filter({ hasText: "Couldn't save your changes" })).toHaveCount(0);
+  });
+
+  test("a version conflict keeps the typed salary; Load latest version shows the newest salary", async ({ page }) => {
+    const d = draftWith({ min: 100, max: 200, currency: "KZT" });
+    const current = { ...d, version: 3, salary: { min: 700, max: 800, currency: "USD" } };
+    await mockVacancyGet.ok(page, d);
+    await mockVacancyUpdate.versionConflict(page, current);
+    await page.goto("/company/vacancies/17/edit");
+    await from(page).fill("150");
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByText("This vacancy was changed elsewhere")).toBeVisible();
+    await expect(from(page)).toHaveValue("150");
+    await mockVacancyGet.ok(page, current);
+    await page.getByRole("button", { name: "Load latest version" }).click();
+    await expect(from(page)).toHaveValue("700");
+    await expect(to(page)).toHaveValue("800");
+    await expect(currency(page)).toContainText("USD");
+    await expect(page.getByText("Draft · not visible to students")).toBeVisible();
+  });
 });
