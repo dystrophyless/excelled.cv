@@ -53,7 +53,7 @@ No setup tasks: dependencies, routes and API exist.
 ## Phase 5: Polish
 
 - [X] T010 [P] Documentation (Sonnet worker): `design-system/ia.md` (sitemap, public header, sign-up flow, removed public pages), `design-system/templates.md` (Landing: real page and allowed content, demo-route note), `frontend/README.md` where it lists demo routes, `specs/backlog.md` (first iteration rows)
-- [ ] T011 Run quickstart.md checks one at a time: build, lint, lint:css, every e2e file, `uv run pytest tests/auth`
+- [X] T011 Run quickstart.md checks one at a time: build, lint, lint:css, every e2e file, `uv run pytest tests/auth`
 - [X] T012 Design QA (`/speckit-design-qa`) and its fixes
 
 ## Dependencies
