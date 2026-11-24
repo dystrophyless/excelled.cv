@@ -24,6 +24,7 @@ from src.auth.utils import hash_password  # noqa: E402
 from src.config import settings  # noqa: E402
 from src.database import Base, SessionMaker, async_engine  # noqa: E402
 from src.main import app  # noqa: E402
+from src.cv import models as cv_models  # noqa: F401, E402
 from src.profiles import models as profile_models  # noqa: F401, E402
 from src.skills import models as skill_models  # noqa: F401, E402
 from src.users import models as user_models  # noqa: F401, E402
