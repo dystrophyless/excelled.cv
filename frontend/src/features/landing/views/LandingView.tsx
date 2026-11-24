@@ -59,7 +59,7 @@ export function LandingView({ routes }: LandingViewProps) {
   const [top, ...others] = SAMPLE_OPPORTUNITIES;
 
   return (
-    <PublicLayout variant="landing" homeTo={r.home} signInTo={r.signIn} signUpTo={r.signUp}>
+    <PublicLayout homeTo={r.home} signInTo={r.signIn} signUpTo={r.signUp}>
       <GridBackground className={styles.heroBg} size={48} fade={65}>
         <Container>
           <div className={styles.hero}>

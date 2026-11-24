@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import { createBrowserRouter, Navigate, useLocation, useParams } from "react-router";
-import { RedirectIfSignedIn, RequireOnboarding, RequireRole } from "@/features/auth/guards";
+import { RedirectIfSignedIn, RedirectIfSignedInKeepPage, RequireOnboarding, RequireRole } from "@/features/auth/guards";
 import { ResetConfirmPage } from "@/features/auth/ResetConfirmPage";
 import { ResetRequestPage } from "@/features/auth/ResetRequestPage";
 import { ResetVerifyPage } from "@/features/auth/ResetVerifyPage";
@@ -11,6 +11,7 @@ import { EditVacancyPage } from "@/features/company-vacancies/EditVacancyPage";
 import { NewVacancyPage } from "@/features/company-vacancies/NewVacancyPage";
 import { VacanciesListPage } from "@/features/company-vacancies/VacanciesListPage";
 import { VacancyPage } from "@/features/company-vacancies/VacancyPage";
+import { LandingPage } from "@/features/landing/LandingPage";
 import { OpportunitiesPage } from "@/features/opportunities/OpportunitiesPage";
 import { OpportunityPage } from "@/features/opportunities/OpportunityPage";
 import { CompanyOnboardingPage } from "@/features/profiles/CompanyOnboardingPage";
@@ -19,10 +20,7 @@ import { StudentOnboardingPage } from "@/features/profiles/StudentOnboardingPage
 import { StudentProfileEditPage } from "@/features/profiles/StudentProfileEditPage";
 import { StudentProfilePage } from "@/features/profiles/StudentProfilePage";
 import { StyleguidePage } from "@/pages/styleguide/styleguide-page";
-import { BrowseTemplate } from "@/pages/styleguide/templates/browse";
 import { CandidateTemplate } from "@/pages/styleguide/templates/candidate";
-import { DetailTemplate } from "@/pages/styleguide/templates/detail";
-import { LandingTemplate } from "@/pages/styleguide/templates/landing";
 import { TemplateRoute, TemplatesIndex } from "@/pages/styleguide/templates/registry";
 import { SettingsTemplate } from "@/pages/styleguide/templates/settings";
 import { PrototypeRoute } from "@/prototypes/prototype-route";
@@ -37,7 +35,9 @@ import { PrototypeRoute } from "@/prototypes/prototype-route";
  *   - student opportunities (004): /app/opportunities and /app/opportunities/:id. The student's old demo paths /app, /app/vacancies,
  *     /app/applications, /app/saved redirect there, /app/vacancies/:id to /app/opportunities/:id (research R10); their
  *     reference templates live on under /styleguide/templates/<id>.
- * Still demos (reference templates): /, /employers, /vacancies, /vacancies/:id, /app/settings, /company/candidates/:id, /company/settings.
+ *   - landing (005): / (a signed-in account is sent to its home); the old public demos /employers, /vacancies and
+ *     /vacancies/:id redirect to /; their reference templates live on under /styleguide/templates/<id>.
+ * Still demos (reference templates): /app/settings, /company/candidates/:id, /company/settings.
  * Every role page needs the account's profile: RequireRole sends an account without one to its onboarding (003 R3);
  * the onboarding pages sit behind RequireOnboarding (only accounts of their role without a profile).
  */
@@ -46,8 +46,6 @@ function Demo({ page: Page }: { page: ComponentType }) {
   // remount on path/state change so each state starts from its own initial data
   return <Page key={location.pathname + location.search} />;
 }
-
-const demo = (path: string, page: ComponentType) => ({ path, element: <Demo page={page} /> });
 
 // Role-guarded demo page. The reference templates already render their own role layout (StudentLayout / EmployerLayout),
 // so the guard does not wrap another one.
@@ -69,10 +67,8 @@ const publicOnly = (path: string, page: ReactNode) => ({ path, element: <Redirec
 
 export const router = createBrowserRouter([
   // Public
-  demo("/", LandingTemplate),
-  demo("/employers", LandingTemplate),
-  demo("/vacancies", BrowseTemplate),
-  demo("/vacancies/:id", DetailTemplate),
+  { path: "/", element: <RedirectIfSignedInKeepPage><LandingPage /></RedirectIfSignedInKeepPage> },
+  ...["/employers", "/vacancies", "/vacancies/:id"].map((path) => ({ path, element: <Navigate to="/" replace /> })),
   publicOnly("/sign-in", <SignInPage />),
   publicOnly("/sign-up", <SignUpPage />),
   publicOnly("/sign-up/verify", <VerifyEmailPage />),

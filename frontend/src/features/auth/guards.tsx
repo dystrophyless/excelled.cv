@@ -35,6 +35,16 @@ export function RequireOnboarding({ role, children }: { role: Role; children: Re
   return <>{children}</>;
 }
 
+/**
+ * For the landing page (005 research R3): the page is always rendered, also while the session check is pending or has
+ * failed; only a known account is redirected, to its role's home.
+ */
+export function RedirectIfSignedInKeepPage({ children }: { children: ReactNode }) {
+  const { data: account } = useMe();
+  if (account) return <Navigate to={homeFor(account.role)} replace />;
+  return <>{children}</>;
+}
+
 /** For the public auth pages: a signed-in visitor goes straight to `next` (same-origin only) or their home. */
 export function RedirectIfSignedIn({ children }: { children: ReactNode }) {
   const { data: account, isPending } = useMe();
