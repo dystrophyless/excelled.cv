@@ -130,7 +130,9 @@ instantly (+ toast); last card = delete with confirmation `Modal`.
 
 ### Landing — `/styleguide/templates/landing`
 Hero (hero/display type, one value sentence, primary + secondary CTA) → real `VacancyCard`s (guest mode) →
-"How it works" 3 numbered `Card`s → closing CTA `Tray` → footer. `PublicLayout`.
+"How it works" 3 numbered `Card`s → closing CTA `Tray` → footer. `PublicLayout`. Real page: `/` (one landing for students
+and HR; career matching shown as a capability). Allowed content: product copy and fictional sample names only; no
+invented statistics, partner companies or testimonials. `/employers` and public vacancy routes are not landings; they lead to `/`.
 
 ---
 

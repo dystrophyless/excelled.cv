@@ -1,6 +1,6 @@
 # Novio — information architecture
 
-Status: **approved** · 2026-10-30 · amended 2026-11-24 (004: student section "Opportunities"). Page archetypes (right column) are defined in `templates/`.
+Status: **approved** · 2026-10-30 · amended 2026-11-24 (004: student section "Opportunities"; 005: one public landing). Page archetypes (right column) are defined in `templates/`.
 
 ## Roles
 
@@ -17,12 +17,10 @@ One account has one role, chosen at sign-up. Employers belong to a company (seve
 ### Public (guest)
 | Route | Page | Archetype |
 |---|---|---|
-| `/` | Landing (for students, link "For employers") | Landing |
-| `/employers` | Landing for employers | Landing |
-| `/vacancies` | Public vacancy search (apply → sign up) | Browse |
-| `/vacancies/:id` | Vacancy detail | Detail |
+| `/` | One landing for students and HR (career matching shown as a capability); signed-in users go to their home | Landing |
+| `/employers`, `/vacancies`, `/vacancies/:id` | Removed as public pages: lead to `/` (signed in: `/`, then the role's home) | — |
 | `/companies/:id` | Company page | Detail |
-| `/sign-up` | Choose role → email + password | Auth |
+| `/sign-up` | Choose role (nothing preselected) → email + password | Auth |
 | `/sign-up/verify` | 6-digit email code (affect otp-input) | Auth |
 | `/sign-in` | Email + password | Auth |
 | `/reset-password` | Request + set new password | Auth |
@@ -82,14 +80,14 @@ Every vacancy has one status. HR changes it from the vacancy's "⋯" menu (in `/
 - **Student primary nav:** Opportunities only (004). Home, Applications and Saved return when their features are real. With one section the nav is a plain label (no gray track, no lone white thumb) and mobile needs no menu sheet. The demo notification bell is hidden for students. Profile, Settings, Log out live in the profile menu (affect profile-menu, with profile-setup progress).
 - **Employer primary nav:** Home · Vacancies. Company profile, Settings, Log out in the profile menu.
   Applicants are reached through a vacancy (no cross-vacancy Candidates section in MVP).
-- **Public header:** logo · Vacancies · For employers · Sign in · Sign up (primary).
+- **Public header:** logo · Log in · Create account (primary).
 - No sidebar in MVP — the app is shallow (≤ 5 sections per role); a sidebar is reserved for later depth.
 
 ## Core flows
 
-1. **Student sign-up:** `/sign-up` (role: Student) → `/sign-up/verify` → `/onboarding` (4 steps) → `/app/opportunities`.
+1. **Student sign-up:** `/sign-up` (first step: choose Student, before the account is created) → `/sign-up/verify` → `/onboarding` (4 steps) → `/app/opportunities`.
 2. **Apply (later feature):** `/app/opportunities` → card → `/app/opportunities/:id` (match breakdown) → Apply (modal: CV + optional note) → toast + status "Applied" in `/app/applications`.
-3. **Employer sign-up:** `/sign-up` (role: Employer) → verify → `/company/onboarding` → `/company/vacancies/new`.
+3. **Employer sign-up:** `/sign-up` (first step: choose Employer) → verify → `/company/onboarding` → `/company/vacancies/new`.
 4. **Review applicants:** `/company/vacancies/:id` → candidate card (match %) → `/company/candidates/:id` → Shortlist / Invite to interview / Reject.
 
 ## Matching vocabulary (shared by both sides)
