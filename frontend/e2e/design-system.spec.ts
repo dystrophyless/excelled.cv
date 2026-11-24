@@ -158,6 +158,25 @@ test("employer table: tabs filter, duplicate and delete work", async ({ page }) 
   await expect(rows).toHaveCount(4);
 });
 
+test("dropdown menu: a late scroll event without movement keeps it open; a scroll that moves the trigger closes it", async ({ page }) => {
+  await page.goto("/styleguide/templates/table");
+  await page.evaluate(() => { document.body.style.paddingBottom = "2000px"; }); // guarantees the page can scroll
+  const trigger = page.getByRole("button", { name: "Actions for iOS Developer Intern" });
+  await trigger.click();
+  await expect(page.getByRole("menu")).toBeVisible();
+  // a scroll event delivered after opening, from a scroller whose position did not change the trigger
+  await trigger.evaluate((el) => {
+    let node: HTMLElement | null = el.parentElement;
+    while (node && node.scrollWidth <= node.clientWidth) node = node.parentElement;
+    (node ?? document.body).dispatchEvent(new Event("scroll"));
+  });
+  await page.waitForTimeout(150);
+  await expect(page.getByRole("menu")).toBeVisible();
+  // a real scroll moves the trigger: the menu closes
+  await page.evaluate(() => window.scrollBy(0, 60));
+  await expect(page.getByRole("menu")).toBeHidden();
+});
+
 test("pipeline: views switch and a candidate can be moved", async ({ page }) => {
   await page.goto("/styleguide/templates/pipeline");
   const newColumn = page.getByRole("region", { name: "Applicants by stage" }).getByRole("region", { name: "New" });
