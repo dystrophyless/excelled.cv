@@ -31,7 +31,7 @@ export function StatusTag({ status }: { status: ApplicationStatus }) {
 export type Fact = { icon: IconName; label: ReactNode };
 
 /** Vacancy / profile facts with icons. inline: meta line in cards · list: detail-page aside. */
-export function FactList({ facts, layout = "inline" }: { facts: Fact[]; layout?: "inline" | "list" }) {
+export function FactList({ facts, layout = "inline", trailing }: { facts: Fact[]; layout?: "inline" | "list"; trailing?: ReactNode }) {
   return (
     <ul className={styles.facts} data-layout={layout}>
       {facts.map((f, i) => (
@@ -40,6 +40,7 @@ export function FactList({ facts, layout = "inline" }: { facts: Fact[]; layout?:
           {f.label}
         </li>
       ))}
+      {trailing}
     </ul>
   );
 }

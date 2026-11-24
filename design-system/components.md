@@ -31,7 +31,7 @@ and get a section on `/styleguide`.
 | `Checkbox`, `Radio`, `Switch`, `ChoiceGroup` | N | multiple choice / one choice / instant on-off setting | Switch = applies immediately; Checkbox in forms with Save |
 | `ChoiceCardGroup`, `ChoiceCard` | N | ready-made answers in a wizard step, 2–12 options: a radio (or `type="checkbox"`) drawn as a tile. `size="sm"` compact text-only (year of study, company size) · `md` with `description` (university + city) and / or `icon` tile (industry, `industryIcon(value)`) | `options=[{value,label,description?,icon?,disabled?}]`, `value`/`defaultValue`/`onChange` (string, or string[] for checkbox), `name`, `legend` (`hideLegend` under a step h1), `hint`, `error`, `disabled`, `required`, `min` / `columns` for the grid; children = extra cards ("Other"). Not for edit forms, toolbars or > 12 options — see patterns.md §16 |
 | `SalaryField` | N | a monthly salary as **From – To** amounts and a **currency** (one row when the group is 452 px or wider, From | To + currency below from 352 px, all stacked below that, so 999 999 999 always shows whole); either amount optional; vacancy wizard and edit form | `value: { min, max, currency }` (digits only, `SalaryDraft`), `onChange`, `currencies` (catalog: value, label, symbol), `label` (group legend), `hint` ("Per month…"), `error` (one message under the row; the amounts it concerns get the error edge), `optional`. Digits group live ("1 000 000") with the caret staying after the same digit when typing, deleting (also over a space) and pasting "1,000,000 ₸"; numeric keyboard (`inputMode`), never `type=number`; "From" / "To" stay visible inside the amount fields as a muted prefix (the input keeps `aria-label`); text inset 12 px like every field; the currency is a `SelectField` showing "₸ KZT", its list adds "Tenge". Group semantics: `fieldset` + `legend`; amounts have `aria-label` From / To. Helpers: `draftToSalary`, `validateSalary`, `formatSalary` in `lib/money.ts` |
-| `FileUpload` | N | one file (CV, logo) | type and size validated |
+| `FileUpload` | N | one file (logo; the CV drop zone) | type and size validated, a chosen file becomes a row with Remove. `onFile(file)` = caller-validated mode (006 CV): the zone only reports the picked / dropped file, shows the caller's `error`, never turns into a row; `value` / `onChange` optional. `zoneHint` = a line inside the zone that stays beside an error; `hideLabel`; `prompt` may be a node. The stored CV, its actions and dialogs are feature views (`features/cv/views`), not the kit |
 | `OtpInput` | A | 6-digit email code | status idle · verifying · error · success |
 | `SegmentedControl` | A | 2–6 views of the same content, status tabs (`variant="underline"`, counts) | > 6 options, form choices |
 | `FilterMenu` | A | grouped checkbox filters with chips | single choice, free text |
@@ -86,7 +86,7 @@ and get a section on `/styleguide`.
 
 | Component | Origin | Use |
 |---|---|---|
-| `Modal` | N | confirmations, short forms (≤ 4 fields), filters on mobile. Footer buttons on the tray |
+| `Modal` | N | confirmations, short forms (≤ 4 fields), filters on mobile. Footer buttons on the tray. A footer button with `data-autofocus` takes the first focus (confirmations: the safe "Keep …" button) instead of the Close X |
 | `toast()` / `Toaster` | N | short confirmation after an action; `action: { label: "Undo", onClick }` for reversible changes |
 | `Alert` | N | inline message that must stay visible (form summary error, important notice) |
 | `EmptyState` | N | empty list / first run / load error inside a card |
