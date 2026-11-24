@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { draftToSalary, type Salary } from "@/lib/money";
+import { currenciesOrKnown, draftToSalary, type Salary } from "@/lib/money";
 import type { Catalog, ClosedBy, StatusCounts, StatusFilter, VacancyAction, VacancyDraft, VacancyItem, VacancyStatus } from "./model";
 
 /* Typed calls for specs/002-employer-vacancies/contracts/vacancies-api.md + pure API <-> view-model mapping. */
@@ -43,7 +43,7 @@ export type VacancyInput = {
   nice_skills: string[];
 };
 
-export type ApiCatalog = { types: Catalog["types"]; fields: Catalog["fields"]; cities: Catalog["cities"]; formats: Catalog["formats"]; currencies: Catalog["currencies"] };
+export type ApiCatalog = { types: Catalog["types"]; fields: Catalog["fields"]; cities: Catalog["cities"]; formats: Catalog["formats"]; currencies?: Catalog["currencies"] };
 export type ListResponse = { items: ApiVacancy[]; counts: StatusCounts };
 export type VacancyList = { items: VacancyItem[]; counts: StatusCounts };
 export type StatusBody = { action: Exclude<VacancyAction, "delete">; version: number; apply_by?: string };
@@ -104,7 +104,7 @@ export function toVacancyInput(d: VacancyDraft): VacancyInput {
   };
 }
 
-export const toCatalog = (c: ApiCatalog): Catalog => ({ types: c.types, fields: c.fields, cities: c.cities, formats: c.formats, currencies: c.currencies });
+export const toCatalog = (c: ApiCatalog): Catalog => ({ types: c.types, fields: c.fields, cities: c.cities, formats: c.formats, currencies: currenciesOrKnown(c.currencies) });
 
 const BASE = "/api/company/vacancies";
 

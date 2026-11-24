@@ -1,6 +1,6 @@
 import type { IconName } from "@/components/icons";
 import type { TagTone } from "@/components/ui";
-import { salaryToDraft, type CurrencyOption, type Salary, type SalaryDraft } from "@/lib/money";
+import { draftToSalary, salaryToDraft, type CurrencyOption, type Salary, type SalaryDraft } from "@/lib/money";
 
 /*
  * View-model of the employer's vacancies (what the views render). The page containers map the API
@@ -179,6 +179,10 @@ export function toDraft(v: VacancyItem): VacancyDraft {
     requiredSkills: v.requiredSkills, niceSkills: v.niceSkills,
   };
 }
+
+/** Do two form states hold the same vacancy? The salary is compared by value: a currency with no amounts is no salary. */
+export const sameDraft = (a: VacancyDraft, b: VacancyDraft) =>
+  JSON.stringify({ ...a, salary: draftToSalary(a.salary) }) === JSON.stringify({ ...b, salary: draftToSalary(b.salary) });
 
 export const DRAFT_FIELD_LABEL: Record<DraftField, string> = {
   title: "Title", type: "Type", field: "Field", city: "City", format: "Format", description: "Description",

@@ -32,15 +32,35 @@ const CURRENCIES: Record<string, { symbol: string; after: boolean }> = {
   RUB: { symbol: "₽", after: true },
 };
 
+/** The currencies the interface knows; the form offers them when an older API's catalog has none. */
+export const KNOWN_CURRENCIES: CurrencyOption[] = [
+  { value: "KZT", label: "Tenge", symbol: "₸" },
+  { value: "USD", label: "US dollar", symbol: "$" },
+  { value: "EUR", label: "Euro", symbol: "€" },
+  { value: "RUB", label: "Russian ruble", symbol: "₽" },
+];
+
+/** The catalog's currencies, or the known ones when the catalog has none. */
+export const currenciesOrKnown = (options: CurrencyOption[] | undefined): CurrencyOption[] => (options?.length ? options : KNOWN_CURRENCIES);
+
 export const currencySymbol = (code: string, options?: CurrencyOption[]) =>
   options?.find((o) => o.value === code)?.symbol ?? CURRENCIES[code]?.symbol ?? code;
 
 /** "1000000" → "1 000 000" (non-breaking spaces). Digits only in, grouped out. */
 export const groupDigits = (digits: string) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, NBSP);
 
-/** Everything that is not a digit removed: "1,000,000 ₸" → "1000000". Leading zeros go ("007" → "7", "000" → "0"). */
+/**
+ * Everything that is not a digit removed: "1,000,000 ₸" → "1000000". Leading zeros go ("007" → "7", "000" → "0").
+ * Pasted text is read as an amount, not as digits to glue: a trailing fraction of one or two digits after "." or ","
+ * is dropped ("200000.50" → 200000, "1 000,50" → 1000; "1,000" and "1.000.000" are grouping and stay), and a negative
+ * number becomes "0" so the amount error shows instead of a silently positive amount.
+ */
 export function digitsOf(text: string): string {
-  const digits = text.replace(/\D/g, "").slice(0, MAX_DIGITS);
+  const trimmed = text.trim();
+  // a currency or "/ month" after the amount does not hide its fraction: look at the text up to the last digit
+  const whole = trimmed.replace(/\D+$/, "").replace(/[.,]\d{1,2}$/, "");
+  const digits = whole.replace(/\D/g, "").slice(0, MAX_DIGITS);
+  if (digits && /^[-−–]/.test(trimmed)) return "0";
   return digits.replace(/^0+(?=\d)/, "");
 }
 

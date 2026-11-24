@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import type { CurrencyOption } from "@/lib/money";
+import { currenciesOrKnown, type CurrencyOption } from "@/lib/money";
 import type { CompanyProfile, CompanyValues, Option, ProfileCatalog, StudentProfile, StudentValues } from "./model";
 import { toStudentIn } from "./model";
 
@@ -136,7 +136,7 @@ export const toProfileCatalog = (c: ApiProfileCatalog): ProfileCatalog => ({
   types: c.types,
   languageLevels: c.language_levels,
   formats: c.formats ?? [],
-  currencies: c.currencies ?? [],
+  currencies: currenciesOrKnown(c.currencies),
 });
 
 export const EMPTY_PROFILE_CATALOG: ProfileCatalog = {

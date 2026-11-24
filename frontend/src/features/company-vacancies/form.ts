@@ -1,5 +1,5 @@
 import { ApiError } from "@/lib/api";
-import { AMOUNT_ERROR } from "@/lib/money";
+import { AMOUNT_ERROR, salaryMessage, type SalaryDraft } from "@/lib/money";
 import { toVacancyItem, type ApiVacancy } from "./api";
 import type { Catalog, DraftErrors, DraftField, VacancyItem, VacancyRoutes } from "./model";
 
@@ -34,6 +34,18 @@ const API_FIELD: Record<string, DraftField> = {
   title: "title", type: "type", field: "field", city: "city", format: "format", description: "description",
   apply_by: "applyBy", required_skills: "requiredSkills",
 };
+
+export const CURRENCY_ERROR = "Choose a currency";
+
+/**
+ * A 422 whose `loc` is ["body", "salary", …] (the server's own refusal) → the message for the salary field, or null when the
+ * error is about something else. The form's own rules say which amount is wrong; a currency or an unknown refusal gets a plain one.
+ */
+export function salaryRefusal(error: ApiError, salary: SalaryDraft): string | null {
+  const hit = error.validation?.find((v) => v.loc[1] === "salary");
+  if (!hit) return null;
+  return salaryMessage(salary) ?? (hit.loc[2] === "currency" ? CURRENCY_ERROR : AMOUNT_ERROR);
+}
 
 export const titleOk = (title: string) => title.trim().length >= 3 && title.trim().length <= 120;
 
