@@ -22,8 +22,8 @@ export type StudentProfileViewProps = {
   catalog: ProfileCatalog;
   routes: { edit: string };
   onRetry?: () => void;
-  /** 006: the CV block of the owner panel. Without it the panel keeps "Coming soon: CV". */
-  cv?: CvBlockProps;
+  /** 006: the CV block of the owner panel */
+  cv: CvBlockProps;
 };
 
 /** The line under the name: "{Major} · {Degree}, {n} year" + the student's city. University and GPA live in Education. */
@@ -94,7 +94,7 @@ export function StudentProfileView(p: StudentProfileViewProps) {
                   header={<PrivateNote />}
                   footer={loading || !pr ? <Skeleton width={140} height={12} /> : <span>Updated {formatDate(pr.updatedAt)}</span>}
                 >
-                  {loading || !pr ? <LinesSkeleton lines={4} /> : <ProfileChecklist profile={pr} editTo={p.routes.edit} cv={p.cv && <CvBlock {...p.cv} />} />}
+                  {loading || !pr ? <LinesSkeleton lines={4} /> : <ProfileChecklist profile={pr} editTo={p.routes.edit} cv={<CvBlock {...p.cv} />} />}
                 </Tray>
               }
               main={
@@ -140,7 +140,7 @@ export function StudentProfileView(p: StudentProfileViewProps) {
                           <span className={styles.identityName}>{pr.fullName}</span>
                           <FactList
                             facts={identityFacts(pr, p.catalog)}
-                            trailing={p.cv && <CvJump state={p.cv.state} hasCv={Boolean(p.cv.cv)} />}
+                            trailing={<CvJump state={p.cv.state} hasCv={Boolean(p.cv.cv)} />}
                           />
                         </span>
                       </div>

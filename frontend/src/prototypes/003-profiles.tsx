@@ -16,6 +16,9 @@ import { CompanyProfileView } from "@/features/profiles/views/CompanyProfileView
 import { StudentOnboardingView } from "@/features/profiles/views/StudentOnboardingView";
 import { StudentProfileEditView } from "@/features/profiles/views/StudentProfileEditView";
 import { StudentProfileView } from "@/features/profiles/views/StudentProfileView";
+import { CV_STORED } from "@/features/cv/mocks";
+import { CV_LIMITS } from "@/features/cv/model";
+import type { CvBlockProps } from "@/features/cv/views/CvBlock";
 
 /* Prototype wiring for 003-profiles: each View rendered with mock props; ?state= picks the state. */
 
@@ -239,6 +242,14 @@ function CompanyOnboardingInner({ state }: { state: CompanyOnboardingState }) {
 
 /* ── S2 Own profile ──────────────────────────────────────── */
 
+const noop = () => {};
+/** 003 shows the profile only: the CV block is a stored CV whose actions do nothing (the 006-cv prototype is the clickable one). */
+const STORED_CV: CvBlockProps = {
+  state: "ready", cv: CV_STORED, limits: CV_LIMITS,
+  onChoose: noop, onUpload: noop, onCancelPending: noop, onConfirmReplace: noop,
+  onAskRemove: noop, onConfirmRemove: noop, onCancelRemove: noop, onDownload: noop,
+};
+
 export function StudentProfilePrototype() {
   const state = useViewState(PROFILE_STATES);
   const navigate = useNavigate();
@@ -251,6 +262,7 @@ export function StudentProfilePrototype() {
         catalog={CATALOG}
         routes={{ edit: ROUTES.edit }}
         onRetry={() => navigate(ROUTES.profile)}
+        cv={STORED_CV}
       />
       <StateSwitcher states={PROFILE_STATES} />
     </>

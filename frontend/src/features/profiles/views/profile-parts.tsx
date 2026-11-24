@@ -168,16 +168,15 @@ export const optionalItems = (pr: StudentProfile) => [
 
 /** Features that don't exist yet: listed so the student knows what's next, never as working controls. */
 const COMING: { id: string; label: string; detail: string; icon: IconName }[] = [
-  { id: "cv", label: "CV", detail: "Apply to vacancies in one step", icon: "cv" },
   { id: "skills", label: "Skills", detail: "Get matched with vacancies", icon: "skill" },
 ];
 
 /**
  * Owner panel content: "Complete your profile · n of 6 added" + every optional item (added = muted with a check,
  * missing = "Add" → its Edit profile section) while anything is missing. A finished profile shows no completeness
- * block at all (FR-006a) — only "Coming soon". With `cv` (006) the CV block sits between the two and leaves "Coming soon".
+ * block at all (FR-006a) — only "Coming soon". The CV block (006) sits between the two.
  */
-export function ProfileChecklist({ profile, editTo, cv }: ProfileBlockProps & { cv?: ReactNode }) {
+export function ProfileChecklist({ profile, editTo, cv }: ProfileBlockProps & { cv: ReactNode }) {
   const navigate = useNavigate();
   const items = optionalItems(profile);
   const done = items.filter((i) => i.done).length;
@@ -211,17 +210,13 @@ export function ProfileChecklist({ profile, editTo, cv }: ProfileBlockProps & { 
           <div className={styles.divider} />
         </>
       )}
-      {/* 006: the CV block takes the CV's place (below the checklist, so the checklist never jumps); without it "Coming soon: CV" stays */}
-      {cv && (
-        <>
-          {cv}
-          <div className={styles.divider} />
-        </>
-      )}
+      {/* 006: the CV block sits below the checklist, so the checklist never jumps when it changes height */}
+      {cv}
+      <div className={styles.divider} />
       <Stack gap={12}>
         <span className={styles.groupLabel}>Coming soon</span>
         <ul className={styles.soonList}>
-          {COMING.filter((c) => !(cv && c.id === "cv")).map((c) => (
+          {COMING.map((c) => (
             <li key={c.id} className={styles.soonRow}>
               <span className={styles.lineIcon} aria-hidden="true"><Icon name={c.icon} size={16} /></span>
               <span className={styles.entryText}>

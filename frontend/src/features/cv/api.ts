@@ -38,3 +38,8 @@ const fileRequest = (file: File) => ({
 export const uploadCv = async (file: File): Promise<CvFile> => toCv(await api<ApiCv>(BASE, { method: "POST", ...fileRequest(file) }));
 
 export const downloadCv = (id: string): Promise<Blob> => apiBlob(`${BASE}/${encodeURIComponent(id)}/file`);
+
+export const replaceCv = async (id: string, file: File): Promise<CvFile> =>
+  toCv(await api<ApiCv>(`${BASE}/${encodeURIComponent(id)}`, { method: "PUT", ...fileRequest(file) }));
+
+export const removeCv = (id: string): Promise<void> => api<void>(`${BASE}/${encodeURIComponent(id)}`, { method: "DELETE" });
