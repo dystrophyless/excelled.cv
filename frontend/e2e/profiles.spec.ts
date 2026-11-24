@@ -39,6 +39,9 @@ async function startOnboarding(page: Page, path = "/onboarding") {
   return api;
 }
 
+/** After Continue the page moves focus to the heading on the next tick; typing into a combobox before that closes its list. */
+const headingFocused = (page: Page) => expect(h1(page)).toBeFocused();
+
 async function pickOption(page: Page, combobox: string, typed: string, option: RegExp) {
   await page.getByRole("combobox", { name: combobox }).fill(typed);
   await page.getByRole("option", { name: option }).first().click();
@@ -51,6 +54,7 @@ async function fillName(page: Page) {
 }
 
 async function fillUniversity(page: Page) {
+  await headingFocused(page);
   await pickOption(page, "University", "Satbayev", /^Satbayev University/);
   await page.getByRole("radio", { name: "Bachelor's" }).check();
   await cont(page).click();
@@ -58,6 +62,7 @@ async function fillUniversity(page: Page) {
 }
 
 async function fillMajor(page: Page) {
+  await headingFocused(page);
   await pickOption(page, "Major", "Computer Sci", /^Computer Science$/);
   await page.getByRole("radio", { name: "3rd year" }).check();
   await cont(page).click();
@@ -154,6 +159,7 @@ test.describe("US1 student profile", () => {
     await expectStep(page, "Major");
 
     // step 3: a major but no year of study
+    await headingFocused(page);
     await pickOption(page, "Major", "Computer Sci", /^Computer Science$/);
     await cont(page).click();
     await expect(page.getByText("Choose your year of study")).toBeVisible();

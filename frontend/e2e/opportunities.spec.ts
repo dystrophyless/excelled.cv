@@ -100,7 +100,7 @@ test.describe("US1 list (S1)", () => {
     await expect(cards(page).filter({ hasText: "Data Science Research Assistant" })).toContainText("Research");
     await expect(cards(page).filter({ hasText: "Closing tomorrow role" }).getByTestId("vacancy-deadline")).toHaveText("Closes tomorrow");
     // the plain list is one request without a query
-    expect(requests[0]).toBe("");
+    await expect.poll(() => requests[0]).toBe("");
     expect(errors).toEqual([]);
   });
 
@@ -135,10 +135,12 @@ test.describe("US1 list (S1)", () => {
 
     await page.getByLabel("Full name").fill("Maya Akhmetova");
     await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toBeFocused(); // focus moves here after Continue
     await page.getByRole("combobox", { name: "University" }).fill("Satbayev");
     await page.getByRole("option", { name: /^Satbayev University/ }).first().click();
     await page.getByRole("radio", { name: "Bachelor's" }).check();
     await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
     await page.getByRole("combobox", { name: "Major" }).fill("Computer Sci");
     await page.getByRole("option", { name: /^Computer Science$/ }).first().click();
     await page.getByRole("radio", { name: "3rd year" }).check();
@@ -438,7 +440,7 @@ test.describe("US2 details (S2)", () => {
     await expect(cards(page)).toHaveCount(2);
     await expect(count(page)).toHaveText("12 opportunities");
     await expect(page.getByRole("combobox", { name: /Sort by/ })).toContainText("Closing soon");
-    expect(requests.at(-1)).toBe("q=opportunity&city=almaty&sort=closing&page=2");
+    await expect.poll(() => requests.at(-1)).toBe("q=opportunity&city=almaty&sort=closing&page=2");
   });
 
   test("the browser's Back from an opportunity also returns to the same list", async ({ page }) => {
@@ -540,7 +542,7 @@ test.describe("US3 search and filters (S1)", () => {
     await expect(count(page)).toHaveText("1 opportunity");
     expect(await titles(page)).toEqual(["Backend Intern (Python)"]);
     await expect(page).toHaveURL(/\?q=python&type=internship$/);
-    expect(requests.at(-1)).toBe("q=python&type=internship");
+    await expect.poll(() => requests.at(-1)).toBe("q=python&type=internship");
 
     // Vacancies = Full-time + Part-time; Research is its own type
     await searchbox(page).fill("");
@@ -631,11 +633,11 @@ test.describe("US3 search and filters (S1)", () => {
     await pickFilter(page, "format", "Remote");
     await expect(cards(page)).toHaveCount(3);
     await expect(page).toHaveURL(/\?format=hybrid&format=remote$/);
-    expect(requests.at(-1)).toBe("format=hybrid&format=remote");
+    await expect.poll(() => requests.at(-1)).toBe("format=hybrid&format=remote");
 
     await pickFilter(page, "city", "Almaty");
     await expect.poll(() => titles(page)).toEqual(["Backend Intern (Python)", "Support Engineer"]);
-    expect(requests.at(-1)).toBe("format=hybrid&format=remote&city=almaty");
+    await expect.poll(() => requests.at(-1)).toBe("format=hybrid&format=remote&city=almaty");
 
     await pickFilter(page, "field", "Frontend");
     await expect(page.getByTestId("opportunities-no-results")).toBeVisible();
@@ -671,7 +673,7 @@ test.describe("US3 search and filters (S1)", () => {
     await expect.poll(() => titles(page)).toEqual([
       "Data Science Research Assistant", "Frontend Developer", "Support Engineer", "Backend Intern (Python)", "QA Intern",
     ]);
-    expect(requests.at(-1)).toBe("sort=closing");
+    await expect.poll(() => requests.at(-1)).toBe("sort=closing");
   });
 
   test("paging goes back to page 1 when the search or a filter changes; a page change keeps them", async ({ page }) => {
@@ -690,7 +692,7 @@ test.describe("US3 search and filters (S1)", () => {
     await expect(cards(page)).toHaveCount(2);
     await searchbox(page).fill("opportunity 1");
     await expect(page).toHaveURL(/\?q=opportunity\+1&type=internship$/);
-    expect(requests.at(-1)).toBe("q=opportunity+1&type=internship");
+    await expect.poll(() => requests.at(-1)).toBe("q=opportunity+1&type=internship");
   });
 
   test("a page past the last shows the last page and the address says so", async ({ page }) => {
@@ -709,7 +711,7 @@ test.describe("US3 search and filters (S1)", () => {
     await page.goto(`${LIST}?type=bogus&format=nope&city=mars&field=zzz&sort=weird&page=abc`);
     await expect(cards(page)).toHaveCount(5);
     await expect(page.getByRole("radio", { name: "All" })).toBeChecked();
-    expect(requests).toEqual([""]);
+    await expect.poll(() => requests).toEqual([""]);
   });
 
   test("typing 'data engineer' with a pause after the space keeps the space", async ({ page }) => {
@@ -776,7 +778,7 @@ test.describe("US3 search and filters (S1)", () => {
     await expect(cards(page)).toHaveCount(3);
     await expect(page.getByText("Couldn't load opportunities")).toHaveCount(0);
     await expect(page).toHaveURL(/\?page=3$/);
-    expect(requests[0]).toBe("page=1000000");
+    await expect.poll(() => requests[0]).toBe("page=1000000");
   });
 
   test("the search field holds 120 characters at most", async ({ page }) => {
@@ -795,7 +797,7 @@ test.describe("US3 search and filters (S1)", () => {
     await searchbox(page).click();
     await searchbox(page).pressSequentially("python", { delay: 40 });
     await expect(cards(page)).toHaveCount(2);
-    expect(requests).toEqual(["q=python"]);
+    await expect.poll(() => requests).toEqual(["q=python"]);
   });
 
   test("Escape clears the search", async ({ page }) => {
@@ -989,7 +991,7 @@ test.describe("US4 research type (S3)", () => {
     await page.goto(LIST);
     await page.getByRole("radio", { name: "Research" }).click();
     await expect(cards(page)).toHaveCount(2);
-    expect(requests.at(-1)).toBe("type=research");
+    await expect.poll(() => requests.at(-1)).toBe("type=research");
     const card = cards(page).filter({ hasText: "Research on payments fraud" });
     await expect(card.getByText("Research", { exact: true })).toBeVisible();
     await card.getByRole("link", { name: "Research on payments fraud" }).click();
@@ -1004,10 +1006,12 @@ test.describe("US4 research type (S3)", () => {
     await page.goto("/onboarding");
     await page.getByLabel("Full name").fill("Maya Akhmetova");
     await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toBeFocused(); // focus moves here after Continue
     await page.getByRole("combobox", { name: "University" }).fill("Satbayev");
     await page.getByRole("option", { name: /^Satbayev University/ }).first().click();
     await page.getByRole("radio", { name: "Bachelor's" }).check();
     await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
     await page.getByRole("combobox", { name: "Major" }).fill("Computer Sci");
     await page.getByRole("option", { name: /^Computer Science$/ }).first().click();
     await page.getByRole("radio", { name: "3rd year" }).check();
