@@ -8,11 +8,11 @@
 
 Replace the demo page at `/` with a real landing page for both roles, remove the public demo routes, and split sign-up
 into a role step (nothing preselected) and an account details step. Frontend only: the server already requires a valid
-role, which gets explicit API tests.
+role, and existing API tests cover it.
 
 ## Technical Context
 
-**Language/Version**: TypeScript strict, React 19; Python 3.13 (tests only)
+**Language/Version**: TypeScript strict, React 19; Python 3.13 (unchanged)
 
 **Primary Dependencies**: Vite, React Router, TanStack Query; FastAPI (unchanged)
 
@@ -79,7 +79,6 @@ frontend/src/
 ├── features/auth/views/SignUpView.tsx      # role control replaced by the chosen role
 └── prototypes/005-landing-role-choice.tsx
 frontend/e2e/landing.spec.ts, auth.spec.ts
-tests/auth/test_sign_up.py                  # missing and unknown role are refused
 design-system/ia.md, specs/backlog.md
 ```
 

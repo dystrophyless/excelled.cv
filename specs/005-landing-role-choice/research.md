@@ -11,7 +11,7 @@
 
 ## R2. Server behaviour
 - **Decision**: No server change. `UserRegisterRequest.role` is a required enum, so a missing or unknown role is refused
-  with 422 before anything is stored. Add API tests for both.
+  with 422 before anything is stored. `tests/auth/test_sign_up.py` already covers both.
 - **Alternatives**: storing the role separately after registration: more states, no benefit.
 
 ## R3. Landing and the session check
