@@ -87,9 +87,8 @@ def _is_docx(data: bytes) -> bool:
     return "[Content_Types].xml" in names and "word/document.xml" in names
 
 
-def detect_format(data: bytes) -> CvFormat | None:
-    if b"%PDF-" in data[:PDF_MARKER_WINDOW]:
-        return CvFormat.pdf
-    if _is_docx(data):
-        return CvFormat.docx
-    return None
+def matches_format(data: bytes, claimed: CvFormat) -> bool:
+    """Whether the content is a file of the format the extension claims (checked against that format only)."""
+    if claimed is CvFormat.pdf:
+        return b"%PDF-" in data[:PDF_MARKER_WINDOW]
+    return _is_docx(data)

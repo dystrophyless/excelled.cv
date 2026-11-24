@@ -8,6 +8,11 @@ from src.cv.models import CvFormat
 from tests.cv.helpers import docx_bytes, pdf_bytes
 
 
+def detect(data: bytes) -> CvFormat | None:
+    """The one format the content matches, if any."""
+    return next((fmt for fmt in CvFormat if formats.matches_format(data, fmt)), None)
+
+
 @pytest.mark.parametrize(
     ("raw", "expected"),
     [
@@ -63,21 +68,21 @@ def test_the_download_header_has_a_safe_ascii_fallback():
 
 
 def test_pdf_marker_must_be_in_the_first_kilobyte():
-    assert formats.detect_format(pdf_bytes()) is CvFormat.pdf
-    assert formats.detect_format(b"junk" * 100 + pdf_bytes()) is CvFormat.pdf
-    assert formats.detect_format(b" " * 1100 + pdf_bytes()) is None
-    assert formats.detect_format(b"hello") is None
+    assert detect(pdf_bytes()) is CvFormat.pdf
+    assert detect(b"junk" * 100 + pdf_bytes()) is CvFormat.pdf
+    assert detect(b" " * 1100 + pdf_bytes()) is None
+    assert detect(b"hello") is None
 
 
 def test_docx_needs_its_two_parts():
-    assert formats.detect_format(docx_bytes()) is CvFormat.docx
-    assert formats.detect_format(docx_bytes(omit=("word/document.xml",))) is None
-    assert formats.detect_format(docx_bytes(omit=("[Content_Types].xml",))) is None
+    assert detect(docx_bytes()) is CvFormat.docx
+    assert detect(docx_bytes(omit=("word/document.xml",))) is None
+    assert detect(docx_bytes(omit=("[Content_Types].xml",))) is None
 
 
 @pytest.mark.parametrize("macro", ["word/vbaProject.bin", "WORD/VBAPROJECT.BIN", "x/y/vbaproject.bin"])
 def test_a_macro_document_is_not_accepted(macro):
-    assert formats.detect_format(docx_bytes(members={macro: b"x"})) is None
+    assert detect(docx_bytes(members={macro: b"x"})) is None
 
 
 def test_zip_problems_mean_unsupported():
@@ -91,17 +96,26 @@ def test_zip_problems_mean_unsupported():
         good.replace(b"PK\x01\x02", b"XX\x01\x02"),  # damaged directory entry
     ]
     for data in broken:
-        assert formats.detect_format(data) is None
+        assert detect(data) is None
 
 
 def test_a_directory_with_too_many_entries_is_refused():
     many = docx_bytes(members={f"f{i}.txt": b"" for i in range(formats.ZIP_MAX_ENTRIES)})
-    assert formats.detect_format(many) is None
-    assert formats.detect_format(docx_bytes(members={f"f{i}.txt": b"" for i in range(100)})) is CvFormat.docx
+    assert detect(many) is None
+    assert detect(docx_bytes(members={f"f{i}.txt": b"" for i in range(100)})) is CvFormat.docx
 
 
 def test_a_forged_entry_count_is_refused_before_the_directory_is_read():
     data = bytearray(docx_bytes())
     at = data.rfind(b"PK\x05\x06")
     data[at + 10 : at + 12] = b"\xff\xff"
-    assert formats.detect_format(bytes(data)) is None
+    assert detect(bytes(data)) is None
+
+
+def test_a_docx_that_mentions_the_pdf_marker_is_still_a_docx():
+    data = docx_bytes(members={"word/document.xml": b"%PDF-1.7 pasted text"})
+    assert b"%PDF-" in data[:1024]
+    assert formats.matches_format(data, CvFormat.docx)
+    # claimed as PDF, the marker alone is enough: the check is against the claimed format only
+    assert formats.matches_format(data, CvFormat.pdf)
+    assert not formats.matches_format(pdf_bytes(), CvFormat.docx)
