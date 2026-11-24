@@ -18,8 +18,11 @@ async def register(client, email="maya@sdu.edu.kz", password=PASSWORD, role="stu
     )
 
 
-async def verify(client, email, code):
-    return await client.post("/api/auth/verify-email", json={"email": email, "code": code})
+async def verify(client, email, code, role=None):
+    body = {"email": email, "code": code}
+    if role is not None:
+        body["role"] = role
+    return await client.post("/api/auth/verify-email", json=body)
 
 
 async def resend(client, email, purpose="sign_up"):
@@ -252,3 +255,50 @@ async def test_the_chosen_role_is_required(client):
     )
 
     assert response.status_code == 422
+
+
+# ---- /verify-email with an explicit role -----------------------------------------------------
+
+
+async def test_verify_role_overrides_the_pending_role_after_a_cooldown_429(client, sent_emails, db):
+    await register(client, role="student")
+    again = await register(client, role="employer")
+    assert again.status_code == 429
+
+    response = await verify(client, "maya@sdu.edu.kz", sent_emails[0]["code"], role="employer")
+
+    assert response.status_code == 200
+    assert response.json()["account"]["role"] == "employer"
+    assert (await db.execute(select(User))).scalar_one().role == UserRole.employer
+
+
+async def test_verify_without_role_keeps_the_pending_role(client, sent_emails):
+    await register(client, role="employer")
+
+    response = await verify(client, "maya@sdu.edu.kz", sent_emails[0]["code"])
+
+    assert response.status_code == 200
+    assert response.json()["account"]["role"] == "employer"
+
+
+async def test_verify_unknown_role_is_422_and_creates_nothing(client, sent_emails, db):
+    await register(client)
+
+    response = await verify(client, "maya@sdu.edu.kz", sent_emails[0]["code"], role="admin")
+
+    assert response.status_code == 422
+    assert (await db.execute(select(User))).scalars().all() == []
+    assert await pending_count(db) == 1
+
+
+async def test_verify_wrong_code_with_role_does_not_change_the_pending_role(client, sent_emails, db):
+    await register(client, role="student")
+    code = sent_emails[0]["code"]
+    wrong = "000000" if code != "000000" else "111111"
+
+    response = await verify(client, "maya@sdu.edu.kz", wrong, role="employer")
+
+    assert response.status_code == 400
+    assert (await db.execute(select(User))).scalars().all() == []
+    pending = (await db.execute(select(PendingUser))).scalar_one()
+    assert pending.role == UserRole.student

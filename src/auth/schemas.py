@@ -35,6 +35,7 @@ class ResendCodeRequest(BaseModel):
 class VerifyEmailRequest(BaseModel):
     email: EmailStr
     code: str = Code
+    role: UserRole | None = None
 
 
 class CodeSentResponse(BaseModel):
