@@ -87,7 +87,7 @@ after them. Every story with UI gets an e2e block (Playwright + axe, API mocked)
 - [X] T027 [US5] Design round 3 (ui-designer): salary from / to / currency in the 002 wizard and edit form, salary display; owner approval
 - [X] T028 [US5] (ui-builder) Wire the approved salary field and display in `frontend/src/features/company-vacancies/` and `frontend/src/features/opportunities/`, `features/*/api.ts` mapping, 422 errors at the field
 - [X] T029 [US5] (ui-builder) e2e: US5 scenarios 1–4 (wizard, edit, list, page, student card and details), paste, currency kept, axe, 390 px; update mocks
-- [ ] T030 Run all checks again
+- [X] T030 Run all checks again
 
 ---
 
