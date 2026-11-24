@@ -10,8 +10,11 @@
   after account creation (needs accounts without a role; rejected by the owner).
 
 ## R2. Server behaviour
-- **Decision**: No server change. `UserRegisterRequest.role` is a required enum, so a missing or unknown role is refused
-  with 422 before anything is stored. `tests/auth/test_sign_up.py` already covers both.
+- **Decision**: One small server change. `UserRegisterRequest.role` stays a required enum (missing or unknown role: 422,
+  nothing stored). `POST /verify-email` additionally accepts an optional `role`; when present and the code is correct the
+  account gets that role, otherwise the pending one. Reason: changing the role and re-submitting within the 60 s cooldown
+  gets 429 and leaves the pending role stale, which would create an unchangeable wrong-role account. A wrong code never
+  alters anything. Covered in `tests/auth/test_sign_up.py`.
 - **Alternatives**: storing the role separately after registration: more states, no benefit.
 
 ## R3. Landing and the session check

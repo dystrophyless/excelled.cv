@@ -1,7 +1,8 @@
 # Data model: Landing page and role choice
 
 No database change. `role` (`student` | `employer`) stays required on pending sign-ups and accounts; the label
-"HR Representative" maps to `employer`.
+"HR Representative" maps to `employer`. `/verify-email` may carry the chosen role, which overrides `pending_users.role`
+when the account is created.
 
 Sign-up client state:
 

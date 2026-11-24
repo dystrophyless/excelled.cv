@@ -7,14 +7,14 @@
 ## Summary
 
 Replace the demo page at `/` with a real landing page for both roles, remove the public demo routes, and split sign-up
-into a role step (nothing preselected) and an account details step. Frontend only: the server already requires a valid
-role, and existing API tests cover it.
+into a role step (nothing preselected) and an account details step. The server needs one small change: `/verify-email`
+accepts an optional `role` that wins over the pending one (see research R2); `/register` already requires a valid role.
 
 ## Technical Context
 
-**Language/Version**: TypeScript strict, React 19; Python 3.13 (unchanged)
+**Language/Version**: TypeScript strict, React 19; Python 3.13
 
-**Primary Dependencies**: Vite, React Router, TanStack Query; FastAPI (unchanged)
+**Primary Dependencies**: Vite, React Router, TanStack Query; FastAPI
 
 **Storage**: No change (PostgreSQL `pending_users.role`, `users.role` exist)
 
