@@ -153,8 +153,37 @@ export function EmployerLayout({ children }: { children: ReactNode }) {
   );
 }
 
-export function PublicLayout({ children }: { children: ReactNode }) {
+export type PublicLayoutProps = {
+  children: ReactNode;
+  /**
+   * 005: "landing" = no demo links, "Log in" + "Create account" always visible in the header (also on mobile).
+   * Default keeps the 001-004 header until the implementation of 005 switches the landing and the sign-up pages to it.
+   */
+  variant?: "default" | "landing";
+  /** Where the logo, "Log in" and "Create account" go (landing variant); the prototypes point them at their own screens */
+  homeTo?: string;
+  signInTo?: string;
+  signUpTo?: string;
+};
+
+export function PublicLayout({ children, variant = "default", homeTo = "/", signInTo = "/sign-in", signUpTo = "/sign-up" }: PublicLayoutProps) {
   const navigate = useNavigate();
+  if (variant === "landing") {
+    return (
+      <AppShell
+        home={homeTo}
+        nav={[]}
+        actions={
+          <>
+            <Button variant="ghost" size="sm" onClick={() => navigate(signInTo)}>Log in</Button>
+            <Button size="sm" onClick={() => navigate(signUpTo)}>Create account</Button>
+          </>
+        }
+      >
+        {children}
+      </AppShell>
+    );
+  }
   return (
     <AppShell
       home="/"
