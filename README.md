@@ -31,8 +31,8 @@ Novio is built feature by feature (spec → plan → approved design → tasks �
 | **0.2.0** | Sign up, sign in and password reset for students and employers |
 | **0.1.0** | Design system, reference page templates and the design workflow |
 
-Next on the roadmap (see [specs/backlog.md](specs/backlog.md)): the public landing page, role choice, CV upload, then
-skills extraction and matching. See [CHANGELOG.md](CHANGELOG.md).
+Next on the roadmap (see [specs/backlog.md](specs/backlog.md)): extracting skills from the CV, then
+matching. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Features
 
@@ -47,6 +47,11 @@ skills extraction and matching. See [CHANGELOG.md](CHANGELOG.md).
   year of study, optional GPA, what they are looking for (or "not sure yet"), city, about, projects, languages, contacts.
 - Employers: company name, industry, size, website, city, description; vacancies show the current company name.
 - Accounts without a profile go through onboarding first; the API refuses vacancy actions without a company profile.
+
+**Student CV** (`specs/006-cv`)
+- A student with a profile uploads one CV (PDF or DOCX, up to 5 MB) on the profile page, and can download, replace or remove it.
+- The file type is checked by content as well as by name; replacing and removing ask for confirmation.
+- Only the student can see and download the CV; employers cannot. The file is stored in the database.
 
 **Student opportunities** (`specs/004-student-opportunities`)
 - One list of active internships, vacancies and research opportunities, with a details page for each.
@@ -120,7 +125,7 @@ Open <http://localhost:5173/sign-up>, choose a role and register. The verificati
 | `FRONTEND_ORIGIN` | origin allowed to make state-changing requests (default `http://localhost:5173`) |
 
 Upgrading from an older checkout: `uv run python -m src.scripts.create_tables` adds new tables and migrates data
-(0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"; 0.5.0: the "Research" opportunity type; vacancy salaries become monthly amounts with a currency, and an old text salary that is a plain number such as "200 000 ₸" becomes that amount in tenge, other texts stay in the old column and are listed in the output); it is safe to run again. Add
+(CV: the `student_cvs` table; 0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"; 0.5.0: the "Research" opportunity type; vacancy salaries become monthly amounts with a currency, and an old text salary that is a plain number such as "200 000 ₸" becomes that amount in tenge, other texts stay in the old column and are listed in the output); it is safe to run again. Add
 `--reset-auth` only if the auth tables changed and you can lose development accounts.
 
 ## Tests and checks
@@ -141,7 +146,7 @@ accessibility checks).
 ## API overview
 
 All routes are under `/api`; errors look like `{"detail": {"code", "message", ...}}`. Full contracts live next to each
-feature: [auth](specs/001-user-auth/contracts/auth-api.md), [vacancies](specs/002-employer-vacancies/contracts/vacancies-api.md), [profiles](specs/003-profiles/contracts/profiles-api.md), [opportunities](specs/004-student-opportunities/contracts/opportunities-api.md).
+feature: [auth](specs/001-user-auth/contracts/auth-api.md), [vacancies](specs/002-employer-vacancies/contracts/vacancies-api.md), [profiles](specs/003-profiles/contracts/profiles-api.md), [opportunities](specs/004-student-opportunities/contracts/opportunities-api.md), [CV](specs/006-cv/contracts/cv-api.md).
 
 | Area | Endpoints |
 |---|---|
@@ -149,6 +154,7 @@ feature: [auth](specs/001-user-auth/contracts/auth-api.md), [vacancies](specs/00
 | Password reset | `POST /auth/password-reset/request` · `/verify` · `/confirm` |
 | Catalog & skills | `GET /catalog` · `GET /skills?q=` |
 | Profiles | `GET/POST/PUT /student/profile` · `GET/POST/PUT /company/profile` |
+| CV (student) | `GET/POST /student/cv` · `PUT/DELETE /student/cv/{id}` · `GET /student/cv/{id}/file` |
 | Opportunities (student) | `GET /student/opportunities` (`q`, `type`, `format`, `city`, `field`, `sort`, `page`) · `GET /student/opportunities/{id}` |
 | Vacancies (employer) | `GET /company/vacancies` · `POST /company/vacancies` · `GET/PUT/DELETE /company/vacancies/{id}` · `POST /company/vacancies/{id}/status` |
 

@@ -5,7 +5,17 @@ and the project uses [Semantic Versioning](https://semver.org/) (pre-1.0: each d
 
 ## [Unreleased]
 
-Planned (backlog iterations 1 and 5): the public landing page, an explicit role choice, CV upload, replace and remove.
+### Added
+- Student CV: upload, download, replace and remove one CV on the profile page. PDF and DOCX, 1 byte to 5 MB; the file
+  type is checked by content as well as by name. Replace and remove ask for confirmation.
+- CV API under `/api/student/cv` (read, upload, replace, remove, download). Only the owner can read or download the CV;
+  employers cannot see it. Changes made in another tab are not overwritten silently.
+- The CV is stored in the database (new `student_cvs` table, created by `create_tables`) and is deleted with the profile
+  or account.
+- Contract: `specs/006-cv/contracts/cv-api.md`.
+
+### Changed
+- The profile page no longer shows CV as "Coming soon"; the CV is not part of onboarding or the profile edit form.
 
 ## [0.5.0] - 2026-11-24
 

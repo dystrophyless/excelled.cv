@@ -28,14 +28,14 @@ One account has one role, chosen at sign-up. Employers belong to a company (seve
 ### Student (`/app/…` after sign-in)
 | Route | Page | Archetype |
 |---|---|---|
-| `/onboarding` | University → skills → preferences → CV (skippable steps) | Wizard |
+| `/onboarding` | University → skills → preferences (skippable steps; no CV step, the CV is added on `/app/profile`) | Wizard |
 | `/app/opportunities` | Active internships, vacancies and research: search, type, Format / City / Field filters, Newest / Closing soon, 10 per page | Browse |
 | `/app/opportunities/:id` | Everything the employer published + company; Back keeps the list's search. Later: "your match" + Apply + Save | Detail |
 | `/app` | Home (hidden until real; redirects to `/app/opportunities`) | Dashboard |
 | `/app/applications` | My applications by status (hidden until real; redirects to Opportunities) | Tracker |
 | `/app/saved` | Saved opportunities (hidden until real; redirects to Opportunities) | Browse |
-| `/app/profile` | My profile as employers see it | Detail |
-| `/app/profile/edit` | Edit profile: about, education, skills, projects, experience, languages, CV | Form |
+| `/app/profile` | My profile as employers see it + owner-only CV block (upload, replace, download, remove); employers cannot see the CV | Detail |
+| `/app/profile/edit` | Edit profile: about, education, skills, projects, experience, languages (the CV is managed on `/app/profile`, not here) | Form |
 | `/app/settings` | Account (sign-in email read-only, password), notifications, privacy, delete account | Settings |
 
 Old addresses `/app/vacancies` and `/app/vacancies/:id` redirect to `/app/opportunities` and `/app/opportunities/:id`. Employers keep "Vacancies" (`/company/vacancies`); students call the same records "opportunities" because the list also holds research.
