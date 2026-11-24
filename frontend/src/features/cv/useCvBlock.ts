@@ -101,6 +101,7 @@ export function useCvBlock(): CvBlockProps {
    * The CV changed under the draft / dialog (a refetch showed another id): drop them and say why. Runs on every cache
    * update of the CV query, and when our own request ends; never while it runs (it writes its own result).
    */
+  const lostRemove = useRef<string | null>(null); // the id of a DELETE whose answer was lost (it may have been applied)
   const draftRef = useRef(draft);
   useEffect(() => { draftRef.current = draft; });
   const checkChange = useCallback(() => {
@@ -110,6 +111,14 @@ export function useCvBlock(): CvBlockProps {
     const before = baseline.current;
     baseline.current = now;
     if (before === undefined || before === now) return;
+    if (now === null && lostRemove.current === before) {
+      // our own removal arrived although its answer was lost
+      lostRemove.current = null;
+      toast.success(CV_TOASTS.removed);
+      setAskedId(null);
+      setError(undefined);
+      return;
+    }
     const d = draftRef.current;
     if (d && data.cv && d.forId !== now && isSameFile(data.cv, d.file)) {
       // our own request arrived although its answer was lost
@@ -237,15 +246,23 @@ export function useCvBlock(): CvBlockProps {
   const onConfirmRemove = () => {
     const id = askedId;
     if (id === null || id !== cvId) return;
-    void exec("removing", () => removeCv(id), async () => {
+    const removed = async () => {
+      lostRemove.current = null;
       if (!(await apply(null))) return;
       setAskedId(null);
       toast.success(CV_TOASTS.removed);
-    }, async (e) => {
+    };
+    void exec("removing", () => removeCv(id), removed, async (e) => {
       if (e instanceof ApiError && e.code === "cv_changed") {
         const current = currentCvOf(e.detail);
-        await adopt(current, current === null ? "removed" : "replaced");
+        // gone after an attempt of ours whose answer was lost: that attempt did it, so it is a success
+        if (current === null && lostRemove.current === id) await removed();
+        else {
+          lostRemove.current = null;
+          await adopt(current, current === null ? "removed" : "replaced");
+        }
       } else {
+        lostRemove.current = id;
         setError("remove-failed"); // the dialog stays with the error; the CV is still saved
       }
     });
@@ -290,6 +307,7 @@ export function useCvBlock(): CvBlockProps {
     onConfirmRemove,
     onCancelRemove: () => {
       if (running.current) return;
+      lostRemove.current = null;
       setAskedId(null);
       setError(undefined);
     },

@@ -37,12 +37,6 @@ export function formatFileSize(bytes: number) {
 
 export const formatLabel = (f: CvFormat) => f.toUpperCase();
 
-/** "Resume 2026.pdf" → ["Resume 2026", ".pdf"]: the extension is shown whole while a long stem is cut. */
-export function splitFileName(name: string): [string, string] {
-  const i = name.lastIndexOf(".");
-  return i > 0 ? [name.slice(0, i), name.slice(i)] : [name, ""];
-}
-
 const hasAt = (bytes: Uint8Array, text: string) => {
   const needle = Array.from(text, (c) => c.charCodeAt(0));
   for (let i = 0; i + needle.length <= bytes.length; i++) if (needle.every((b, j) => bytes[i + j] === b)) return true;

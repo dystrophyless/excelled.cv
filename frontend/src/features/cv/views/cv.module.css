@@ -131,13 +131,6 @@
   color: var(--color-muted);
 }
 
-.swapArrow {
-  display: grid;
-  place-items: center;
-  width: var(--control-md);
-  color: var(--color-muted);
-}
-
 .skeletonRow {
   display: flex;
   align-items: flex-start;
@@ -194,6 +187,9 @@
   text-decoration: underline;
   text-decoration-color: var(--color-line-strong);
   text-underline-offset: 3px;
+  /* a 24px target (WCAG 2.5.8): the padding is cancelled by the negative margin, so the facts row does not move */
+  padding-block: var(--space-4);
+  margin-block: calc(-1 * var(--space-4));
 }
 
 .jump:hover {

@@ -134,6 +134,20 @@ export function CvBlock(p: CvBlockProps) {
     else if (phase === "none" && before.phase !== "none") zoneRef.current?.querySelector<HTMLElement>("input[type=file]")?.focus();
   }, [ready, phase, cv?.id]);
 
+  // A file dropped beside the zone must not make the browser open it and leave the page; the zone's own drop still works
+  const dropZoneShown = ready && phase === "none";
+  useEffect(() => {
+    if (!dropZoneShown) return;
+    const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files");
+    const stop = (e: DragEvent) => { if (hasFiles(e)) e.preventDefault(); };
+    window.addEventListener("dragover", stop);
+    window.addEventListener("drop", stop);
+    return () => {
+      window.removeEventListener("dragover", stop);
+      window.removeEventListener("drop", stop);
+    };
+  }, [dropZoneShown]);
+
   const accept = limits.formats.map((f) => `.${f}`).join(",");
   const maxMb = Math.round(limits.maxBytes / 1024 / 1024);
   const dialogError = p.error === "replace-failed" || p.error === "remove-failed";
@@ -263,6 +277,7 @@ export function CvBlock(p: CvBlockProps) {
         open={replacing}
         onClose={() => { if (!saving) p.onCancelPending(); }}
         dismissible={!saving}
+        busy={saving}
         title="Replace your CV?"
         description="The new file becomes your only CV. The current file is deleted and can't be restored."
         data-testid="cv-replace-dialog"
@@ -294,6 +309,7 @@ export function CvBlock(p: CvBlockProps) {
         open={Boolean(p.confirmRemove && cv && ready)}
         onClose={() => { if (!removing) p.onCancelRemove(); }}
         dismissible={!removing}
+        busy={removing}
         title="Remove your CV?"
         description="The file is deleted from your profile and can't be restored. The rest of your profile stays as it is."
         data-testid="cv-remove-dialog"
