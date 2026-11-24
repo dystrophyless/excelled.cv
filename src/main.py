@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from src.auth.router import router as auth_router
 from src.catalog.router import router as catalog_router
 from src.config import settings
+from src.cv.router import router as cv_router
 from src.opportunities.router import router as opportunities_router
 from src.profiles.router import router as profiles_router
 from src.database import async_engine
@@ -87,6 +88,7 @@ app.include_router(skills_router, prefix="/api", tags=["skills"])
 app.include_router(vacancies_router, prefix="/api", tags=["vacancies"])
 app.include_router(profiles_router, prefix="/api", tags=["profiles"])
 app.include_router(opportunities_router, prefix="/api", tags=["opportunities"])
+app.include_router(cv_router, prefix="/api", tags=["cv"])
 
 
 @app.get("/")
