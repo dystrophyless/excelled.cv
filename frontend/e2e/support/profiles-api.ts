@@ -1,11 +1,13 @@
 import type { Page, Route } from "@playwright/test";
 import { account, type Role } from "./auth-api";
+import { mockCv } from "./cv-api";
 import { CATALOG } from "./vacancies-api";
 
 /*
  * page.route mocks for /api/student/profile, /api/company/profile and the catalog the profile forms use — bodies follow
  * specs/003-profiles/contracts/profiles-api.md. Call before page.goto(); later registrations win (Playwright semantics).
- * Write helpers push each parsed request body into a `sink` so tests can assert them.
+ * Every helper that serves a student profile also registers the default CV mock ("no CV", 006-cv) for the profile page;
+ * a spec that cares about the CV registers its own cvServer AFTER these calls. Write helpers push each parsed request body into a `sink` so tests can assert them.
  */
 
 export type Sink = Record<string, unknown>[];
@@ -56,7 +58,10 @@ export const mockProfileCatalog = {
 };
 
 export const mockStudentProfile = {
-  ok: (page: Page, profile = studentProfileFixture()) => at(page, "GET", STUDENT, (r) => json(r, 200, profile)),
+  ok: async (page: Page, profile = studentProfileFixture()) => {
+    await mockCv.none(page);
+    await at(page, "GET", STUDENT, (r) => json(r, 200, profile));
+  },
   notFound: (page: Page) => at(page, "GET", STUDENT, (r) => err(r, 404, "profile_not_found")),
   /** `times`: fail only the first n calls (the page retries once by itself, so 2 = the load fails, Try again works). */
   serverError: (page: Page, times?: number) => at(page, "GET", STUDENT, (r) => err(r, 500, "server_error"), times),
@@ -85,6 +90,7 @@ export async function newStudent(page: Page, { email = "maya@sdu.edu.kz" }: { em
   const posted: Sink = [];
   let stored: Record<string, unknown> | undefined;
   const role: Role = "student";
+  await mockCv.none(page);
   await page.route("**/api/auth/me", (r) =>
     r.request().method() === "GET" ? json(r, 200, { account: account(role, email, Boolean(stored)) }) : r.fallback());
   await at(page, "GET", STUDENT, (r) => (stored ? json(r, 200, stored) : err(r, 404, "profile_not_found")));
@@ -160,8 +166,10 @@ async function profileServer(page: Page, path: string, initial: Record<string, u
   };
 }
 
-export const studentServer = (page: Page, initial = studentProfileFixture()) =>
-  profileServer(page, STUDENT, initial, (b) => b);
+export const studentServer = async (page: Page, initial = studentProfileFixture()) => {
+  await mockCv.none(page);
+  return profileServer(page, STUDENT, initial, (b) => b);
+};
 
 export const companyServer = (page: Page, initial: Record<string, unknown>) =>
   profileServer(page, COMPANY, initial, (b) => companyFrom(b));
