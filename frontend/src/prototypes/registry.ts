@@ -17,6 +17,7 @@ import {
 import {
   AccountDetailsPrototype, DETAILS_STATES as ACCOUNT_DETAILS_STATES, LANDING_STATES, LandingPrototype, ROLE_STATES, RoleStepPrototype,
 } from "./005-landing-role-choice";
+import { CV_STATES, CvProfilePrototype } from "./006-cv";
 
 /*
  * Feature prototypes, added by the ui-designer during /speckit-design.
@@ -79,6 +80,13 @@ export const PROTOTYPES: PrototypeEntry[] = [
       landing: { title: "Landing", states: LANDING_STATES, Component: LandingPrototype },
       "choose-role": { title: "Sign up: choose role", states: ROLE_STATES, Component: RoleStepPrototype },
       "account-details": { title: "Sign up: account details", states: ACCOUNT_DETAILS_STATES, Component: AccountDetailsPrototype },
+    },
+  },
+  {
+    id: "006-cv",
+    title: "Student CV",
+    screens: {
+      profile: { title: "My profile with CV", states: CV_STATES, Component: CvProfilePrototype },
     },
   },
 ];
