@@ -6,6 +6,7 @@ import { Icon } from "@/components/icons";
 import {
   Avatar, BackLink, Button, Card, Container, EmptyState, ExternalLink, PageHeader, Skeleton, Tag, Tray,
 } from "@/components/ui";
+import { formatSalary } from "@/lib/money";
 import { optionLabel } from "@/features/company-vacancies/model";
 import { deadlineInfo, postedAgo, type OpportunityCatalog, type OpportunityDetail } from "../model";
 import styles from "./opportunities.module.css";
@@ -124,12 +125,13 @@ export function OpportunityDetailsView(p: OpportunityDetailsViewProps) {
   const city = optionLabel(p.catalog.cities, o.city);
   const format = optionLabel(p.catalog.formats, o.format);
   const deadline = deadlineInfo(o.applyBy, p.today, true);
+  const salaryText = formatSalary(o.salary, p.catalog.currencies);
   const facts: Fact[] = [
     o.format === "remote"
       ? { icon: "remote", label: "Remote" }
       : { icon: "location", label: [city, format].filter(Boolean).join(" · ") },
     ...(o.duration ? [{ icon: "duration" as const, label: o.duration }] : []),
-    ...(o.salary ? [{ icon: "salary" as const, label: o.salary }] : []),
+    ...(salaryText ? [{ icon: "salary" as const, label: salaryText }] : []),
   ];
   const skills = [
     ...o.requiredSkills.map((name) => ({ name, required: true })),

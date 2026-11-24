@@ -21,6 +21,7 @@ export function toOpportunityCatalog(c: ProfileCatalog): OpportunityCatalog {
     fields: c.fields.map(({ value, label }) => ({ value, label })),
     cities: c.cities,
     formats: c.formats ?? [],
+    currencies: c.currencies ?? [],
     industries: c.industries,
     companySizes: c.companySizes,
   };

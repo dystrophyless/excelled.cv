@@ -179,6 +179,7 @@ export function VacancyEditView(p: VacancyEditViewProps) {
               <FormSection title="Details" description="The description and the deadline students see.">
                 <DetailsFields
                   {...common}
+                  catalog={p.catalog}
                   today={closed ? undefined : p.today}
                   deadlineHint={closed ? "This vacancy is closed. Use Reopen to take applications again." : undefined}
                 />

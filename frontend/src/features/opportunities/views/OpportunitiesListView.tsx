@@ -11,6 +11,7 @@ import {
   KIND_OPTIONS, SORT_OPTIONS, deadlineInfo, filterCount, hasFilters, pluralOpportunities, postedAgo,
   type OpportunityCatalog, type OpportunityItem, type OpportunityKind, type OpportunityPage, type OpportunityQuery, type OpportunitySort,
 } from "../model";
+import { formatSalary } from "@/lib/money";
 import { optionLabel } from "@/features/company-vacancies/model";
 import styles from "./opportunities.module.css";
 
@@ -98,6 +99,7 @@ function useSearchDraft(value: string, onCommit: (v: string) => void, syncKey?: 
 }
 
 function summaryOf(o: OpportunityItem, p: OpportunitiesListViewProps): VacancySummary {
+  const { catalog } = p;
   return {
     id: o.id,
     title: o.title,
@@ -106,7 +108,7 @@ function summaryOf(o: OpportunityItem, p: OpportunitiesListViewProps): VacancySu
     location: optionLabel(p.catalog.cities, o.city) ?? "",
     format: (optionLabel(p.catalog.formats, o.format) ?? "On-site") as VacancySummary["format"],
     duration: o.duration ?? undefined,
-    salary: o.salary ?? undefined,
+    salary: formatSalary(o.salary, catalog.currencies) ?? undefined,
     postedAgo: postedAgo(o.publishedOn, p.today),
     // the list shows the Required skills; Nice to have are on the details page
     skills: o.requiredSkills.map((name) => ({ name, required: true })),

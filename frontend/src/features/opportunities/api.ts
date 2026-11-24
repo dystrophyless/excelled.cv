@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { Salary } from "@/lib/money";
 import { kzDate } from "@/features/company-vacancies/api";
 import {
   toSearchParams, type OpportunityCompanyDetail, type OpportunityDetail, type OpportunityItem, type OpportunityPage, type OpportunityQuery,
@@ -14,7 +15,7 @@ export type ApiOpportunity = {
   city: string;
   format: string;
   duration: string | null;
-  salary: string | null;
+  salary: Salary | null;
   apply_by: string;
   published_at: string;
   required_skills: string[];

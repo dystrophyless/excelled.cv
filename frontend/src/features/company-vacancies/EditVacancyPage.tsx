@@ -3,6 +3,7 @@ import { useBlocker, useNavigate, useParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui";
 import { ApiError } from "@/lib/api";
+import { EMPTY_SALARY } from "@/lib/money";
 import { get, vacancyKey } from "./api";
 import { DEADLINE_ERROR, EMPTY_CATALOG, ROUTES, TITLE_ERROR, conflictVacancy, errorsFor, incompleteFields, isApiError, titleOk } from "./form";
 import { useRestoreFocus } from "./focus";
@@ -12,7 +13,7 @@ import { VacancyEditView, type EditFormAlert } from "./views/VacancyEditView";
 
 const noop = () => {};
 const BLANK: VacancyDraft = {
-  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: "", applyBy: "",
+  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: EMPTY_SALARY, applyBy: "",
   requiredSkills: [], niceSkills: [],
 };
 

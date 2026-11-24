@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { draftToSalary, type Salary } from "@/lib/money";
 import type { Catalog, ClosedBy, StatusCounts, StatusFilter, VacancyAction, VacancyDraft, VacancyItem, VacancyStatus } from "./model";
 
 /* Typed calls for specs/002-employer-vacancies/contracts/vacancies-api.md + pure API <-> view-model mapping. */
@@ -12,7 +13,7 @@ export type ApiVacancy = {
   format: string | null;
   description: string | null;
   duration: string | null;
-  salary: string | null;
+  salary: Salary | null;
   apply_by: string | null;
   closes_at: string | null;
   required_skills: string[];
@@ -36,13 +37,13 @@ export type VacancyInput = {
   format: string | null;
   description: string | null;
   duration: string | null;
-  salary: string | null;
+  salary: Salary | null;
   apply_by: string | null;
   required_skills: string[];
   nice_skills: string[];
 };
 
-export type ApiCatalog = { types: Catalog["types"]; fields: Catalog["fields"]; cities: Catalog["cities"]; formats: Catalog["formats"] };
+export type ApiCatalog = { types: Catalog["types"]; fields: Catalog["fields"]; cities: Catalog["cities"]; formats: Catalog["formats"]; currencies: Catalog["currencies"] };
 export type ListResponse = { items: ApiVacancy[]; counts: StatusCounts };
 export type VacancyList = { items: VacancyItem[]; counts: StatusCounts };
 export type StatusBody = { action: Exclude<VacancyAction, "delete">; version: number; apply_by?: string };
@@ -96,14 +97,14 @@ export function toVacancyInput(d: VacancyDraft): VacancyInput {
     format: orNull(d.format),
     description: orNull(d.description),
     duration: orNull(d.duration),
-    salary: orNull(d.salary),
+    salary: draftToSalary(d.salary),
     apply_by: orNull(d.applyBy),
     required_skills: d.requiredSkills,
     nice_skills: d.niceSkills,
   };
 }
 
-export const toCatalog = (c: ApiCatalog): Catalog => ({ types: c.types, fields: c.fields, cities: c.cities, formats: c.formats });
+export const toCatalog = (c: ApiCatalog): Catalog => ({ types: c.types, fields: c.fields, cities: c.cities, formats: c.formats, currencies: c.currencies });
 
 const BASE = "/api/company/vacancies";
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { toast } from "@/components/ui";
 import { useCompanyProfile } from "@/features/profiles/hooks";
 import { ApiError } from "@/lib/api";
+import { EMPTY_SALARY } from "@/lib/money";
 import { DEADLINE_ERROR, EMPTY_CATALOG, ROUTES, TITLE_ERROR, errorsFor, incompleteFields, isApiError, titleOk } from "./form";
 import { focusHeading } from "./focus";
 import { todayKz, useCatalog, useCreateVacancy, useSkillSuggestions } from "./hooks";
@@ -10,7 +11,7 @@ import { TOASTS, type DraftErrors, type VacancyDraft } from "./model";
 import { VacancyWizardView, type WizardAlert, type WizardStep } from "./views/VacancyWizardView";
 
 const EMPTY_DRAFT: VacancyDraft = {
-  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: "", applyBy: "",
+  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: EMPTY_SALARY, applyBy: "",
   requiredSkills: [], niceSkills: [],
 };
 

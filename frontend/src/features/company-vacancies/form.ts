@@ -1,10 +1,11 @@
 import { ApiError } from "@/lib/api";
+import { AMOUNT_ERROR } from "@/lib/money";
 import { toVacancyItem, type ApiVacancy } from "./api";
 import type { Catalog, DraftErrors, DraftField, VacancyItem, VacancyRoutes } from "./model";
 
 /* Shared by NewVacancyPage and EditVacancyPage: API error → form messages. */
 
-export const EMPTY_CATALOG: Catalog = { types: [], fields: [], cities: [], formats: [] };
+export const EMPTY_CATALOG: Catalog = { types: [], fields: [], cities: [], formats: [], currencies: [] };
 
 export const ROUTES: VacancyRoutes = {
   list: "/company/vacancies",
@@ -25,6 +26,7 @@ const FIELD_MESSAGE: Record<DraftField, string> = {
   description: "Add a description",
   applyBy: "Choose an Apply by date",
   requiredSkills: "Add at least one required skill",
+  salary: AMOUNT_ERROR,
 };
 
 /** The names the API uses in `incomplete.fields` (snake_case) → the form's field keys. */

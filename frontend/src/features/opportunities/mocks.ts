@@ -1,5 +1,6 @@
 import { CATALOG as VACANCY_CATALOG } from "@/features/company-vacancies/mocks";
 import { CATALOG as PROFILE_CATALOG } from "@/features/profiles/mocks";
+import type { Salary } from "@/lib/money";
 import { STUDENT_SKILLS } from "@/mocks/data";
 import {
   PAGE_SIZE, type OpportunityCatalog, type OpportunityCompanyDetail, type OpportunityDetail, type OpportunityItem, type OpportunityPage,
@@ -22,6 +23,7 @@ export const CATALOG: OpportunityCatalog = {
   fields: PROFILE_CATALOG.fields.map(({ value, label }) => ({ value, label })),
   cities: VACANCY_CATALOG.cities,
   formats: VACANCY_CATALOG.formats,
+  currencies: VACANCY_CATALOG.currencies,
   industries: PROFILE_CATALOG.industries,
   companySizes: PROFILE_CATALOG.companySizes,
 };
@@ -76,17 +78,17 @@ type Row = Omit<OpportunityItem, "company" | "niceSkills" | "duration" | "salary
   company: keyof typeof COMPANIES;
   nice?: string[];
   duration?: string;
-  salary?: string;
+  salary?: Salary;
   description: string;
 };
 
 const ROWS: Row[] = [
   { id: "o1", title: "Backend Intern (Python)", company: "kaspi", type: "internship", field: "backend", city: "almaty", format: "hybrid",
-    duration: "3 months", salary: "200 000 ₸ / month", applyBy: "2026-12-15", publishedOn: "2026-11-24",
+    duration: "3 months", salary: { min: 200000, max: 300000, currency: "KZT" }, applyBy: "2026-12-15", publishedOn: "2026-11-24",
     requiredSkills: ["Python", "SQL", "FastAPI", "Docker"], nice: ["Redis", "Git"],
     description: "Join the Payments team and build services used by 14 million people every day.\nYou will ship real features with a mentor from week one: REST endpoints in FastAPI, SQL for reporting and code review in a friendly team.\nWe offer flexible hours around your studies and a full-time offer for the best interns." },
   { id: "o2", title: "Research Assistant, Kazakh Language Models", company: "issai", type: "research", field: "data_science", city: "astana", format: "on_site",
-    duration: "6 months", salary: "150 000 ₸ / month", applyBy: "2026-12-20", publishedOn: "2026-11-23",
+    duration: "6 months", salary: { min: 150000, max: 150000, currency: "KZT" }, applyBy: "2026-12-20", publishedOn: "2026-11-23",
     requiredSkills: ["Python", "Machine learning", "PyTorch"], nice: ["Linux", "Kazakh"],
     description: "Help the language technology group collect, clean and evaluate Kazakh text and speech data, and train small models on it.\nYou will work with a researcher on one experiment from idea to a written result.\nStudents of any year with solid Python and some machine learning coursework are welcome." },
   { id: "o3", title: "Data Analyst Intern", company: "halyk", type: "internship", field: "data_analytics", city: "almaty", format: "on_site",
@@ -94,7 +96,7 @@ const ROWS: Row[] = [
     requiredSkills: ["SQL", "Excel", "Power BI"], nice: ["Python", "Statistics"],
     description: "Support the retail analytics team: prepare weekly reports, check data quality and build dashboards for branch managers.\nYou will learn how a large bank turns transactions into decisions, with a mentor who reviews your queries." },
   { id: "o4", title: "Junior Frontend Developer", company: "kolesa", type: "full_time", field: "frontend", city: "almaty", format: "remote",
-    salary: "450 000 ₸ / month", applyBy: "2026-12-31", publishedOn: "2026-11-21",
+    salary: { min: 450000, max: 600000, currency: "KZT" }, applyBy: "2026-12-31", publishedOn: "2026-11-21",
     requiredSkills: ["TypeScript", "React", "Git"], nice: ["Figma"],
     description: "Build and maintain pages of our marketplaces with React and TypeScript.\nYou will pair with a senior developer during the first month, then own small features end to end.\nWe work remotely and meet in the Almaty office once a month." },
   { id: "o5", title: "QA Engineer Intern", company: "epam", type: "internship", field: "qa", city: "astana", format: "hybrid",
@@ -106,19 +108,19 @@ const ROWS: Row[] = [
     requiredSkills: ["Python", "Pandas", "Machine learning"], nice: ["Statistics"],
     description: "Join a faculty-led project that estimates crop health in Kazakhstan from open satellite images.\nYou will prepare image datasets, train a baseline model and compare it with field measurements.\nThe project meets weekly. Ask your department whether the work can count towards a course project." },
   { id: "o7", title: "Product Design Intern", company: "indrive", type: "internship", field: "design", city: "almaty", format: "remote",
-    duration: "3 months", applyBy: "2026-12-05", publishedOn: "2026-11-19",
+    duration: "3 months", salary: { min: 600, max: null, currency: "EUR" }, applyBy: "2026-12-05", publishedOn: "2026-11-19",
     requiredSkills: ["Figma", "UX research"], nice: ["English"],
     description: "Work with a product designer on one feature of the driver app: interviews, flows, prototypes and a final handoff to developers.\nYou will present your result to the team at the end of the internship." },
   { id: "o8", title: "Junior Data Engineer", company: "beeline", type: "full_time", field: "data_engineering", city: "astana", format: "hybrid",
-    salary: "500 000 ₸ / month", applyBy: "2027-01-15", publishedOn: "2026-11-18",
+    salary: { min: 500000, max: null, currency: "KZT" }, applyBy: "2027-01-15", publishedOn: "2026-11-18",
     requiredSkills: ["Python", "SQL", "PostgreSQL"], nice: ["Docker"],
     description: "Build and monitor the data pipelines that feed reports and marketing offers.\nYou will start with small fixes, then own one pipeline with a senior engineer reviewing your work." },
   { id: "o9", title: "iOS Developer Intern", company: "choco", type: "internship", field: "mobile", city: "almaty", format: "on_site",
-    duration: "3 months", salary: "180 000 ₸ / month", applyBy: "2026-11-30", publishedOn: "2026-11-17",
+    duration: "3 months", salary: { min: 180000, max: 180000, currency: "KZT" }, applyBy: "2026-11-30", publishedOn: "2026-11-17",
     requiredSkills: ["Swift", "Git"], nice: ["Figma"],
     description: "Build and polish screens of our iPhone app with a senior iOS developer.\nYou will fix real bugs in the first week and ship one small feature before the internship ends." },
   { id: "o10", title: "Python Developer (part-time)", company: "jusan", type: "part_time", field: "backend", city: "astana", format: "remote",
-    salary: "250 000 ₸ / month", applyBy: "2026-12-18", publishedOn: "2026-11-16",
+    salary: { min: null, max: 250000, currency: "KZT" }, applyBy: "2026-12-18", publishedOn: "2026-11-16",
     requiredSkills: ["Python", "FastAPI"], nice: ["Git", "Linux"],
     description: "Twenty hours a week, planned around your classes. You will build and test internal APIs in FastAPI and join the team's code reviews.\nA good fit for third and fourth-year students." },
   { id: "o11", title: "Research Intern, Computer Vision", company: "iict", type: "research", field: "data_science", city: "almaty", format: "on_site",
@@ -130,7 +132,7 @@ const ROWS: Row[] = [
     requiredSkills: ["Python", "Excel", "Statistics"],
     description: "Help a laboratory group process measurement data and prepare plots for a paper.\nYou will learn how experiments are documented and how results are checked before publication." },
   { id: "o13", title: "UX Research Intern", company: "kolesa", type: "internship", field: "design", city: "almaty", format: "hybrid",
-    duration: "3 months", applyBy: "2026-12-12", publishedOn: "2026-11-13",
+    duration: "3 months", salary: { min: 70000, max: 90000, currency: "RUB" }, applyBy: "2026-12-12", publishedOn: "2026-11-13",
     requiredSkills: ["UX research", "Figma", "Russian"], nice: ["English"],
     description: "Plan and run user interviews for the real estate marketplace, summarise what you learn and present it to product managers.\nA researcher from our team coaches you through each study." },
   { id: "o14", title: "DevOps Intern", company: "kazakhtelecom", type: "internship", field: "devops", city: "astana", format: "on_site",
@@ -142,11 +144,11 @@ const ROWS: Row[] = [
     requiredSkills: ["Python", "Excel", "Statistics"], nice: ["MATLAB"],
     description: "Join a group that models electricity demand for regional networks.\nYou will clean consumption data, run simulations and discuss the results at the group's weekly seminar." },
   { id: "o16", title: "Data Science Intern", company: "kaspi", type: "internship", field: "data_science", city: "almaty", format: "hybrid",
-    duration: "4 months", salary: "250 000 ₸ / month", applyBy: "2026-12-01", publishedOn: "2026-11-10",
+    duration: "4 months", salary: { min: 250000, max: 350000, currency: "KZT" }, applyBy: "2026-12-01", publishedOn: "2026-11-10",
     requiredSkills: ["Python", "Pandas", "Machine learning", "SQL"], nice: ["Statistics"],
     description: "Work on a recommendation model for the marketplace with a data scientist from the team.\nYou will prepare features, run experiments and compare them with the current model." },
   { id: "o17", title: "Junior Java Developer", company: "halyk", type: "full_time", field: "backend", city: "almaty", format: "hybrid",
-    salary: "420 000 ₸ / month", applyBy: "2027-01-20", publishedOn: "2026-11-09",
+    salary: { min: 420000, max: null, currency: "KZT" }, applyBy: "2027-01-20", publishedOn: "2026-11-09",
     requiredSkills: ["Java", "Spring", "SQL"], nice: ["Docker", "Git"],
     description: "Develop and support services of the digital banking platform in Java and Spring.\nNew developers get a buddy and a three-month plan with clear goals." },
   { id: "o18", title: "Research Intern, Bioinformatics", company: "nusom", type: "research", field: "data_analytics", city: "astana", format: "on_site",
@@ -154,7 +156,7 @@ const ROWS: Row[] = [
     requiredSkills: ["Python", "Statistics"], nice: ["Linux"],
     description: "Help analyse genetic and clinical data for a study run at the School of Medicine.\nYou will clean datasets, run statistical tests and learn how research data is kept anonymous." },
   { id: "o19", title: "Frontend Intern (React)", company: "arbuz", type: "internship", field: "frontend", city: "almaty", format: "remote",
-    duration: "3 months", salary: "150 000 ₸ / month", applyBy: "2026-12-14", publishedOn: "2026-11-07",
+    duration: "3 months", salary: { min: 150000, max: 150000, currency: "KZT" }, applyBy: "2026-12-14", publishedOn: "2026-11-07",
     requiredSkills: ["JavaScript", "React", "Git"], nice: ["TypeScript"],
     description: "Improve the checkout and product pages of the shop. You will take small tasks from the board, open pull requests and get reviews within a day." },
   { id: "o20", title: "Research Assistant, Applied Mathematics", company: "auezov", type: "research", field: "other", city: "shymkent", format: "on_site",
@@ -162,7 +164,7 @@ const ROWS: Row[] = [
     requiredSkills: ["Python", "Statistics", "English"],
     description: "Support a mathematics group working on numerical methods: implement algorithms in Python, test them on examples and help prepare a conference paper." },
   { id: "o21", title: "Data Analyst (part-time)", company: "magnum", type: "part_time", field: "data_analytics", city: "almaty", format: "hybrid",
-    salary: "220 000 ₸ / month", applyBy: "2026-12-08", publishedOn: "2026-11-05",
+    salary: { min: 220000, max: 220000, currency: "KZT" }, applyBy: "2026-12-08", publishedOn: "2026-11-05",
     requiredSkills: ["Excel", "SQL", "Power BI"], nice: ["Python"],
     description: "Prepare sales and stock reports for category managers, about 20 hours a week.\nYou will own two regular dashboards and improve them with the managers' feedback." },
   { id: "o22", title: "Android Developer Intern", company: "kcell", type: "internship", field: "mobile", city: "almaty", format: "hybrid",
@@ -170,7 +172,7 @@ const ROWS: Row[] = [
     requiredSkills: ["Kotlin", "Git"], nice: ["Java"],
     description: "Build screens of the Kcell app in Kotlin with a mentor from the mobile team, and fix bugs reported by users." },
   { id: "o23", title: "Junior Product Analyst", company: "indrive", type: "full_time", field: "product", city: "almaty", format: "hybrid",
-    salary: "550 000 ₸ / month", applyBy: "2027-01-31", publishedOn: "2026-11-03",
+    salary: { min: 1500, max: 2200, currency: "USD" }, applyBy: "2027-01-31", publishedOn: "2026-11-03",
     requiredSkills: ["SQL", "Excel", "Statistics"], nice: ["Python", "English"],
     description: "Measure how new features change user behaviour: write SQL, design simple experiments and explain the results to product managers." },
   { id: "o24", title: "Research Assistant, Natural Language Processing", company: "aitu", type: "research", field: "data_science", city: "astana", format: "hybrid",
@@ -190,6 +192,9 @@ export const detailOf = (id: string): OpportunityDetail | undefined => {
   const r = ROWS.find((x) => x.id === id);
   return r && { ...toItem(r), description: r.description, company: COMPANIES[r.company] };
 };
+
+/** Salary stress test for 390 px: the longest range the form accepts, and a million. */
+export const LONG_SALARY: Salary = { min: 1000000, max: 999999999, currency: "KZT" };
 
 /** The sparest valid opportunity: no salary, duration, nice-to-have skills, company website or company description. */
 export const MINIMAL_DETAIL: OpportunityDetail = (() => {

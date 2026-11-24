@@ -1,3 +1,4 @@
+import type { Salary } from "@/lib/money";
 import { formatDay, formatDayYear, type Catalog, type CatalogOption } from "@/features/company-vacancies/model";
 
 /*
@@ -11,7 +12,7 @@ export type { Catalog, CatalogOption };
 /** Catalog of vacancy values (types, fields, cities, formats) + the company values the details page shows. */
 export type OpportunityCatalog = Catalog & { industries: CatalogOption[]; companySizes: CatalogOption[] };
 
-export const EMPTY_CATALOG: OpportunityCatalog = { types: [], fields: [], cities: [], formats: [], industries: [], companySizes: [] };
+export const EMPTY_CATALOG: OpportunityCatalog = { types: [], fields: [], cities: [], formats: [], currencies: [], industries: [], companySizes: [] };
 
 /** What the student filters by: Internship · Vacancy (Full-time + Part-time) · Research. "" = All. */
 export type OpportunityKind = "" | "internship" | "vacancy" | "research";
@@ -95,7 +96,8 @@ export type OpportunityItem = {
   city: string;
   format: string;
   duration: string | null;
-  salary: string | null;
+  /** monthly amounts + currency; null = none */
+  salary: Salary | null;
   /** ISO date YYYY-MM-DD, the deadline */
   applyBy: string;
   /** ISO date YYYY-MM-DD */

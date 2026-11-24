@@ -1,3 +1,4 @@
+import { EMPTY_SALARY, salaryToDraft, type CurrencyOption } from "@/lib/money";
 import { SKILL_OPTIONS as SHARED_SKILLS } from "@/mocks/data";
 import type {
   Catalog, DraftErrors, DraftField, StatusCounts, StatusFilter, VacancyDraft, VacancyItem, VacancyRoutes,
@@ -11,7 +12,14 @@ import type {
 export const MOCK_TODAY = "2026-10-30";
 export const MOCK_COMPANY = "Kaspi.kz";
 
+/** GET /api/catalog → currencies: tenge first (the default). */
+export const CURRENCIES: CurrencyOption[] = [
+  { value: "KZT", label: "Tenge", symbol: "₸" }, { value: "USD", label: "US dollar", symbol: "$" },
+  { value: "EUR", label: "Euro", symbol: "€" }, { value: "RUB", label: "Russian ruble", symbol: "₽" },
+];
+
 export const CATALOG: Catalog = {
+  currencies: CURRENCIES,
   types: [
     { value: "internship", label: "Internship" },
     { value: "full_time", label: "Full-time" },
@@ -63,12 +71,12 @@ export const FUTURE_APPLICANTS: Record<string, [number, number]> = { v1: [48, 6]
 export const VACANCIES: VacancyItem[] = [
   base({
     id: "v1", title: "Backend Intern (Python)", status: "open", type: "internship", field: "backend", city: "almaty", format: "hybrid",
-    description: DESCRIPTION, duration: "3 months", salary: "200 000 ₸ / month", applyBy: "2026-11-30",
+    description: DESCRIPTION, duration: "3 months", salary: { min: 200000, max: 300000, currency: "KZT" }, applyBy: "2026-11-30",
     requiredSkills: ["Python", "SQL", "FastAPI", "Docker"], niceSkills: ["Redis", "Git"], version: 3, updatedOn: "2026-10-28",
   }),
   base({
     id: "v2", title: "iOS Developer Intern", status: "open", type: "internship", field: "mobile", city: "almaty", format: "on_site",
-    description: "Build and polish screens of the Kaspi mobile app with a senior iOS engineer.", duration: "3 months", salary: "180 000 ₸ / month",
+    description: "Build and polish screens of the Kaspi mobile app with a senior iOS engineer.", duration: "3 months", salary: { min: 180000, max: 180000, currency: "KZT" },
     applyBy: "2026-11-20", requiredSkills: ["Swift", "Git"], niceSkills: ["Figma"], version: 2, updatedOn: "2026-10-26",
   }),
   base({
@@ -87,7 +95,7 @@ export const VACANCIES: VacancyItem[] = [
   }),
   base({
     id: "v6", title: "Python Developer (part-time)", status: "closed", type: "part_time", field: "backend", city: "astana", format: "remote",
-    description: "Maintain internal services in FastAPI, 20 hours a week.", salary: "250 000 ₸ / month", applyBy: "2026-10-15",
+    description: "Maintain internal services in FastAPI, 20 hours a week.", salary: { min: null, max: 250000, currency: "KZT" }, applyBy: "2026-10-15",
     requiredSkills: ["Python", "FastAPI"], niceSkills: ["Git", "Linux"], closedOn: "2026-10-15", closedBy: "deadline", version: 3, updatedOn: "2026-10-15",
   }),
   base({ id: "v7", title: "Frontend Intern (React)", status: "draft", updatedOn: "2026-10-20" }),
@@ -121,13 +129,13 @@ export function countsOf(items: VacancyItem[]): StatusCounts {
 /* ── Form values ─────────────────────────────────────────── */
 
 export const EMPTY_DRAFT: VacancyDraft = {
-  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: "", applyBy: "",
+  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: EMPTY_SALARY, applyBy: "",
   requiredSkills: [], niceSkills: [],
 };
 
 export const COMPLETE_DRAFT: VacancyDraft = {
   title: "Backend Intern (Python)", type: "internship", field: "backend", city: "almaty", format: "hybrid",
-  description: DESCRIPTION, duration: "3 months", salary: "200 000 ₸ / month", applyBy: "2026-11-30",
+  description: DESCRIPTION, duration: "3 months", salary: { min: "200000", max: "300000", currency: "KZT" }, applyBy: "2026-11-30",
   requiredSkills: ["Python", "SQL", "FastAPI"], niceSkills: ["Docker"],
 };
 
@@ -141,7 +149,7 @@ export const PAST_DEADLINE = "2026-10-12";
 /* ── Prototype helpers: what the server decides, faked locally ───────────── */
 
 
-const REQUIRED_TO_PUBLISH: DraftField[] = ["title", "type", "field", "city", "format", "description", "applyBy", "requiredSkills"];
+const REQUIRED_TO_PUBLISH: Exclude<DraftField, "salary">[] = ["title", "type", "field", "city", "format", "description", "applyBy", "requiredSkills"];
 
 /** Which fields stop this draft from becoming Open (the API answers `incomplete` with the same list). */
 export function missingFields(d: VacancyDraft, today = MOCK_TODAY): { fields: DraftField[]; errors: DraftErrors } {
@@ -163,5 +171,5 @@ export function missingFields(d: VacancyDraft, today = MOCK_TODAY): { fields: Dr
 export const missingOf = (v: VacancyItem) =>
   missingFields({
     title: v.title, type: v.type ?? "", field: v.field ?? "", city: v.city ?? "", format: v.format ?? "", description: v.description ?? "",
-    duration: v.duration ?? "", salary: v.salary ?? "", applyBy: v.applyBy ?? "", requiredSkills: v.requiredSkills, niceSkills: v.niceSkills,
+    duration: v.duration ?? "", salary: salaryToDraft(v.salary), applyBy: v.applyBy ?? "", requiredSkills: v.requiredSkills, niceSkills: v.niceSkills,
   });

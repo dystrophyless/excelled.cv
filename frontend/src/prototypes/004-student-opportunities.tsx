@@ -4,7 +4,7 @@ import { StateSwitcher, useViewState } from "@/components/dev";
 import { Stack } from "@/components/layout";
 import { Button, Modal, TextareaField, toast } from "@/components/ui";
 import {
-  CATALOG, DETAILS_PATH, LIST_PATH, MINIMAL_DETAIL, MOCK_TODAY, OPPORTUNITIES, STUDENT_HAS, detailOf, previewScore, searchOpportunities,
+  CATALOG, DETAILS_PATH, LIST_PATH, LONG_SALARY, MINIMAL_DETAIL, MOCK_TODAY, OPPORTUNITIES, STUDENT_HAS, detailOf, previewScore, searchOpportunities,
 } from "@/features/opportunities/mocks";
 import { DEFAULT_QUERY, hasFilters, parseQuery, toSearchParams, type OpportunityItem, type OpportunityQuery } from "@/features/opportunities/model";
 import { OpportunitiesListView, type OpportunitiesListState } from "@/features/opportunities/views/OpportunitiesListView";
@@ -16,8 +16,8 @@ import { OpportunityDetailsView, type OpportunityDetailsState } from "@/features
  * all work. `with-match` previews the later Match / Apply / Save features; the application never passes those props.
  */
 
-export const LIST_STATES = ["default", "loading", "updating", "none-yet", "no-results", "error", "filters-open", "with-match"] as const;
-export const DETAILS_STATES = ["default", "minimal", "loading", "unavailable", "error", "with-match"] as const;
+export const LIST_STATES = ["default", "loading", "updating", "none-yet", "no-results", "error", "filters-open", "with-match", "long-numbers"] as const;
+export const DETAILS_STATES = ["default", "minimal", "loading", "unavailable", "error", "with-match", "long-numbers"] as const;
 
 const LATENCY = 350;
 const QUERY_KEYS = ["q", "type", "format", "city", "field", "sort", "page"];
@@ -76,7 +76,12 @@ function ListInner({ state }: { state: (typeof LIST_STATES)[number] }) {
   }, [toSearchParams(query).toString()]);
 
   const none = state === "none-yet";
-  const data = useMemo(() => searchOpportunities(none ? [] : OPPORTUNITIES, shown), [none, shown]);
+  const stress = state === "long-numbers";
+  // salary stress test: the longest range the form accepts on the first and the fourth card
+  const data = useMemo(() => {
+    const found = searchOpportunities(none ? [] : OPPORTUNITIES, shown);
+    return stress ? { ...found, items: found.items.map((o) => (o.id === "o1" || o.id === "o4" ? { ...o, salary: LONG_SALARY } : o)) } : found;
+  }, [none, stress, shown]);
 
   const viewState: OpportunitiesListState = state === "loading" ? "loading" : state === "error" ? "error" : busy ? "updating" : "ready";
 
@@ -138,7 +143,8 @@ function DetailsInner({ state }: { state: (typeof DETAILS_STATES)[number] }) {
   const [applied, setApplied] = useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
 
-  const opportunity = state === "minimal" ? MINIMAL_DETAIL : detailOf(id);
+  const found = detailOf(id);
+  const opportunity = state === "minimal" ? MINIMAL_DETAIL : state === "long-numbers" && found ? { ...found, salary: LONG_SALARY } : found;
   const viewState: OpportunityDetailsState =
     state === "loading" ? "loading" : state === "error" ? "error" : state === "unavailable" || !opportunity ? "unavailable" : "ready";
 

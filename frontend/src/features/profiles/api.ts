@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { CurrencyOption } from "@/lib/money";
 import type { CompanyProfile, CompanyValues, Option, ProfileCatalog, StudentProfile, StudentValues } from "./model";
 import { toStudentIn } from "./model";
 
@@ -66,6 +67,7 @@ export type ApiProfileCatalog = {
   types: ApiOption[];
   language_levels: ApiOption[];
   formats?: ApiOption[];
+  currencies?: CurrencyOption[];
 };
 
 /** One FastAPI 422 item (default validation shape). */
@@ -134,6 +136,7 @@ export const toProfileCatalog = (c: ApiProfileCatalog): ProfileCatalog => ({
   types: c.types,
   languageLevels: c.language_levels,
   formats: c.formats ?? [],
+  currencies: c.currencies ?? [],
 });
 
 export const EMPTY_PROFILE_CATALOG: ProfileCatalog = {

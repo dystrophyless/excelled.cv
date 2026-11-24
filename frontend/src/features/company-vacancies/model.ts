@@ -1,5 +1,6 @@
 import type { IconName } from "@/components/icons";
 import type { TagTone } from "@/components/ui";
+import { salaryToDraft, type CurrencyOption, type Salary, type SalaryDraft } from "@/lib/money";
 
 /*
  * View-model of the employer's vacancies (what the views render). The page containers map the API
@@ -22,7 +23,8 @@ export type VacancyItem = {
   format: string | null;
   description: string | null;
   duration: string | null;
-  salary: string | null;
+  /** monthly amounts + currency (FR-020); null = none */
+  salary: Salary | null;
   /** ISO date YYYY-MM-DD */
   applyBy: string | null;
   requiredSkills: string[];
@@ -39,7 +41,11 @@ export type VacancyItem = {
 };
 
 export type CatalogOption = { value: string; label: string };
-export type Catalog = { types: CatalogOption[]; fields: CatalogOption[]; cities: CatalogOption[]; formats: CatalogOption[] };
+export type Catalog = {
+  types: CatalogOption[]; fields: CatalogOption[]; cities: CatalogOption[]; formats: CatalogOption[];
+  /** tenge first (the default), then USD, EUR, RUB */
+  currencies: CurrencyOption[];
+};
 
 /** The form values of the wizard and the edit form (VacancyInput in the API). */
 export type VacancyDraft = {
@@ -50,14 +56,15 @@ export type VacancyDraft = {
   format: string;
   description: string;
   duration: string;
-  salary: string;
+  /** digits as typed, see SalaryField */
+  salary: SalaryDraft;
   applyBy: string;
   requiredSkills: string[];
   niceSkills: string[];
 };
 
 /** Field keys the API names in `incomplete.fields`. */
-export type DraftField = "title" | "type" | "field" | "city" | "format" | "description" | "applyBy" | "requiredSkills";
+export type DraftField = "title" | "type" | "field" | "city" | "format" | "description" | "applyBy" | "requiredSkills" | "salary";
 export type DraftErrors = Partial<Record<DraftField, string>>;
 
 export type VacancyRoutes = {
@@ -168,12 +175,12 @@ export const optionLabel = (options: CatalogOption[], value: string | null) => o
 export function toDraft(v: VacancyItem): VacancyDraft {
   return {
     title: v.title, type: v.type ?? "", field: v.field ?? "", city: v.city ?? "", format: v.format ?? "",
-    description: v.description ?? "", duration: v.duration ?? "", salary: v.salary ?? "", applyBy: v.applyBy ?? "",
+    description: v.description ?? "", duration: v.duration ?? "", salary: salaryToDraft(v.salary), applyBy: v.applyBy ?? "",
     requiredSkills: v.requiredSkills, niceSkills: v.niceSkills,
   };
 }
 
 export const DRAFT_FIELD_LABEL: Record<DraftField, string> = {
   title: "Title", type: "Type", field: "Field", city: "City", format: "Format", description: "Description",
-  applyBy: "Apply by", requiredSkills: "Required skills",
+  applyBy: "Apply by", requiredSkills: "Required skills", salary: "Salary",
 };

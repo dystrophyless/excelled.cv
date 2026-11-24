@@ -1,3 +1,4 @@
+import type { CurrencyOption } from "@/lib/money";
 /*
  * 003-profiles: shared types, labels, limits and the client-side validation that mirrors the API (research R6).
  * Used by the Views (labels), the prototypes and the real pages (validation before PUT/POST, 422 mapping).
@@ -28,6 +29,8 @@ export type ProfileCatalog = {
   languageLevels: Option[];
   /** work formats (On-site, Hybrid, Remote); read by the student opportunities filters, not by the profile forms */
   formats?: Option[];
+  /** salary currencies (KZT first); read by the vacancy forms and the opportunities views, not by the profile forms */
+  currencies?: CurrencyOption[];
 };
 
 /** A screen that reads data first: catalog (onboarding) or catalog + profile (profile and edit pages). */
