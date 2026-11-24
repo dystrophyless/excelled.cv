@@ -84,7 +84,7 @@ async def _received_file(request: Request, db: AsyncSession, claimed: CvFormat) 
 
     if not data:
         raise api_error(status.HTTP_422_UNPROCESSABLE_CONTENT, "cv_empty", "The file is empty.")
-    if await anyio.to_thread.run_sync(formats.detect_format, data) != claimed:
+    if not await anyio.to_thread.run_sync(formats.matches_format, data, claimed):
         raise _unsupported()
     return data
 
@@ -135,3 +135,26 @@ async def download_cv(cv_id: uuid.UUID, profile_id: ProfileId, db: Db):
             "Cache-Control": "private, no-store",
         },
     )
+
+
+@router.put("/{cv_id}", response_model=CvOut)
+async def replace_cv(cv_id: uuid.UUID, request: Request, account: Student, _access: ProfileId, db: Db):
+    name, claimed = _checked_name(request)
+    data = await _received_file(request, db, claimed)
+    if data is None:
+        return RawResponse(status_code=status.HTTP_400_BAD_REQUEST)
+
+    profile_id = await student_profile_id(db, account.user.id)
+    if profile_id is None:
+        raise profile_required(PROFILE_MESSAGE)
+    replaced = await repository.replace(db, profile_id, cv_id, name, claimed, data)
+    if replaced is None:
+        raise cv_changed(await repository.get_current(db, profile_id))
+    return replaced
+
+
+@router.delete("/{cv_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_cv(cv_id: uuid.UUID, profile_id: ProfileId, db: Db):
+    if not await repository.remove(db, profile_id, cv_id):
+        raise cv_changed(await repository.get_current(db, profile_id))
+    return RawResponse(status_code=status.HTTP_204_NO_CONTENT)
