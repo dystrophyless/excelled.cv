@@ -3,14 +3,14 @@ import { Stack } from "@/components/layout";
 import { Alert, Button, PasswordField, TextField, TextLink, Tray } from "@/components/ui";
 import { AuthFrame, resolveRoutes, type AuthRoutes } from "./auth-parts";
 import styles from "./auth.module.css";
-import { ROLE_LABEL } from "./roles";
-import type { SignUpRole, SignUpState } from "./SignUpView";
+import { ROLE_LABEL, type SignUpRole } from "./roles";
 
 /*
  * 005 S3 — sign-up step 2: email + password for the role chosen in step 1.
- * Same states and fields as 001 S2 (SignUpView) minus the role switch; the role is shown with a "Change role" button.
- * The implementation replaces SignUpView with this view; the role switch goes away.
+ * Same states and fields as 001 S2 (the former SignUpView) minus the role switch; the role is shown with a "Change role" button.
  */
+
+export type SignUpState = "default" | "submitting" | "email-taken" | "field-errors" | "server-error";
 
 export type AccountDetailsViewProps = {
   state: SignUpState;
@@ -21,11 +21,13 @@ export type AccountDetailsViewProps = {
   onSubmit?: (values: { email: string; password: string }) => void;
   /** Back to the role step; the email typed so far travels with it */
   onChangeRole?: (email: string) => void;
+  /** Every edit of the email field, so the page can keep it across browser Back / Forward */
+  onEmailChange?: (email: string) => void;
   routes?: Partial<AuthRoutes>;
   home?: string;
 };
 
-export function AccountDetailsView({ state, role, email = "", errors, onSubmit, onChangeRole, routes, home }: AccountDetailsViewProps) {
+export function AccountDetailsView({ state, role, email = "", errors, onSubmit, onChangeRole, onEmailChange, routes, home }: AccountDetailsViewProps) {
   const r = resolveRoutes(routes);
   const [emailValue, setEmailValue] = useState(email);
   const [password, setPassword] = useState("");
@@ -72,7 +74,10 @@ export function AccountDetailsView({ state, role, email = "", errors, onSubmit, 
               placeholder={hr ? "you@company.com" : "you@university.edu"}
               hint={hr ? "Use your work email" : undefined}
               value={emailValue}
-              onChange={(e) => setEmailValue(e.target.value)}
+              onChange={(e) => {
+                setEmailValue(e.target.value);
+                onEmailChange?.(e.target.value);
+              }}
               error={errors?.email}
               aria-invalid={state === "email-taken" || undefined}
             />

@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from "react-router";
 import { StateSwitcher, useViewState } from "@/components/dev";
 import { MOCK_EMAIL } from "@/features/auth/mocks";
-import { AccountDetailsView } from "@/features/auth/views/AccountDetailsView";
+import { AccountDetailsView, type SignUpState } from "@/features/auth/views/AccountDetailsView";
 import type { AuthRoutes } from "@/features/auth/views/auth-parts";
 import { RoleStepView, type RoleStepState } from "@/features/auth/views/RoleStepView";
-import type { SignUpRole, SignUpState } from "@/features/auth/views/SignUpView";
+import type { SignUpRole } from "@/features/auth/views/roles";
 import { SIGN_UP_FIELD_ERRORS } from "@/features/auth/mocks";
 import { LandingView } from "@/features/landing/views/LandingView";
 

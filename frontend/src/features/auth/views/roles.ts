@@ -1,7 +1,8 @@
 import type { IconName } from "@/components/icons";
-import type { SignUpRole } from "./SignUpView";
 
-/* 005: the two roles of sign-up, shared by the role step and the account details step. */
+/* 005: the two roles of sign-up (API values), shared by the role step and the account details step. */
+export type SignUpRole = "student" | "employer";
+
 export const ROLE_LABEL: Record<SignUpRole, string> = { student: "Student", employer: "HR Representative" };
 
 export const ROLE_OPTIONS: { value: SignUpRole; label: string; description: string; icon: IconName }[] = [

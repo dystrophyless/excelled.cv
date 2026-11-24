@@ -2,8 +2,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { Stack } from "@/components/layout";
 import { Button, ChoiceCardGroup, TextLink, Tray } from "@/components/ui";
 import { AuthFrame, resolveRoutes, type AuthRoutes } from "./auth-parts";
-import { ROLE_OPTIONS } from "./roles";
-import type { SignUpRole } from "./SignUpView";
+import { ROLE_OPTIONS, type SignUpRole } from "./roles";
 
 /* 005 S2 — sign-up step 1: choose a role. Nothing preselected; Continue without a role stays and shows the error. */
 
