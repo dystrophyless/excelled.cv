@@ -4,12 +4,13 @@ import { mockSignOut, signedInAs } from "./support/auth-api";
 import {
   bigPdf, cvFixture, cvServer, docxFile, emptyFile, fakePdf, mockCv, pdfFile, textFile, type ApiCvFixture, type TestFile,
 } from "./support/cv-api";
+import { mockOpportunities } from "./support/opportunities-api";
 import { mockProfileCatalog, mockStudentProfile } from "./support/profiles-api";
 
 /*
  * Feature 006-cv, US1 (upload and download): the CV block on My profile (ui-spec S1).
  * The API is mocked with page.route (support/cv-api.ts); contract: specs/006-cv/contracts/cv-api.md.
- * Replace (S1a) and remove (S1b) are tested with their own stories.
+ * US2 replace (S1a), US3 remove (S1b) and the races follow.
  */
 
 const EMAIL = "maya@sdu.edu.kz";
@@ -165,7 +166,7 @@ test.describe("US1 refusals", () => {
 
   const SERVER: [string, "empty" | "format" | "too-large" | "name", string][] = [
     ["cv_empty", "empty", "This file is empty."],
-    ["cv_format_unsupported", "format", "This isn't a PDF or DOCX file."],
+    ["cv_format_unsupported", "format", "This file is damaged or not a real PDF or DOCX."],
     ["cv_too_large", "too-large", "This file is larger than 5 MB."],
     ["cv_name_invalid", "name", "This isn't a PDF or DOCX file."],
   ];
@@ -405,5 +406,403 @@ test.describe("US1 layout", () => {
     test.skip(!page.viewportSize() || page.viewportSize()!.width >= 1024, "mobile only");
     await open(page, cvFixture());
     await expect(page.getByTestId("cv-jump")).toHaveText("CV uploaded");
+  });
+});
+
+/* ── US2 replace (S1a) ───────────────────────────────────────────────────── */
+
+const replaceInput = (page: Page) => page.getByTestId("cv-replace-input");
+const replaceDialog = (page: Page) => page.getByTestId("cv-replace-dialog");
+const removeDialog = (page: Page) => page.getByTestId("cv-remove-dialog");
+/** What the "Replace" button does for the user: the hidden input receives the file. */
+const chooseReplacement = (page: Page, file: TestFile) => replaceInput(page).setInputFiles(file);
+const confirmReplace = (page: Page) => replaceDialog(page).getByRole("button", { name: "Replace CV" });
+const confirmRemove = (page: Page) => removeDialog(page).getByRole("button", { name: "Remove CV" });
+const askRemove = (page: Page) => page.getByRole("button", { name: "Remove", exact: true });
+/** The browser coming back online: the stale CV query refetches (the app has no window-focus refetch). */
+const refetchNow = (page: Page) => page.evaluate(() => {
+  window.dispatchEvent(new Event("offline"));
+  window.dispatchEvent(new Event("online"));
+});
+const OTHER = () => cvFixture({ id: "cv-9", file_name: "Other_tab_CV.docx", format: "docx", size_bytes: 20_000 });
+
+test.describe("US2 replace", () => {
+  test("a valid file opens the dialog naming both files; Replace CV replaces, announces and focuses the new CV", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await chooseReplacement(page, pdfFile("Maya_Akhmetova_CV_2026.pdf", 530 * 1024));
+    const dialog = replaceDialog(page);
+    await expect(dialog).toContainText("Replace your CV?");
+    await expect(dialog).toContainText("Maya_Akhmetova_CV.pdf");
+    await expect(dialog).toContainText("Maya_Akhmetova_CV_2026.pdf");
+    await expect(dialog).toContainText("PDF · 530 KB");
+    await expect(dialog.getByRole("button", { name: "Keep current CV" })).toBeFocused();
+    expect(server.puts).toHaveLength(0); // choosing stores nothing
+    await expectNoA11yViolations(page);
+
+    await confirmReplace(page).click();
+    await expect(toast(page)).toContainText("CV replaced");
+    await expect(dialog).toBeHidden();
+    await expect(page.getByTestId("cv-stored")).toContainText("Maya_Akhmetova_CV_2026.pdf");
+    await expect(page.getByTestId("cv-stored")).toBeFocused();
+    expect(server.puts).toEqual([{ id: "cv-1", name: "Maya_Akhmetova_CV_2026.pdf", size: 530 * 1024 }]);
+    await page.reload();
+    await expect(page.getByTestId("cv-stored")).toContainText("Maya_Akhmetova_CV_2026.pdf");
+    await expectNoA11yViolations(page);
+  });
+
+  test("Keep current CV and Esc cancel without sending anything", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await chooseReplacement(page, docxFile("New.docx"));
+    await replaceDialog(page).getByRole("button", { name: "Keep current CV" }).click();
+    await expect(replaceDialog(page)).toBeHidden();
+    await chooseReplacement(page, docxFile("New.docx"));
+    await expect(replaceDialog(page)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(replaceDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-stored")).toContainText("Maya_Akhmetova_CV.pdf");
+    expect(server.puts).toHaveLength(0);
+  });
+
+  test("an invalid file: error in the block, the old CV stays, no dialog", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await chooseReplacement(page, textFile());
+    await expect(page.getByTestId("cv-error")).toContainText("This isn't a PDF or DOCX file.");
+    await expect(block(page)).toContainText("PDF or DOCX, up to 5 MB.");
+    await expect(page.getByTestId("cv-stored")).toContainText("Maya_Akhmetova_CV.pdf");
+    await expect(replaceDialog(page)).toBeHidden();
+    await expectNoA11yViolations(page);
+    await page.getByTestId("cv-error").getByRole("button", { name: /dismiss|close/i }).click();
+    await expect(page.getByTestId("cv-error")).toHaveCount(0);
+    expect(server.puts).toHaveLength(0);
+  });
+
+  test("a failed replace keeps the dialog with an error and the old CV; retry works", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    server.failPut("server");
+    await chooseReplacement(page, pdfFile("New_CV.pdf"));
+    await confirmReplace(page).click();
+    await expect(replaceDialog(page)).toContainText("Couldn't replace your CV. Your current CV is unchanged.");
+    await expect(page.getByTestId("cv-stored")).toContainText("Maya_Akhmetova_CV.pdf");
+    await expectNoA11yViolations(page);
+    await confirmReplace(page).click();
+    await expect(page.getByTestId("cv-stored")).toContainText("New_CV.pdf");
+    expect(server.puts.map((p) => p.id)).toEqual(["cv-1", "cv-1"]);
+  });
+
+  for (const [kind, text] of [["empty", "This file is empty."], ["format", "This file is damaged or not a real PDF or DOCX."], ["too-large", "This file is larger than 5 MB."]] as const) {
+    test(`the server refuses (${kind}): the dialog closes, the refusal shows in the block, the old CV stays`, async ({ page }) => {
+      const server = await open(page, cvFixture());
+      server.failPut(kind);
+      await chooseReplacement(page, pdfFile("New_CV.pdf"));
+      await confirmReplace(page).click();
+      await expect(replaceDialog(page)).toBeHidden();
+      await expect(page.getByTestId("cv-error")).toContainText(text);
+      await expect(page.getByTestId("cv-stored")).toContainText("Maya_Akhmetova_CV.pdf");
+      expect(server.current()!.id).toBe("cv-1");
+    });
+  }
+
+  test("the answer is lost, the retry gets cv_changed showing our own file: it counts as replaced", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    server.failPut("lose-answer");
+    await chooseReplacement(page, pdfFile("New_CV.pdf", 3000));
+    await confirmReplace(page).click();
+    await expect(replaceDialog(page)).toContainText("Couldn't replace your CV.");
+    await confirmReplace(page).click();
+    await expect(toast(page)).toContainText("CV replaced");
+    await expect(page.getByTestId("cv-stored")).toContainText("New_CV.pdf");
+    await expect(page.getByTestId("cv-notice")).toHaveCount(0);
+  });
+
+  test("the answer is lost, then a refresh shows our own file: success, not a notice", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    server.failPut("lose-answer");
+    await chooseReplacement(page, pdfFile("New_CV.pdf", 3000));
+    await confirmReplace(page).click();
+    await expect(replaceDialog(page)).toContainText("Couldn't replace your CV.");
+    await refetchNow(page);
+    await expect(toast(page)).toContainText("CV replaced");
+    await expect(replaceDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-stored")).toContainText("New_CV.pdf");
+    await expect(page.getByTestId("cv-notice")).toHaveCount(0);
+  });
+
+  test("replaced in another tab: confirming overwrites nothing, shows the current CV and a notice", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await chooseReplacement(page, pdfFile("New_CV.pdf"));
+    server.elsewhere(OTHER());
+    await confirmReplace(page).click();
+    await expect(replaceDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-notice")).toContainText("Your CV was replaced in another tab");
+    await expect(page.getByTestId("cv-stored")).toContainText("Other_tab_CV.docx");
+    expect(server.current()!.id).toBe("cv-9");
+    await expectNoA11yViolations(page);
+  });
+
+  test("removed in another tab: the zone and the removed notice", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await chooseReplacement(page, pdfFile("New_CV.pdf"));
+    server.elsewhere(null);
+    await confirmReplace(page).click();
+    await expect(page.getByTestId("cv-notice")).toContainText("Your CV was removed in another tab");
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+    expect(server.current()).toBeNull();
+  });
+
+  test("a refresh while the dialog is open shows another CV: the dialog closes, a notice, no request", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await chooseReplacement(page, pdfFile("New_CV.pdf"));
+    await expect(replaceDialog(page)).toBeVisible();
+    server.elsewhere(OTHER());
+    await refetchNow(page);
+    await expect(replaceDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-notice")).toContainText("Your CV was replaced in another tab");
+    await expect(page.getByTestId("cv-stored")).toContainText("Other_tab_CV.docx");
+    expect(server.puts).toHaveLength(0);
+  });
+
+  test("a refresh while a file is chosen (no CV) drops it with the added notice; no dialog ever opens", async ({ page }) => {
+    const server = await open(page);
+    await choose(page, pdfFile("Mine.pdf"));
+    server.elsewhere(OTHER());
+    await refetchNow(page);
+    await expect(page.getByTestId("cv-notice")).toContainText("A CV was added in another tab");
+    await expect(page.getByTestId("cv-stored")).toContainText("Other_tab_CV.docx");
+    await expect(page.getByTestId("cv-chosen")).toHaveCount(0);
+    await expect(replaceDialog(page)).toBeHidden();
+    expect(server.posts).toHaveLength(0);
+  });
+
+  test("upload answer lost, then a refresh shows our own file: success, not 'added'", async ({ page }) => {
+    const server = await open(page);
+    server.failPost("lose-answer");
+    await choose(page, pdfFile("Maya_Akhmetova_CV.pdf", 3000));
+    await upload(page).click();
+    await expect(page.getByTestId("cv-error")).toBeVisible();
+    await refetchNow(page);
+    await expect(toast(page)).toContainText("CV uploaded");
+    await expect(page.getByTestId("cv-stored")).toContainText("Maya_Akhmetova_CV.pdf");
+    await expect(page.getByTestId("cv-notice")).toHaveCount(0);
+    await expect(page.getByTestId("cv-error")).toHaveCount(0);
+  });
+
+  test("a refresh during our own request raises no notice and cannot overwrite the result", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await chooseReplacement(page, pdfFile("New_CV.pdf"));
+    const release = server.hold();
+    await confirmReplace(page).click();
+    await expect.poll(() => server.puts.length).toBe(1);
+    await refetchNow(page);
+    release();
+    await expect(page.getByTestId("cv-stored")).toContainText("New_CV.pdf");
+    await expect(toast(page)).toContainText("CV replaced");
+    await expect(page.getByTestId("cv-notice")).toHaveCount(0);
+  });
+
+  test("a double click sends one PUT; the dialog cannot be dismissed while it runs", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await chooseReplacement(page, pdfFile("New_CV.pdf"));
+    const release = server.hold();
+    await confirmReplace(page).dblclick();
+    await expect.poll(() => server.puts.length).toBe(1);
+    await expect(replaceDialog(page).getByRole("button", { name: "Keep current CV" })).toBeDisabled();
+    await page.keyboard.press("Escape");
+    await expect(replaceDialog(page)).toBeVisible();
+    release();
+    await expect(replaceDialog(page)).toBeHidden();
+    expect(server.puts).toHaveLength(1);
+    await expect(page.getByTestId("cv-stored")).toContainText("New_CV.pdf");
+  });
+});
+
+/* ── US3 remove (S1b) ────────────────────────────────────────────────────── */
+
+test.describe("US3 remove", () => {
+  test("Remove asks first, naming the file; Remove CV deletes, announces, shows the zone and survives a reload", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await askRemove(page).click();
+    const dialog = removeDialog(page);
+    await expect(dialog).toContainText("Remove your CV?");
+    await expect(dialog).toContainText("Maya_Akhmetova_CV.pdf");
+    await expect(dialog.getByRole("button", { name: "Keep CV" })).toBeFocused();
+    expect(server.deletes).toHaveLength(0);
+    await expectNoA11yViolations(page);
+    await confirmRemove(page).click();
+    await expect(toast(page)).toContainText("CV removed");
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+    await expect(zoneInput(page)).toBeFocused();
+    await expect(page.getByRole("button", { name: "Download" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Replace" })).toHaveCount(0);
+    await expect(askRemove(page)).toHaveCount(0);
+    expect(server.deletes).toEqual(["cv-1"]);
+    await page.reload();
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+    await expect(page.getByTestId("cv-none")).toBeVisible();
+  });
+
+  test("Keep CV and Esc cancel; nothing is sent and the CV stays", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await askRemove(page).click();
+    await removeDialog(page).getByRole("button", { name: "Keep CV" }).click();
+    await expect(removeDialog(page)).toBeHidden();
+    await expect(askRemove(page)).toBeFocused(); // focus returns to the opener
+    await askRemove(page).click();
+    await page.keyboard.press("Escape");
+    await expect(removeDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-stored")).toBeVisible();
+    expect(server.deletes).toHaveLength(0);
+  });
+
+  test("a failed removal keeps the dialog with an error and the CV; retry works", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    server.failDelete("server");
+    await askRemove(page).click();
+    await confirmRemove(page).click();
+    await expect(removeDialog(page)).toContainText("Couldn't remove your CV. It is still saved.");
+    await expect(page.getByTestId("cv-stored")).toBeVisible();
+    expect(server.current()).not.toBeNull();
+    await expectNoA11yViolations(page);
+    await confirmRemove(page).click();
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+    expect(server.deletes).toEqual(["cv-1", "cv-1"]);
+  });
+
+  test("the network fails: same error, the CV is intact", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    server.failDelete("network");
+    await askRemove(page).click();
+    await confirmRemove(page).click();
+    await expect(removeDialog(page)).toContainText("Couldn't remove your CV.");
+    await expect(page.getByTestId("cv-stored")).toBeVisible();
+  });
+
+  test("already removed elsewhere (409 cv_changed, no CV): the removed notice and the zone", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await askRemove(page).click();
+    server.elsewhere(null);
+    await confirmRemove(page).click();
+    await expect(removeDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-notice")).toContainText("Your CV was removed in another tab");
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+    await expect(toast(page)).toHaveCount(0);
+  });
+
+  test("replaced elsewhere (409 cv_changed with another CV): the dialog closes, the replaced notice, that CV is kept", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await askRemove(page).click();
+    server.elsewhere(OTHER());
+    await confirmRemove(page).click();
+    await expect(removeDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-notice")).toContainText("Your CV was replaced in another tab");
+    await expect(page.getByTestId("cv-stored")).toContainText("Other_tab_CV.docx");
+    expect(server.current()!.id).toBe("cv-9"); // never deleted
+    await expectNoA11yViolations(page);
+  });
+
+  test("a refresh while the dialog is open shows another CV: the dialog closes, a notice, nothing deleted", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await askRemove(page).click();
+    await expect(removeDialog(page)).toBeVisible();
+    server.elsewhere(OTHER());
+    await refetchNow(page);
+    await expect(removeDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-notice")).toContainText("Your CV was replaced in another tab");
+    expect(server.deletes).toHaveLength(0);
+    expect(server.current()!.id).toBe("cv-9");
+  });
+
+  test("the answer is lost, the retry finds it already removed: the CV is gone", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    server.failDelete("lose-answer");
+    await askRemove(page).click();
+    await confirmRemove(page).click();
+    await expect(removeDialog(page)).toContainText("Couldn't remove your CV.");
+    await confirmRemove(page).click();
+    await expect(removeDialog(page)).toBeHidden();
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+    await expect(page.getByTestId("cv-stored")).toHaveCount(0);
+  });
+
+  test("a double click sends one DELETE; the dialog cannot be dismissed while it runs", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await askRemove(page).click();
+    const release = server.hold();
+    await confirmRemove(page).dblclick();
+    await expect.poll(() => server.deletes.length).toBe(1);
+    await page.keyboard.press("Escape");
+    await expect(removeDialog(page)).toBeVisible();
+    release();
+    await expect(removeDialog(page)).toBeHidden();
+    expect(server.deletes).toHaveLength(1);
+  });
+
+  test("upload after removal works", async ({ page }) => {
+    await open(page, cvFixture());
+    await askRemove(page).click();
+    await confirmRemove(page).click();
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+    await choose(page, pdfFile("Fresh.pdf"));
+    await upload(page).click();
+    await expect(page.getByTestId("cv-stored")).toContainText("Fresh.pdf");
+  });
+});
+
+/* ── races and mapping ───────────────────────────────────────────────────── */
+
+test.describe("races", () => {
+  test("a refresh during our own upload raises no notice and the result is kept", async ({ page }) => {
+    const server = await open(page);
+    await choose(page, pdfFile("Mine.pdf"));
+    const release = server.hold();
+    await upload(page).click();
+    await expect.poll(() => server.posts.length).toBe(1);
+    await refetchNow(page);
+    release();
+    await expect(page.getByTestId("cv-stored")).toContainText("Mine.pdf");
+    await expect(page.getByTestId("cv-notice")).toHaveCount(0);
+    await expect(toast(page)).toHaveCount(1);
+  });
+
+  test("an upload that finishes after sign-out never reaches the next account's cache", async ({ page }) => {
+    test.skip(page.viewportSize()!.width < 1024, "the account menu is in the header on desktop only");
+    const server = await open(page);
+    await mockSignOut.ok(page);
+    await mockOpportunities.empty(page);
+    await choose(page, pdfFile("Maya_Akhmetova_CV.pdf"));
+    const release = server.hold();
+    await upload(page).click();
+    await expect.poll(() => server.posts.length).toBe(1);
+
+    await page.getByTestId("account-menu").click();
+    await page.getByRole("menuitem", { name: /log out|sign out/i }).click();
+    await expect(page).not.toHaveURL(/\/app\/profile/);
+
+    // the next session's CV request is held, so what the page shows meanwhile can only come from the cache
+    let releaseGet!: () => void;
+    const gate = new Promise<void>((r) => { releaseGet = r; });
+    await page.route(/\/api\/student\/cv(\?.*)?$/, async (route) => {
+      if (route.request().method() !== "GET") return route.fallback();
+      await gate;
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ cv: null, limits: { formats: ["pdf", "docx"], max_bytes: 5242880 } }) });
+    });
+    release();
+    await page.waitForTimeout(500); // the stale response arrives here
+    await page.evaluate(() => {
+      history.pushState({}, "", "/app/profile");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    await expect(block(page)).toHaveAttribute("aria-busy", "true");
+    await expect(page.getByTestId("cv-stored")).toHaveCount(0);
+    await expect(toast(page).filter({ hasText: "CV uploaded" })).toHaveCount(0);
+    releaseGet();
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+  });
+
+  test("a server cv_format_unsupported after the client check means the content does not match: damaged wording", async ({ page }) => {
+    const server = await open(page);
+    server.failPost("format");
+    await choose(page, pdfFile());
+    await upload(page).click();
+    await expect(block(page).getByRole("alert")).toContainText("This file is damaged or not a real PDF or DOCX.");
   });
 });

@@ -62,9 +62,30 @@ export async function cvServer(page: Page, initial: ApiCvFixture | null = null, 
     postFailures: [] as PostFailure[],
     getFailures: [] as ("server" | "network")[],
     fileFailures: [] as ("server" | "network")[],
+    putFailures: [] as PostFailure[],
+    deleteFailures: [] as ("network" | "server" | "lose-answer")[],
+    gate: null as Promise<void> | null,
     nextId: 2,
   };
+
+  /** The refusals shared by POST and PUT; false means "carry on and store". */
+  const refuse = async (route: Route, failure: PostFailure | undefined): Promise<boolean> => {
+    switch (failure) {
+      case "network": await route.abort("failed"); return true;
+      case "server": await err(route, 500, "server_error"); return true;
+      case "timeout": await err(route, 408, "cv_upload_timeout"); return true;
+      case "empty": await err(route, 422, "cv_empty"); return true;
+      case "format": await err(route, 422, "cv_format_unsupported"); return true;
+      case "name": await err(route, 422, "cv_name_invalid"); return true;
+      case "too-large": await err(route, 413, "cv_too_large", { max_bytes: CV_LIMITS_API.max_bytes }); return true;
+      case "unauthorized": await err(route, 401, "not_signed_in"); return true;
+      case "no-profile": await err(route, 403, "student_profile_required"); return true;
+      default: return false;
+    }
+  };
   const posts: CvPost[] = [];
+  const puts: { id: string; name: string; size: number }[] = [];
+  const deletes: string[] = [];
   const gets: number[] = [];
   const downloads: string[] = [];
 
@@ -82,24 +103,44 @@ export async function cvServer(page: Page, initial: ApiCvFixture | null = null, 
     const headerName = request.headers()["x-file-name"] ?? "";
     const name = decodeURIComponent(headerName);
     posts.push({ name, size: body.length, contentType: request.headers()["content-type"] });
+    if (state.gate) await state.gate;
     const failure = state.postFailures.shift();
-    switch (failure) {
-      case "network": return route.abort("failed");
-      case "server": return err(route, 500, "server_error");
-      case "timeout": return err(route, 408, "cv_upload_timeout");
-      case "empty": return err(route, 422, "cv_empty");
-      case "format": return err(route, 422, "cv_format_unsupported");
-      case "name": return err(route, 422, "cv_name_invalid");
-      case "too-large": return err(route, 413, "cv_too_large", { max_bytes: CV_LIMITS_API.max_bytes });
-      case "unauthorized": return err(route, 401, "not_signed_in");
-      case "no-profile": return err(route, 403, "student_profile_required");
-      default:
-    }
+    if (await refuse(route, failure)) return;
     if (state.cv) return err(route, 409, "cv_exists", { cv: state.cv });
     state.cv = cvFixture({ id: `cv-${state.nextId++}`, file_name: name, format: format(name), size_bytes: body.length, uploaded_at: "2026-11-25T10:00:00Z" });
     state.bytes = body;
     if (failure === "lose-answer") return route.abort("failed");
     return json(route, 201, state.cv);
+  });
+
+  // PUT and DELETE /api/student/cv/{id}
+  await page.route(/\/api\/student\/cv\/[^/]+(\?.*)?$/, async (route) => {
+    const request = route.request();
+    const method = request.method();
+    if (method !== "PUT" && method !== "DELETE") return route.fallback();
+    const id = decodeURIComponent(new URL(request.url()).pathname.split("/").at(-1)!);
+    if (method === "PUT") {
+      const body = request.postDataBuffer() ?? Buffer.alloc(0);
+      const name = decodeURIComponent(request.headers()["x-file-name"] ?? "");
+      puts.push({ id, name, size: body.length });
+      if (state.gate) await state.gate;
+      const failure = state.putFailures.shift();
+      if (await refuse(route, failure)) return;
+      if (!state.cv || state.cv.id !== id) return err(route, 409, "cv_changed", { cv: state.cv });
+      state.cv = cvFixture({ id: `cv-${state.nextId++}`, file_name: name, format: format(name), size_bytes: body.length, uploaded_at: "2026-11-26T10:00:00Z" });
+      state.bytes = body;
+      if (failure === "lose-answer") return route.abort("failed");
+      return json(route, 200, state.cv);
+    }
+    deletes.push(id);
+    if (state.gate) await state.gate;
+    const failure = state.deleteFailures.shift();
+    if (failure === "network") return route.abort("failed");
+    if (failure === "server") return err(route, 500, "server_error");
+    if (!state.cv || state.cv.id !== id) return err(route, 409, "cv_changed", { cv: state.cv });
+    state.cv = null;
+    if (failure === "lose-answer") return route.abort("failed");
+    return json(route, 204);
   });
 
   await page.route(/\/api\/student\/cv\/[^/]+\/file$/, async (route) => {
@@ -122,7 +163,17 @@ export async function cvServer(page: Page, initial: ApiCvFixture | null = null, 
 
   return {
     posts,
+    puts,
+    deletes,
     gets,
+    /** Holds every POST / PUT / DELETE answer until `release()` (a request that is slow, or still running at sign-out). */
+    hold: () => {
+      let release!: () => void;
+      state.gate = new Promise<void>((r) => { release = r; });
+      return () => { state.gate = null; release(); };
+    },
+    failPut: (...kinds: PostFailure[]) => { state.putFailures.push(...kinds); },
+    failDelete: (...kinds: ("network" | "server" | "lose-answer")[]) => { state.deleteFailures.push(...kinds); },
     downloads,
     current: () => state.cv,
     failPost: (...kinds: PostFailure[]) => { state.postFailures.push(...kinds); },
