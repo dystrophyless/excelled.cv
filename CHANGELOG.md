@@ -26,7 +26,7 @@ Filter Opportunities, and the research type of US-08).
 - Salary as monthly amounts "from" and "to" (whole numbers 1 to 999 999 999) with a currency (KZT by default, also USD,
   EUR, RUB); `GET /api/catalog` lists `currencies` with their symbols.
 - Contract: `specs/004-student-opportunities/contracts/opportunities-api.md`.
-- 63 API tests and about 130 browser tests for the feature, plus 69 API tests for the salary change.
+- 63 API tests and about 130 browser tests for the feature, plus 69 API tests and about 110 browser tests for the salary change.
 
 ### Changed
 - The student menu has a single item, Opportunities. The demo pages Home, Applications and Saved redirect to it, and

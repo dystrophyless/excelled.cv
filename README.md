@@ -135,7 +135,7 @@ npm run build && npm run lint && npm run lint:css
 npm run test:e2e                # Playwright + axe; builds and serves the app itself
 ```
 
-Current baseline: 389 API tests and about 580 browser tests (every flow on desktop and on a phone, including
+Current baseline: 389 API tests and about 700 browser tests (every flow on desktop and on a phone, including
 accessibility checks).
 
 ## API overview
