@@ -28,7 +28,7 @@ export function resolveRoutes(routes?: Partial<AuthRoutes>): AuthRoutes {
 
 export function AuthFrame({ title, subtitle, legal, home, children }: { title: string; subtitle: ReactNode; legal?: ReactNode; home?: string; children: ReactNode }) {
   return (
-    <div className={styles.page}>
+    <main id="main" className={styles.page}>
       <div className={styles.column}>
         <div className={styles.logo}><Logo to={home} /></div>
         <div className={styles.head}>
@@ -38,7 +38,7 @@ export function AuthFrame({ title, subtitle, legal, home, children }: { title: s
         {children}
         {legal && <p className={styles.legal}>{legal}</p>}
       </div>
-    </div>
+    </main>
   );
 }
 

@@ -45,9 +45,9 @@ export function VerifyEmailView({ state, email, attemptsLeft = 2, resendIn = 60,
     return (
       <AuthFrame
         title="Start again"
-        subtitle={tooMany ? "We cancelled this sign-up. Your email is saved." : "This sign-up expired or was cancelled."}
+        subtitle={tooMany ? "We cancelled this registration. Your email is saved." : "This registration expired or was cancelled."}
       >
-        <Tray padding="lg" footerAlign="center" footer={<span>Already verified?&nbsp;<TextLink to={r.signIn}>Sign in</TextLink></span>}>
+        <Tray padding="lg" footerAlign="center" footer={<span>Already verified?&nbsp;<TextLink to={r.signIn}>Log in</TextLink></span>}>
           <Stack gap={14}>
             <Alert tone={tooMany ? "error" : "warning"} title={tooMany ? "Too many wrong codes" : "Nothing to verify"}>
               Start again to get a new code.
