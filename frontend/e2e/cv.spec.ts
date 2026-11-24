@@ -721,6 +721,48 @@ test.describe("US3 remove", () => {
     await expect(removeDialog(page)).toBeHidden();
     await expect(page.getByTestId("cv-zone")).toBeVisible();
     await expect(page.getByTestId("cv-stored")).toHaveCount(0);
+    await expect(toast(page)).toContainText("CV removed"); // our own earlier attempt did it: not "removed in another tab"
+    await expect(page.getByTestId("cv-notice")).toHaveCount(0);
+  });
+
+  test("the answer is lost, then a refresh shows it gone: CV removed, no notice", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    server.failDelete("lose-answer");
+    await askRemove(page).click();
+    await confirmRemove(page).click();
+    await expect(removeDialog(page)).toContainText("Couldn't remove your CV.");
+    await refetchNow(page);
+    await expect(removeDialog(page)).toBeHidden();
+    await expect(toast(page)).toContainText("CV removed");
+    await expect(page.getByTestId("cv-zone")).toBeVisible();
+    await expect(page.getByTestId("cv-notice")).toHaveCount(0);
+  });
+
+  test("after cancelling the failed removal, a refresh showing it gone is a notice again", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    server.failDelete("lose-answer");
+    await askRemove(page).click();
+    await confirmRemove(page).click();
+    await expect(removeDialog(page)).toContainText("Couldn't remove your CV.");
+    await removeDialog(page).getByRole("button", { name: "Keep CV" }).click();
+    await refetchNow(page);
+    await expect(page.getByTestId("cv-notice")).toContainText("Your CV was removed in another tab");
+    await expect(toast(page)).toHaveCount(0);
+  });
+
+  test("the Close X is disabled while a request runs and enabled otherwise", async ({ page }) => {
+    const server = await open(page, cvFixture());
+    await askRemove(page).click();
+    const close = removeDialog(page).getByRole("button", { name: "Close" });
+    await expect(close).toBeEnabled();
+    const release = server.hold();
+    await confirmRemove(page).click();
+    await expect.poll(() => server.deletes.length).toBe(1);
+    await expect(close).toBeDisabled();
+    await page.keyboard.press("Escape");
+    await expect(removeDialog(page)).toBeVisible();
+    release();
+    await expect(removeDialog(page)).toBeHidden();
   });
 
   test("a double click sends one DELETE; the dialog cannot be dismissed while it runs", async ({ page }) => {
@@ -804,5 +846,36 @@ test.describe("races", () => {
     await choose(page, pdfFile());
     await upload(page).click();
     await expect(block(page).getByRole("alert")).toContainText("This file is damaged or not a real PDF or DOCX.");
+  });
+});
+
+test.describe("layout and drop", () => {
+  test("the mobile identity link is at least 24px high", async ({ page }) => {
+    test.skip(page.viewportSize()!.width >= 1024, "mobile only");
+    await open(page);
+    const box = (await page.getByTestId("cv-jump").boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(24);
+    await expectNoA11yViolations(page);
+  });
+
+  /** Fires a drag event carrying (or not) a file at `selector`; returns whether the page prevented the default. */
+  const fire = (page: Page, selector: string, type: "dragover" | "drop", withFile: boolean) =>
+    page.evaluate(([sel, kind, file]) => {
+      const dt = new DataTransfer();
+      if (file) dt.items.add(new File(["%PDF-1.4"], "Dropped.pdf", { type: "application/pdf" }));
+      const event = new DragEvent(kind, { bubbles: true, cancelable: true, dataTransfer: dt });
+      document.querySelector(sel)!.dispatchEvent(event);
+      return event.defaultPrevented;
+    }, [selector, type, withFile] as const);
+
+  test("a file dropped beside the zone does not navigate away; other drags are left alone; the zone still takes its drop", async ({ page }) => {
+    await open(page);
+    expect(await fire(page, "h1", "dragover", true)).toBe(true);
+    expect(await fire(page, "h1", "drop", true)).toBe(true);
+    expect(await fire(page, "h1", "dragover", false)).toBe(false); // text and links are not touched
+    await fire(page, "[data-testid=cv-zone]", "drop", true);
+    await expect(page.getByTestId("cv-chosen")).toContainText("Dropped.pdf");
+    // the zone is gone: the guard is removed with it
+    expect(await fire(page, "h1", "drop", true)).toBe(false);
   });
 });
