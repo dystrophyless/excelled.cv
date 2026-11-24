@@ -6,34 +6,26 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.dependencies import CurrentAccount, require_role
 from src.auth.exceptions import api_error
 from src.catalog.enums import City, VacancyField, WorkFormat
 from src.database import get_session
 from src.opportunities import repository
 from src.opportunities.schemas import OpportunityKind, OpportunityListOut, OpportunityOut, OpportunitySort
-from src.profiles.repository import has_profile
+from src.profiles.dependencies import require_student_profile
 from src.vacancies import rules
 from src.vacancies.deadlines import now_utc
 
 router = APIRouter(prefix="/student/opportunities")
 
-Student = Annotated[CurrentAccount, Depends(require_role("student"))]
 Now = Annotated[datetime, Depends(now_utc)]
 
 
 async def opportunity_db(
-    account: Student,
+    _profile_id: Annotated[int, Depends(require_student_profile("Create your profile to see opportunities."))],
     db: Annotated[AsyncSession, Depends(get_session)],
     now: Now,
 ) -> AsyncSession:
     """The session, after the role check, the student-profile check (FR-001) and the deadline sweep."""
-    if not await has_profile(db, account.user):
-        raise api_error(
-            status.HTTP_403_FORBIDDEN,
-            "student_profile_required",
-            "Create your profile to see opportunities.",
-        )
     await rules.sweep_expired(db, now)
     return db
 
