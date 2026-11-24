@@ -59,7 +59,7 @@ async def test_nothing_is_listed_without_a_company_profile(
 
 async def test_an_item_carries_what_the_card_shows(client, student_with_profile, employer, make_vacancy):
     vacancy = await make_vacancy(
-        employer, status=S.open, required=["SQL", "Python"], nice=["Docker"], duration="3 months", salary=None
+        employer, status=S.open, required=["SQL", "Python"], nice=["Docker"], duration="3 months"
     )
     item = (await fetch(client, student_with_profile))["items"][0]
     assert item["id"] == vacancy.id

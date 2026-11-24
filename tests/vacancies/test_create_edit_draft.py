@@ -46,7 +46,7 @@ async def test_publishing_on_create_opens_the_vacancy(client, employer):
     assert body["closes_at"] == closes_at_for(deadline).isoformat().replace("+00:00", "Z")
     assert body["required_skills"] == ["Python", "SQL"]
     assert body["nice_skills"] == ["Docker"]
-    assert body["duration"] == "3 months" and body["salary"] == "200 000 ₸ / month"
+    assert body["duration"] == "3 months" and body["salary"] == {"min": 200000, "max": 300000, "currency": "KZT"}
 
 
 async def test_publishing_an_incomplete_vacancy_names_what_is_missing(client, employer, db):

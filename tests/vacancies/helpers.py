@@ -19,7 +19,7 @@ def complete(**overrides) -> dict:
         "format": "hybrid",
         "description": "Join the Payments team.",
         "duration": "3 months",
-        "salary": "200 000 ₸ / month",
+        "salary": {"min": 200000, "max": 300000, "currency": "KZT"},
         "apply_by": day(14).isoformat(),
         "required_skills": ["Python", "SQL"],
         "nice_skills": ["Docker"],

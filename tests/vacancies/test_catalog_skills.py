@@ -11,7 +11,7 @@ async def test_the_catalog_is_public_and_complete(client):
     assert response.status_code == 200
     body = response.json()
     assert set(body) == {
-        "types", "fields", "cities", "formats", "industries", "company_sizes", "degrees", "language_levels",
+        "types", "fields", "cities", "formats", "industries", "company_sizes", "degrees", "language_levels", "currencies",
     }
     assert {"value": "full_time", "label": "Full-time"} in body["types"]
     assert {"value": "on_site", "label": "On-site"} in body["formats"]

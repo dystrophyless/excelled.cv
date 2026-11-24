@@ -1,6 +1,6 @@
 """One opportunity (spec FR-005, FR-007)."""
 
-from src.catalog.enums import City, Industry, VacancyType
+from src.catalog.enums import City, Currency, Industry, VacancyType
 from src.users.models import UserRole
 from src.vacancies.models import VacancyStatus
 
@@ -20,7 +20,7 @@ async def test_everything_the_employer_published(
     )  # fmt: skip
     vacancy = await make_vacancy(
         owner, status=S.open, type=VacancyType.research, required=["SQL", "Python"], nice=["R"], duration="1 semester",
-        salary="150 000 ₸",
+        salary_min=150000, salary_currency=Currency.KZT,
     )  # fmt: skip
 
     response = await client.get(f"{LIST}/{vacancy.id}", headers=student_with_profile.headers)
@@ -30,7 +30,10 @@ async def test_everything_the_employer_published(
     assert body["type"] == "research"
     assert body["description"] == "Join the Payments team."
     assert (body["field"], body["city"], body["format"]) == ("backend", "almaty", "hybrid")
-    assert (body["duration"], body["salary"]) == ("1 semester", "150 000 ₸")
+    assert (body["duration"], body["salary"]) == (
+        "1 semester",
+        {"min": 150000, "max": None, "currency": "KZT"},
+    )
     assert body["apply_by"] == vacancy.apply_by.isoformat()
     assert (body["required_skills"], body["nice_skills"]) == (["SQL", "Python"], ["R"])
     assert body["company"] == {
