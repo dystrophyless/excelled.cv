@@ -4,7 +4,7 @@ import { Icon } from "@/components/icons";
 import { AppShell, Avatar, Button, NotificationCenter, ProfileMenu, type NavItem } from "@/components/ui";
 import { useMe, useSignOut } from "@/features/auth/hooks";
 import { useCompanyProfile, useStudentProfile } from "@/features/profiles/hooks";
-import { EMPLOYER_NOTIFICATIONS, STUDENT_NOTIFICATIONS } from "@/mocks/data";
+import { EMPLOYER_NOTIFICATIONS } from "@/mocks/data";
 import styles from "./layouts.module.css";
 
 /*
@@ -12,11 +12,9 @@ import styles from "./layouts.module.css";
  * Pages never build their own header.
  */
 
+// 004: Home, Applications and Saved stay hidden until their features are real (the templates keep them as references)
 export const STUDENT_NAV: NavItem[] = [
-  { to: "/app", label: "Home", icon: "home", end: true },
-  { to: "/app/vacancies", label: "Vacancies", icon: "vacancy" },
-  { to: "/app/applications", label: "Applications", icon: "application" },
-  { to: "/app/saved", label: "Saved", icon: "saved" },
+  { to: "/app/opportunities", label: "Opportunities", icon: "vacancy" },
 ];
 
 export const EMPLOYER_NAV: NavItem[] = [
@@ -106,11 +104,11 @@ export function StudentLayout({ children }: { children: ReactNode }) {
   const signOut = useSignOut();
   return (
     <AppShell
-      home="/app"
+      home="/app/opportunities"
       nav={STUDENT_NAV}
       actions={
         <>
-          <NotificationCenter items={STUDENT_NOTIFICATIONS} settingsTo="/app/settings" />
+          {/* no demo bell for students: its items point to hidden pages (004) */}
           <AccountMenu
             account={account}
             items={[

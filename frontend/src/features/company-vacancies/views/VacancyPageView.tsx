@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router";
 import { EmployerLayout } from "@/app/layouts";
 import { Cluster, PageBody, Section, Stack, TwoColumn } from "@/components/layout";
-import { FactList, SkillChip, type Fact } from "@/components/domain";
+import { FactList, SkillChip, vacancyTypeTone, type Fact } from "@/components/domain";
 import { Icon } from "@/components/icons";
 import { BackLink, Button, Card, Container, DropdownMenu, EmptyState, PageHeader, SectionLabel, Skeleton, Tag, Tray } from "@/components/ui";
+import { formatSalary } from "@/lib/money";
 import {
   formatDay, optionLabel, plural, statusLine,
   type Catalog, type VacancyAction, type VacancyItem, type VacancyNotice, type VacancyRoutes,
@@ -109,6 +110,7 @@ export function VacancyPageView(p: VacancyPageViewProps) {
   }
 
   const isDraft = v.status === "draft";
+  const salaryText = formatSalary(v.salary, p.catalog.currencies);
   const facts: Fact[] = [
     ...(v.format === "remote"
       ? [{ icon: "remote" as const, label: "Remote" }]
@@ -116,7 +118,7 @@ export function VacancyPageView(p: VacancyPageViewProps) {
         ? [{ icon: "location" as const, label: [optionLabel(p.catalog.cities, v.city), optionLabel(p.catalog.formats, v.format)].filter(Boolean).join(" · ") }]
         : []),
     ...(v.duration ? [{ icon: "duration" as const, label: v.duration }] : []),
-    ...(v.salary ? [{ icon: "salary" as const, label: v.salary }] : []),
+    ...(salaryText ? [{ icon: "salary" as const, label: salaryText }] : []),
     ...(v.applyBy ? [{ icon: "deadline" as const, label: `Apply by ${formatDay(v.applyBy)}` }] : []),
   ];
   // Until the pipeline feature exists the area only reports the numbers; with none it is an empty state.
@@ -166,7 +168,7 @@ export function VacancyPageView(p: VacancyPageViewProps) {
                 data-testid="vacancy-summary"
                 header={
                   <>
-                    {v.type ? <Tag tone={v.type === "internship" ? "accent" : "neutral"}>{optionLabel(p.catalog.types, v.type)}</Tag> : <Tag>No type yet</Tag>}
+                    {v.type ? <Tag tone={vacancyTypeTone(v.type)}>{optionLabel(p.catalog.types, v.type)}</Tag> : <Tag>No type yet</Tag>}
                     <span className={styles.rowMeta}>{optionLabel(p.catalog.fields, v.field) ?? "No field yet"}</span>
                   </>
                 }

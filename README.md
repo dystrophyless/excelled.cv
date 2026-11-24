@@ -9,7 +9,7 @@ the match between the two drives what everyone sees.
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
-![Version](https://img.shields.io/badge/version-0.4.0-2f6bff)
+![Version](https://img.shields.io/badge/version-0.5.0-2f6bff)
 
 | Sign in | Employer vacancies |
 |---|---|
@@ -25,13 +25,14 @@ Novio is built feature by feature (spec → plan → approved design → tasks �
 
 | Version | What it adds |
 |---|---|
+| **0.5.0** | Student opportunities: browse, search, filter and open active vacancies; the Research type |
 | **0.4.0** | Student and company profiles: 5-step onboarding with ready-made answers, My profile, editing; employers need a company profile to post |
 | **0.3.0** | Employer vacancies: post, edit, list, and manage status (draft, open, paused, closed), automatic closing at the deadline |
 | **0.2.0** | Sign up, sign in and password reset for students and employers |
 | **0.1.0** | Design system, reference page templates and the design workflow |
 
-Next on the roadmap (see [specs/backlog.md](specs/backlog.md)): students browse and filter opportunities, the public
-landing page, CV upload, then skills extraction and matching. See [CHANGELOG.md](CHANGELOG.md).
+Next on the roadmap (see [specs/backlog.md](specs/backlog.md)): the public landing page, role choice, CV upload, then
+skills extraction and matching. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Features
 
@@ -46,6 +47,12 @@ landing page, CV upload, then skills extraction and matching. See [CHANGELOG.md]
   year of study, optional GPA, what they are looking for (or "not sure yet"), city, about, projects, languages, contacts.
 - Employers: company name, industry, size, website, city, description; vacancies show the current company name.
 - Accounts without a profile go through onboarding first; the API refuses vacancy actions without a company profile.
+
+**Student opportunities** (`specs/004-student-opportunities`)
+- One list of active internships, vacancies and research opportunities, with a details page for each.
+- Keyword search; filters by type, work format, city and field; sort by newest or closing soonest; 10 per page.
+- Search, filters, sort and page live in the address, so Back returns to the same list.
+- Match, Apply and Save are not built yet (prototype only).
 
 **Employer vacancies** (`specs/002-employer-vacancies`)
 - Posting wizard (Basics → Skills → Details → Preview), drafts, edit form, "My vacancies" with status groups and search.
@@ -113,7 +120,7 @@ Open <http://localhost:5173/sign-up>, choose a role and register. The verificati
 | `FRONTEND_ORIGIN` | origin allowed to make state-changing requests (default `http://localhost:5173`) |
 
 Upgrading from an older checkout: `uv run python -m src.scripts.create_tables` adds new tables and migrates data
-(0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"); it is safe to run again. Add
+(0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"; 0.5.0: the "Research" opportunity type; vacancy salaries become monthly amounts with a currency, and an old text salary that is a plain number such as "200 000 ₸" becomes that amount in tenge, other texts stay in the old column and are listed in the output); it is safe to run again. Add
 `--reset-auth` only if the auth tables changed and you can lose development accounts.
 
 ## Tests and checks
@@ -128,13 +135,13 @@ npm run build && npm run lint && npm run lint:css
 npm run test:e2e                # Playwright + axe; builds and serves the app itself
 ```
 
-Current baseline: 257 API tests and about 450 browser tests (every flow on desktop and on a phone, including
+Current baseline: 389 API tests and about 700 browser tests (every flow on desktop and on a phone, including
 accessibility checks).
 
 ## API overview
 
 All routes are under `/api`; errors look like `{"detail": {"code", "message", ...}}`. Full contracts live next to each
-feature: [auth](specs/001-user-auth/contracts/auth-api.md), [vacancies](specs/002-employer-vacancies/contracts/vacancies-api.md), [profiles](specs/003-profiles/contracts/profiles-api.md).
+feature: [auth](specs/001-user-auth/contracts/auth-api.md), [vacancies](specs/002-employer-vacancies/contracts/vacancies-api.md), [profiles](specs/003-profiles/contracts/profiles-api.md), [opportunities](specs/004-student-opportunities/contracts/opportunities-api.md).
 
 | Area | Endpoints |
 |---|---|
@@ -142,6 +149,7 @@ feature: [auth](specs/001-user-auth/contracts/auth-api.md), [vacancies](specs/00
 | Password reset | `POST /auth/password-reset/request` · `/verify` · `/confirm` |
 | Catalog & skills | `GET /catalog` · `GET /skills?q=` |
 | Profiles | `GET/POST/PUT /student/profile` · `GET/POST/PUT /company/profile` |
+| Opportunities (student) | `GET /student/opportunities` (`q`, `type`, `format`, `city`, `field`, `sort`, `page`) · `GET /student/opportunities/{id}` |
 | Vacancies (employer) | `GET /company/vacancies` · `POST /company/vacancies` · `GET/PUT/DELETE /company/vacancies/{id}` · `POST /company/vacancies/{id}/status` |
 
 ## Project structure
@@ -175,7 +183,7 @@ sizes or shadows outside the tokens), so every screen looks like it belongs to t
 ## Versioning
 
 [Semantic Versioning](https://semver.org/): each delivered feature bumps the minor version while the product is
-pre-1.0. Versions are tagged (`v0.1.0` … `v0.4.0`) and described in [CHANGELOG.md](CHANGELOG.md).
+pre-1.0. Versions are tagged (`v0.1.0` … `v0.3.0` so far) and described in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

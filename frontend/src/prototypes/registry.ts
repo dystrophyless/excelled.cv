@@ -10,6 +10,9 @@ import {
   CompanyOnboardingPrototype, CompanyProfilePrototype, EDIT_STATES as PROFILE_EDIT_STATES, COMPANY_ONBOARDING_STATES, PROFILE_STATES, STUDENT_ONBOARDING_STATES,
   StudentEditPrototype, StudentOnboardingPrototype, StudentProfilePrototype,
 } from "./003-profiles";
+import {
+  DETAILS_STATES, LIST_STATES as OPPORTUNITIES_LIST_STATES, OpportunitiesListPrototype, OpportunityDetailsPrototype,
+} from "./004-student-opportunities";
 
 /*
  * Feature prototypes, added by the ui-designer during /speckit-design.
@@ -55,6 +58,14 @@ export const PROTOTYPES: PrototypeEntry[] = [
       "profile-edit": { title: "Edit profile", states: PROFILE_EDIT_STATES, Component: StudentEditPrototype },
       "company-onboarding": { title: "Company onboarding", states: COMPANY_ONBOARDING_STATES, Component: CompanyOnboardingPrototype },
       "company-profile": { title: "Company profile", states: PROFILE_EDIT_STATES, Component: CompanyProfilePrototype },
+    },
+  },
+  {
+    id: "004-student-opportunities",
+    title: "Student opportunities",
+    screens: {
+      list: { title: "Opportunities", states: OPPORTUNITIES_LIST_STATES, Component: OpportunitiesListPrototype },
+      details: { title: "Opportunity details", states: DETAILS_STATES, Component: OpportunityDetailsPrototype },
     },
   },
 ];

@@ -235,6 +235,29 @@
   z-index: 1;
 }
 
+.footMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-16);
+}
+
+/* Apply-by line: muted by default; the last 7 days get ink text + a warning-coloured icon (calm, no red, no fill) */
+.deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.deadline[data-soon] {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.deadline[data-soon] svg {
+  color: var(--color-warning);
+}
+
 .footActions {
   display: flex;
   align-items: center;

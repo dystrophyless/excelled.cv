@@ -3,14 +3,15 @@ import { useNavigate } from "react-router";
 import { toast } from "@/components/ui";
 import { useCompanyProfile } from "@/features/profiles/hooks";
 import { ApiError } from "@/lib/api";
-import { DEADLINE_ERROR, EMPTY_CATALOG, ROUTES, TITLE_ERROR, errorsFor, incompleteFields, isApiError, titleOk } from "./form";
+import { EMPTY_SALARY, salaryMessage } from "@/lib/money";
+import { DEADLINE_ERROR, EMPTY_CATALOG, ROUTES, TITLE_ERROR, errorsFor, incompleteFields, isApiError, salaryRefusal, titleOk } from "./form";
 import { focusHeading } from "./focus";
 import { todayKz, useCatalog, useCreateVacancy, useSkillSuggestions } from "./hooks";
 import { TOASTS, type DraftErrors, type VacancyDraft } from "./model";
 import { VacancyWizardView, type WizardAlert, type WizardStep } from "./views/VacancyWizardView";
 
 const EMPTY_DRAFT: VacancyDraft = {
-  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: "", applyBy: "",
+  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: EMPTY_SALARY, applyBy: "",
   requiredSkills: [], niceSkills: [],
 };
 
@@ -44,7 +45,9 @@ export function NewVacancyPage() {
   useEffect(() => {
     if (attempt === 0) return;
     const invalid = document.querySelector<HTMLElement>('[data-testid^="wizard-step"] [aria-invalid="true"]');
-    invalid?.focus();
+    // a salary refused by the server marks no amount: the group's first amount takes the focus
+    const salary = document.querySelector<HTMLElement>('[data-testid="vacancy-salary"]');
+    (invalid ?? (salary?.querySelector('[role="alert"]') ? salary.querySelector<HTMLElement>("input") : null))?.focus();
   }, [attempt]);
   const invalid = (e: DraftErrors) => {
     setErrors(e);
@@ -70,14 +73,26 @@ export function NewVacancyPage() {
     window.scrollTo({ top: 0 });
   };
 
+  /** The Details step's own rules: a deadline in the past, a salary the form refuses (FR-020). */
+  const detailsErrors = (): DraftErrors | undefined => {
+    const found: DraftErrors = {};
+    if (values.applyBy && values.applyBy < today) found.applyBy = DEADLINE_ERROR;
+    const salary = salaryMessage(values.salary);
+    if (salary) found.salary = salary;
+    return Object.keys(found).length ? found : undefined;
+  };
+
   const onContinue = () => {
     if (step === 0 && !titleOk(values.title)) {
       invalid({ title: TITLE_ERROR });
       return;
     }
-    if (step === 2 && values.applyBy && values.applyBy < today) {
-      invalid({ applyBy: DEADLINE_ERROR });
-      return;
+    if (step === 2) {
+      const refused = detailsErrors();
+      if (refused) {
+        invalid(refused);
+        return;
+      }
     }
     setErrors(undefined);
     setAlert(undefined);
@@ -88,6 +103,14 @@ export function NewVacancyPage() {
     if (!publish && !titleOk(values.title)) {
       setStep(0);
       invalid({ title: values.title.trim() ? TITLE_ERROR : "Add a title to save a draft" });
+      return;
+    }
+    // the salary is checked wherever the employer is: a refusal goes back to the Details step with nothing sent
+    const salary = salaryMessage(values.salary);
+    if (salary) {
+      setStep(2);
+      setAlert(undefined);
+      invalid({ salary });
       return;
     }
     setBusy(publish ? "publish" : "save");
@@ -107,6 +130,9 @@ export function NewVacancyPage() {
       } else if (isApiError(error, "apply_by_not_in_future")) {
         setStep(2);
         invalid({ applyBy: DEADLINE_ERROR });
+      } else if (error instanceof ApiError && salaryRefusal(error, values.salary)) {
+        setStep(2);
+        invalid({ salary: salaryRefusal(error, values.salary) as string });
       } else if (error instanceof ApiError && error.code === "validation" && !titleOk(values.title)) {
         setStep(0);
         setErrors({ title: TITLE_ERROR });

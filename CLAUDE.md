@@ -15,5 +15,8 @@ owner approval) before it is implemented. Roles and models: `design-system/proce
 
 During `/speckit-implement`, every task marked **(ui-builder)** in `tasks.md` is delegated to the `ui-builder` agent
 (Agent tool, `subagent_type: ui-builder`), never written in the main session. Give it the feature dir, the task IDs and
-the ui-spec screen ids; batch consecutive ui-builder tasks of one user story into one run. Backend tasks stay in the
-main session.
+the ui-spec screen ids; batch consecutive ui-builder tasks of one user story into one run.
+
+All other implementation tasks (backend, API tests, documentation) are delegated to a worker on Sonnet (Agent tool,
+`subagent_type: general-purpose`, `model: sonnet`). The main session writes the spec, plan and tasks, reviews the workers'
+results, runs the checks and commits.

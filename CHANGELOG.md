@@ -5,8 +5,40 @@ and the project uses [Semantic Versioning](https://semver.org/) (pre-1.0: each d
 
 ## [Unreleased]
 
-Planned (backlog iterations 4–5): students browse, open and filter opportunities; the "research" opportunity type; the
-public landing page; CV upload, replace and remove.
+Planned (backlog iterations 1 and 5): the public landing page, an explicit role choice, CV upload, replace and remove.
+
+## [0.5.0] - 2026-11-24
+
+Feature `004-student-opportunities` (backlog US-11 View Opportunities, US-12 View Opportunity Details, US-13 Search and
+Filter Opportunities, and the research type of US-08).
+
+### Added
+- Student opportunities API: `GET /api/student/opportunities` (list) and `GET /api/student/opportunities/{id}`
+  (details). Only vacancies that are open for applications are returned.
+- Keyword search; filters by type (internship, vacancy, research), work format, city and field of work; sort by newest
+  or closing soonest; 10 per page.
+- "Research" opportunity type for employers when posting and editing, and among the position types in the student
+  profile.
+- Student Opportunities page (list with search, filters, sort and paging) and opportunity details page; search, filters,
+  sort and page are kept in the address, and Back returns to the same list.
+- Skill requirements show "x of y" only when at least one skill matches, never a bare count.
+- Match, Apply and Save exist only in the design prototype; they arrive with later features.
+- Salary as monthly amounts "from" and "to" (whole numbers 1 to 999 999 999) with a currency (KZT by default, also USD,
+  EUR, RUB); `GET /api/catalog` lists `currencies` with their symbols.
+- Contract: `specs/004-student-opportunities/contracts/opportunities-api.md`.
+- 63 API tests and about 130 browser tests for the feature, plus 69 API tests and about 110 browser tests for the salary change.
+
+### Changed
+- The student menu has a single item, Opportunities. The demo pages Home, Applications and Saved redirect to it, and
+  the demo notification bell is removed for students.
+- Vacancy cards show the deadline and pass router state to the details page; work formats are exposed to the kit.
+- Student browser scenarios moved from demo routes to the page templates.
+- `salary` in the vacancy API and in both student endpoints is an object `{min, max, currency}` or `null` instead of free
+  text; an amount outside the range, a non-integer or from above to is refused with 422 (from above to at `salary.max`).
+
+### Upgrade
+- Run `uv run python -m src.scripts.create_tables` to add the Research type and the salary columns. Old text salaries that
+  are a plain amount become that amount in tenge; other texts stay in the old column and are printed. Safe to run again.
 
 ## [0.4.0] - 2026-11-23
 

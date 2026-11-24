@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { Cluster, Grid, Stack } from "@/components/layout";
 import { SkillSuggestion } from "@/components/domain";
 import {
-  Alert, Button, ChoiceGroup, Combobox, DateField, Modal, Radio, SelectField, Tag, TextareaField, TextField, type MenuItem,
+  Alert, Button, ChoiceGroup, Combobox, DateField, Modal, Radio, SalaryField, SelectField, Tag, TextareaField, TextField, type MenuItem,
 } from "@/components/ui";
 import {
   ACTION_META, STATUS_META, actionsFor, formatDayYear, plural,
@@ -168,8 +168,8 @@ export function SkillsFields({
 
 /** Description, duration, salary and the deadline. */
 export function DetailsFields({
-  values, errors, onChange, today, deadlineHint,
-}: Pick<FieldsProps, "values" | "errors" | "onChange"> & { today?: string; deadlineHint?: ReactNode }) {
+  values, errors, onChange, catalog, today, deadlineHint,
+}: Pick<FieldsProps, "values" | "errors" | "onChange" | "catalog"> & { today?: string; deadlineHint?: ReactNode }) {
   return (
     <Stack gap={16}>
       <TextareaField
@@ -182,12 +182,19 @@ export function DetailsFields({
         error={errors?.description}
         onChange={(e) => onChange({ description: e.target.value })}
       />
-      <Grid min={200} gap={14}>
-        <TextField label="Duration" optional name="duration" value={values.duration} maxLength={60} placeholder="e.g. 3 months"
-          onChange={(e) => onChange({ duration: e.target.value })} />
-        <TextField label="Salary" optional name="salary" value={values.salary} maxLength={60} placeholder="e.g. 200 000 ₸ / month"
-          onChange={(e) => onChange({ salary: e.target.value })} />
-      </Grid>
+      <TextField label="Duration" optional name="duration" value={values.duration} maxLength={60} placeholder="e.g. 3 months"
+        onChange={(e) => onChange({ duration: e.target.value })} />
+      <SalaryField
+        label="Salary"
+        optional
+        name="salary"
+        hint="Per month. Fill one or both amounts"
+        error={errors?.salary}
+        value={values.salary}
+        currencies={catalog.currencies}
+        onChange={(salary) => onChange({ salary })}
+        data-testid="vacancy-salary"
+      />
       <DateField
         label="Apply by"
         value={values.applyBy}

@@ -3,16 +3,17 @@ import { useBlocker, useNavigate, useParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui";
 import { ApiError } from "@/lib/api";
+import { EMPTY_SALARY, salaryMessage } from "@/lib/money";
 import { get, vacancyKey } from "./api";
-import { DEADLINE_ERROR, EMPTY_CATALOG, ROUTES, TITLE_ERROR, conflictVacancy, errorsFor, incompleteFields, isApiError, titleOk } from "./form";
+import { DEADLINE_ERROR, EMPTY_CATALOG, ROUTES, TITLE_ERROR, conflictVacancy, errorsFor, incompleteFields, isApiError, salaryRefusal, titleOk } from "./form";
 import { useRestoreFocus } from "./focus";
 import { todayKz, useCatalog, useSkillSuggestions, useUpdateVacancy, useVacancy, useVacancyStatusAction } from "./hooks";
-import { TOASTS, toDraft, type DraftErrors, type VacancyDraft, type VacancyItem } from "./model";
+import { TOASTS, sameDraft, toDraft, type DraftErrors, type VacancyDraft, type VacancyItem } from "./model";
 import { VacancyEditView, type EditFormAlert } from "./views/VacancyEditView";
 
 const noop = () => {};
 const BLANK: VacancyDraft = {
-  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: "", applyBy: "",
+  title: "", type: "", field: "", city: "", format: "", description: "", duration: "", salary: EMPTY_SALARY, applyBy: "",
   requiredSkills: [], niceSkills: [],
 };
 
@@ -73,7 +74,17 @@ function EditForm({ loaded, catalog }: FormProps) {
   const [saving, setSaving] = useState(false);
   const [latest, setLatest] = useState<VacancyItem | null>(null);
 
-  const dirty = JSON.stringify(values) !== JSON.stringify(toDraft(base));
+  // by value: the salary object is compared as the API would see it (a currency with no amounts is no salary)
+  const dirty = !sameDraft(values, toDraft(base));
+
+  // a failed save moves focus to the first invalid control (the salary's first amount when only the server refused it)
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (attempt === 0) return;
+    const form = document.querySelector<HTMLElement>('[data-testid="vacancy-form"]');
+    const salary = form?.querySelector<HTMLElement>('[data-testid="vacancy-salary"]');
+    (form?.querySelector<HTMLElement>('[aria-invalid="true"]') ?? (salary?.querySelector('[role="alert"]') ? salary.querySelector<HTMLElement>("input") : null))?.focus();
+  }, [attempt]);
 
   // Leaving guard (FR-008): in-app navigation through the router blocker, reloads and tab closes through beforeunload.
   const allowLeave = useRef(false);
@@ -120,6 +131,10 @@ function EditForm({ loaded, catalog }: FormProps) {
     } else if (isApiError(error, "apply_by_not_in_future")) {
       setErrors({ applyBy: DEADLINE_ERROR });
       setAlert(undefined);
+    } else if (error instanceof ApiError && salaryRefusal(error, values.salary)) {
+      setErrors({ salary: salaryRefusal(error, values.salary) as string });
+      setAlert(undefined);
+      setAttempt((n) => n + 1);
     } else if (isApiError(error, "version_conflict")) {
       const current = conflictVacancy(error);
       if (current) {
@@ -136,8 +151,15 @@ function EditForm({ loaded, catalog }: FormProps) {
 
   /** PUT the form with the loaded version. Returns the saved vacancy, or null after showing why not. */
   const persist = async (mode: "publish" | "save"): Promise<VacancyItem | null> => {
-    if (!titleOk(values.title)) {
-      setErrors({ title: TITLE_ERROR });
+    // the form's own rules first: nothing is sent while a field is refused, and what was typed stays
+    const refused: DraftErrors = {};
+    if (!titleOk(values.title)) refused.title = TITLE_ERROR;
+    const salary = salaryMessage(values.salary);
+    if (salary) refused.salary = salary;
+    if (Object.keys(refused).length) {
+      setErrors(refused);
+      setAlert(undefined);
+      setAttempt((n) => n + 1);
       return null;
     }
     setErrors(undefined);

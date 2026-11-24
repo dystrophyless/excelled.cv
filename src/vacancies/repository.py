@@ -9,7 +9,7 @@ from src.skills.models import Skill
 from src.skills.repository import upsert_skills
 from src.skills.normalize import skill_key
 from src.vacancies.models import SkillKind, Vacancy, VacancySkill, VacancyStatus
-from src.vacancies.schemas import Counts, VacancyOut
+from src.vacancies.schemas import Counts, VacancyOut, salary_out
 
 
 async def get_own(db: AsyncSession, vacancy_id: int, employer_id: int) -> Vacancy | None:
@@ -50,7 +50,7 @@ def to_out(vacancy: Vacancy, required: list[str], nice: list[str]) -> VacancyOut
         format=vacancy.format,
         description=vacancy.description,
         duration=vacancy.duration,
-        salary=vacancy.salary,
+        salary=salary_out(vacancy.salary_min, vacancy.salary_max, vacancy.salary_currency),
         apply_by=vacancy.apply_by,
         closes_at=vacancy.closes_at,
         required_skills=required,
@@ -70,7 +70,7 @@ async def out_for(db: AsyncSession, vacancy: Vacancy) -> VacancyOut:
     return to_out(vacancy, required, nice)
 
 
-def _escape_like(text: str) -> str:
+def escape_like(text: str) -> str:
     return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
@@ -84,7 +84,7 @@ async def list_own(
     if status is not None:
         statement = statement.where(Vacancy.status == status)
     if query.strip():
-        statement = statement.where(Vacancy.title.ilike(f"%{_escape_like(query.strip())}%", escape="\\"))
+        statement = statement.where(Vacancy.title.ilike(f"%{escape_like(query.strip())}%", escape="\\"))
     vacancies = (
         await db.execute(
             statement.order_by(Vacancy.updated_at.desc(), Vacancy.id.desc()).execution_options(populate_existing=True)

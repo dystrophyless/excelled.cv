@@ -5,6 +5,7 @@ import {
   companyServer, mockCompanyCreate, mockProfileCatalog, mockStudentCreate, mockStudentProfile, newEmployer, newStudent,
   studentProfileFixture, studentServer, type Sink,
 } from "./support/profiles-api";
+import { mockOpportunities } from "./support/opportunities-api";
 import { mockCatalog, mockCompanyProfile, mockSkills } from "./support/vacancies-api";
 
 /*
@@ -38,6 +39,9 @@ async function startOnboarding(page: Page, path = "/onboarding") {
   return api;
 }
 
+/** After Continue the page moves focus to the heading on the next tick; typing into a combobox before that closes its list. */
+const headingFocused = (page: Page) => expect(h1(page)).toBeFocused();
+
 async function pickOption(page: Page, combobox: string, typed: string, option: RegExp) {
   await page.getByRole("combobox", { name: combobox }).fill(typed);
   await page.getByRole("option", { name: option }).first().click();
@@ -50,6 +54,7 @@ async function fillName(page: Page) {
 }
 
 async function fillUniversity(page: Page) {
+  await headingFocused(page);
   await pickOption(page, "University", "Satbayev", /^Satbayev University/);
   await page.getByRole("radio", { name: "Bachelor's" }).check();
   await cont(page).click();
@@ -57,6 +62,7 @@ async function fillUniversity(page: Page) {
 }
 
 async function fillMajor(page: Page) {
+  await headingFocused(page);
   await pickOption(page, "Major", "Computer Sci", /^Computer Science$/);
   await page.getByRole("radio", { name: "3rd year" }).check();
   await cont(page).click();
@@ -153,6 +159,7 @@ test.describe("US1 student profile", () => {
     await expectStep(page, "Major");
 
     // step 3: a major but no year of study
+    await headingFocused(page);
     await pickOption(page, "Major", "Computer Sci", /^Computer Science$/);
     await cont(page).click();
     await expect(page.getByText("Choose your year of study")).toBeVisible();
@@ -183,15 +190,16 @@ test.describe("US1 student profile", () => {
     expect(posted).toHaveLength(0);
   });
 
-  test("a student without a profile opening /app/vacancies goes to /onboarding?next=… and back after Save", async ({ page }) => {
-    const { posted } = await startOnboarding(page, "/app/vacancies");
-    await expect(page).toHaveURL(/\/onboarding\?next=%2Fapp%2Fvacancies$/);
+  test("a student without a profile opening /app/opportunities goes to /onboarding?next=… and back after Save", async ({ page }) => {
+    const { posted } = await startOnboarding(page, "/app/opportunities");
+    await mockOpportunities.empty(page);
+    await expect(page).toHaveURL(/\/onboarding\?next=%2Fapp%2Fopportunities$/);
     await fillName(page);
     await fillUniversity(page);
     await fillMajor(page);
     await fillLookingFor(page);
     await save(page).click();
-    await expect(page).toHaveURL(/\/app\/vacancies$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
     expect(posted).toHaveLength(1);
   });
 
@@ -590,8 +598,9 @@ test.describe("US2 company profile", () => {
     await expect(page).toHaveURL(/\/company\/profile$/);
     await signedInAs(page, "student");
     await mockStudentProfile.ok(page);
+    await mockOpportunities.empty(page);
     await page.goto("/company/onboarding");
-    await expect(page).toHaveURL(/\/app$/);
+    await expect(page).toHaveURL(/\/app\/opportunities$/);
   });
 
   test("save error: the alert shows, the answers stay, Save again works", async ({ page }) => {
@@ -1010,7 +1019,8 @@ test.describe("account menu", () => {
   test("the sign-in email stands in while the profile can't be read", async ({ page }) => {
     await signedInAs(page, "student", EMAIL);
     await mockStudentProfile.network(page);
-    await page.goto("/app/applications");
+    await mockOpportunities.empty(page);
+    await page.goto("/app/opportunities");
     await page.getByTestId("account-menu").click();
     await expect(page.locator(".ui-pm__name")).toHaveText(EMAIL);
   });

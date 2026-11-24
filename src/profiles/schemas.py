@@ -141,7 +141,7 @@ class StudentProfileIn(BaseModel):
     looking_for_fields: Annotated[
         list[VacancyField], Field(max_length=3), AfterValidator(_distinct), AfterValidator(_accepted_fields)
     ] = Field(default_factory=list)
-    position_types: Annotated[list[VacancyType], Field(min_length=1, max_length=3), AfterValidator(_distinct)]
+    position_types: Annotated[list[VacancyType], Field(min_length=1, max_length=4), AfterValidator(_distinct)]
     city: City | None = None
     about: Optional(1000) = None
     contacts: Contacts = Field(default_factory=Contacts)

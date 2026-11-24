@@ -7,9 +7,10 @@ import type { Page, Route } from "@playwright/test";
  * (DELETE pushes `{ version }` from the query string).
  */
 
+export type ApiSalary = { min: number | null; max: number | null; currency: string };
 export type ApiVacancy = {
   id: number; title: string; type: string | null; field: string | null; city: string | null; format: string | null;
-  description: string | null; duration: string | null; salary: string | null; apply_by: string | null; closes_at: string | null;
+  description: string | null; duration: string | null; salary: ApiSalary | null; apply_by: string | null; closes_at: string | null;
   required_skills: string[]; nice_skills: string[]; status: "draft" | "open" | "paused" | "closed";
   published_at: string | null; closed_at: string | null; closed_by: "employer" | "deadline" | null;
   applicants: number; new_applicants: number; version: number; created_at: string; updated_at: string;
@@ -19,7 +20,7 @@ type Status = ApiVacancy["status"];
 
 /** GET /api/catalog as the backend serves it (src/catalog/router.py): 002's lists + 003's profile lists. */
 export const CATALOG = {
-  types: [{ value: "internship", label: "Internship" }, { value: "full_time", label: "Full-time" }, { value: "part_time", label: "Part-time" }],
+  types: [{ value: "internship", label: "Internship" }, { value: "full_time", label: "Full-time" }, { value: "part_time", label: "Part-time" }, { value: "research", label: "Research" }],
   // refined in 003 (data → data_analytics / data_science / data_engineering, + security), each with a description
   fields: [
     { value: "backend", label: "Backend", description: "Builds the server side: APIs, databases, business logic" },
@@ -40,6 +41,10 @@ export const CATALOG = {
     { value: "karaganda", label: "Karaganda" }, { value: "aktobe", label: "Aktobe" }, { value: "other", label: "Other" },
   ],
   formats: [{ value: "on_site", label: "On-site" }, { value: "hybrid", label: "Hybrid" }, { value: "remote", label: "Remote" }],
+  currencies: [
+    { value: "KZT", label: "Tenge", symbol: "₸" }, { value: "USD", label: "US dollar", symbol: "$" },
+    { value: "EUR", label: "Euro", symbol: "€" }, { value: "RUB", label: "Russian ruble", symbol: "₽" },
+  ],
   industries: [
     { value: "it", label: "IT & software" }, { value: "finance", label: "Finance & banking" }, { value: "education", label: "Education" },
     { value: "healthcare", label: "Healthcare" }, { value: "retail", label: "Retail & e-commerce" }, { value: "manufacturing", label: "Manufacturing" },
@@ -80,7 +85,7 @@ export const mockCompanyProfile = {
 /** An API-shaped Vacancy (an Open internship with a far-future deadline by default). */
 export const vacancyFixture = (overrides: Partial<ApiVacancy> = {}): ApiVacancy => ({
   id: 17, title: "Backend Intern (Python)", type: "internship", field: "backend", city: "almaty", format: "hybrid",
-  description: "Join the Payments team.", duration: "3 months", salary: "200 000 ₸ / month",
+  description: "Join the Payments team.", duration: "3 months", salary: { min: 200000, max: 300000, currency: "KZT" },
   apply_by: "2099-11-30", closes_at: "2099-11-30T19:00:00Z", required_skills: ["Python", "SQL", "Git"], nice_skills: ["Docker"],
   status: "open", published_at: "2026-10-28T09:12:00Z", closed_at: null, closed_by: null,
   applicants: 0, new_applicants: 0, version: 3, created_at: "2026-10-27T10:00:00Z", updated_at: "2026-10-28T09:12:00Z",
@@ -170,6 +175,9 @@ export const mockVacancyCreate = {
     })),
   incomplete: (page: Page, fields: string[] = ["type", "required_skills"], sink: Sink = []) =>
     onCreate(page, recording(sink, (r) => err(r, 422, "incomplete", { fields }))),
+  /** FastAPI's default 422 list for one field, e.g. ["body", "salary", "max"]. */
+  validation: (page: Page, loc: (string | number)[], sink: Sink = []) =>
+    onCreate(page, recording(sink, (r) => json(r, 422, { detail: [{ loc, msg: "Value error, mock", type: "value_error" }] }))),
   applyByNotInFuture: (page: Page, sink: Sink = []) =>
     onCreate(page, recording(sink, (r) => err(r, 422, "apply_by_not_in_future"))),
   ...failures(onCreate),
@@ -185,6 +193,8 @@ export const mockVacancyUpdate = {
     })),
   incomplete: (page: Page, fields: string[] = ["description"], sink: Sink = []) =>
     onUpdate(page, recording(sink, (r) => err(r, 422, "incomplete", { fields }))),
+  validation: (page: Page, loc: (string | number)[], sink: Sink = []) =>
+    onUpdate(page, recording(sink, (r) => json(r, 422, { detail: [{ loc, msg: "Value error, mock", type: "value_error" }] }))),
   applyByNotInFuture: (page: Page, sink: Sink = []) =>
     onUpdate(page, recording(sink, (r) => err(r, 422, "apply_by_not_in_future"))),
   versionConflict: (page: Page, current: ApiVacancy, sink: Sink = []) =>

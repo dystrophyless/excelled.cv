@@ -1,8 +1,9 @@
 import { Cluster, Stack } from "@/components/layout";
-import { FactList, SkillChip, type Fact } from "@/components/domain";
+import { FactList, SkillChip, vacancyTypeTone, type Fact } from "@/components/domain";
 import { Icon } from "@/components/icons";
 import { Alert, Avatar, Button, Container, EmptyState, Skeleton, Stepper, Tag, Tray } from "@/components/ui";
 import { Logo } from "@/components/ui/app-shell";
+import { draftToSalary, formatSalary, salaryMessage } from "@/lib/money";
 import {
   DRAFT_FIELD_LABEL, formatDayYear, optionLabel,
   type Catalog, type DraftErrors, type DraftField, type VacancyDraft,
@@ -16,7 +17,7 @@ export type VacancyWizardState = "ready" | "loading" | "error";
 
 /** Which step holds each field the API can name in `incomplete.fields`. */
 export const FIELD_STEP: Record<DraftField, WizardStep> = {
-  title: 0, type: 0, field: 0, city: 0, format: 0, requiredSkills: 1, description: 2, applyBy: 2,
+  title: 0, type: 0, field: 0, city: 0, format: 0, requiredSkills: 1, description: 2, applyBy: 2, salary: 2,
 };
 
 export type WizardAlert = { kind: "incomplete"; fields: DraftField[] } | { kind: "save-error" };
@@ -122,7 +123,7 @@ export function VacancyWizardView(p: VacancyWizardViewProps) {
                 </Stack>
               )}
               {p.step === 1 && <SkillsFields {...common} skillOptions={p.skillOptions} suggestions={p.suggestions} onSkillQuery={p.onSkillQuery} skillsLoading={p.skillsLoading} />}
-              {p.step === 2 && <DetailsFields {...common} today={p.today} />}
+              {p.step === 2 && <DetailsFields {...common} catalog={p.catalog} today={p.today} />}
               {p.step === 3 && <Preview values={p.values} catalog={p.catalog} company={p.company} />}
             </Tray>
           )}
@@ -148,12 +149,13 @@ export function VacancyWizardView(p: VacancyWizardViewProps) {
 /** The vacancy as a student sees it: one card, no links (nothing to click in a preview). */
 function Preview({ values: v, catalog, company }: { values: VacancyDraft; catalog: Catalog; company: string }) {
   const typeLabel = optionLabel(catalog.types, v.type);
+  const salaryText = salaryMessage(v.salary) ? null : formatSalary(draftToSalary(v.salary), catalog.currencies);
   const city = optionLabel(catalog.cities, v.city);
   const format = optionLabel(catalog.formats, v.format);
   const facts: Fact[] = [
     ...(v.format === "remote" ? [{ icon: "remote" as const, label: "Remote" }] : city || format ? [{ icon: "location" as const, label: [city, format].filter(Boolean).join(" · ") }] : []),
     ...(v.duration ? [{ icon: "duration" as const, label: v.duration }] : []),
-    ...(v.salary ? [{ icon: "salary" as const, label: v.salary }] : []),
+    ...(salaryText ? [{ icon: "salary" as const, label: salaryText }] : []),
     ...(v.applyBy ? [{ icon: "deadline" as const, label: `Apply by ${formatDayYear(v.applyBy)}` }] : []),
   ];
   return (
@@ -164,7 +166,7 @@ function Preview({ values: v, catalog, company }: { values: VacancyDraft; catalo
           <h2 className={styles.previewTitle}>{v.title || "Untitled vacancy"}</h2>
           <span className={styles.rowMeta}>{company}{optionLabel(catalog.fields, v.field) ? ` · ${optionLabel(catalog.fields, v.field)}` : ""}</span>
         </div>
-        {typeLabel && <Tag tone={v.type === "internship" ? "accent" : "neutral"}>{typeLabel}</Tag>}
+        {typeLabel && <Tag tone={vacancyTypeTone(v.type)}>{typeLabel}</Tag>}
       </Cluster>
       {facts.length > 0 && <FactList facts={facts} />}
       <div className={styles.divider} />

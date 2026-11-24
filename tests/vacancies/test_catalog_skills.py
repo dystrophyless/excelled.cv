@@ -11,11 +11,11 @@ async def test_the_catalog_is_public_and_complete(client):
     assert response.status_code == 200
     body = response.json()
     assert set(body) == {
-        "types", "fields", "cities", "formats", "industries", "company_sizes", "degrees", "language_levels",
+        "types", "fields", "cities", "formats", "industries", "company_sizes", "degrees", "language_levels", "currencies",
     }
     assert {"value": "full_time", "label": "Full-time"} in body["types"]
     assert {"value": "on_site", "label": "On-site"} in body["formats"]
-    assert [o["value"] for o in body["types"]] == ["internship", "full_time", "part_time"]
+    assert [o["value"] for o in body["types"]] == ["internship", "full_time", "part_time", "research"]
     assert {"value": "almaty", "label": "Almaty"} in body["cities"]
     assert {"value": "1_10", "label": "1–10 employees"} in body["company_sizes"]
     assert {"value": "bachelor", "label": "Bachelor's", "max_year": 4} in body["degrees"]

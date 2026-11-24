@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { StateSwitcher, useViewState } from "@/components/dev";
 import { toast } from "@/components/ui";
+import { salaryMessage, type SalaryDraft } from "@/lib/money";
 import {
   BASE, CATALOG, COMPLETE_DRAFT, EMPTY_DRAFT, MOCK_COMPANY, MOCK_TODAY, PARTIAL_DRAFT, PAST_DEADLINE, ROUTES, SKILL_OPTIONS,
   SKILL_SUGGESTIONS, VACANCIES, byId, routesFor, countsOf, filterItems, missingFields, missingOf, withApplicants,
@@ -24,10 +25,10 @@ export const LIST_STATES = [
   "default", "with-applicants", "loading", "empty", "no-results", "error", "close-confirm", "reopen", "reopen-error", "delete-confirm", "refused",
 ] as const;
 export const NEW_STATES = [
-  "basics", "basics-error", "skills", "details", "details-error", "preview", "preview-incomplete", "publishing", "save-error", "loading", "error",
+  "basics", "basics-error", "skills", "details", "details-filled", "details-error", "salary-range-error", "salary-amount-error", "preview", "preview-incomplete", "publishing", "save-error", "loading", "error",
 ] as const;
 export const EDIT_STATES = [
-  "default", "draft", "closed", "dirty", "incomplete", "deadline-error", "saving", "conflict", "save-error", "leave-confirm", "loading", "not-found", "load-error",
+  "default", "draft", "closed", "dirty", "incomplete", "deadline-error", "salary-error", "saving", "conflict", "save-error", "leave-confirm", "loading", "not-found", "load-error",
 ] as const;
 export const PAGE_STATES = [
   "default", "with-applicants", "draft", "paused", "closed-by-you", "closed-on-deadline", "loading", "not-found", "load-error",
@@ -238,10 +239,12 @@ function EditInner({ state }: { state: (typeof EDIT_STATES)[number] }) {
     state === "dirty" || state === "saving" || state === "conflict" || state === "save-error" || state === "leave-confirm"
       ? { ...loaded, title: "Backend Intern (Python, Payments team)", requiredSkills: [...loaded.requiredSkills, "Redis"].filter((s, i, a) => a.indexOf(s) === i).slice(0, 5) }
       : state === "deadline-error" ? { ...loaded, applyBy: PAST_DEADLINE }
-        : loaded;
+        : state === "salary-error" ? { ...loaded, salary: { min: "500000", max: "300000", currency: "KZT" } }
+          : loaded;
   const [values, setValues] = useState<VacancyDraft>(startValues);
   const [errors, setErrors] = useState<DraftErrors | undefined>(() => {
     if (state === "deadline-error") return { applyBy: "Choose today or a later date" };
+    if (state === "salary-error") return { salary: salaryMessage({ min: "500000", max: "300000", currency: "KZT" }) };
     if (state === "incomplete") return missingFields(loaded).errors;
     return undefined;
   });
@@ -260,6 +263,11 @@ function EditInner({ state }: { state: (typeof EDIT_STATES)[number] }) {
   const checkAndSave = (publish: boolean) => {
     const { fields, errors: e } = missingFields(values);
     const needs = publish || vacancy.status === "open" || vacancy.status === "paused";
+    const salaryError = salaryMessage(values.salary);
+    if (salaryError) {
+      setErrors({ ...(needs ? e : {}), salary: salaryError });
+      return;
+    }
     if (needs && fields.length) {
       setErrors(e);
       setAlert({ kind: "incomplete", mode: publish ? "publish" : "save", fields });
@@ -317,8 +325,12 @@ export function VacancyNewPrototype() {
   );
 }
 
+/** The salary the error states start from (the field shows it, the message explains it). */
+const salaryDraftOf = (state: string): SalaryDraft =>
+  state === "salary-range-error" ? { min: "500000", max: "300000", currency: "KZT" } : { min: "200000", max: "1000000000", currency: "USD" };
+
 const START_STEP: Record<(typeof NEW_STATES)[number], WizardStep> = {
-  basics: 0, "basics-error": 0, skills: 1, details: 2, "details-error": 2, preview: 3, "preview-incomplete": 3, publishing: 3, "save-error": 1, loading: 0, error: 0,
+  basics: 0, "basics-error": 0, skills: 1, details: 2, "details-filled": 2, "details-error": 2, "salary-range-error": 2, "salary-amount-error": 2, preview: 3, "preview-incomplete": 3, publishing: 3, "save-error": 1, loading: 0, error: 0,
 };
 
 function NewInner({ state }: { state: (typeof NEW_STATES)[number] }) {
@@ -329,7 +341,10 @@ function NewInner({ state }: { state: (typeof NEW_STATES)[number] }) {
       case "basics": case "basics-error": case "loading": case "error": return EMPTY_DRAFT;
       case "skills": case "save-error": return { ...PARTIAL_DRAFT, requiredSkills: ["Python", "SQL"], niceSkills: [] };
       case "details": return { ...PARTIAL_DRAFT, format: "hybrid", requiredSkills: ["Python", "SQL", "FastAPI"], niceSkills: ["Docker"] };
+      case "details-filled": return { ...COMPLETE_DRAFT, salary: { min: "1000000", max: "1500000", currency: "KZT" } };
       case "details-error": return { ...COMPLETE_DRAFT, applyBy: PAST_DEADLINE };
+      case "salary-range-error": return { ...COMPLETE_DRAFT, salary: { min: "500000", max: "300000", currency: "KZT" } };
+      case "salary-amount-error": return { ...COMPLETE_DRAFT, salary: { min: "200000", max: "1000000000", currency: "USD" } };
       case "preview-incomplete": return PARTIAL_DRAFT;
       default: return COMPLETE_DRAFT;
     }
@@ -337,6 +352,8 @@ function NewInner({ state }: { state: (typeof NEW_STATES)[number] }) {
   const [errors, setErrors] = useState<DraftErrors | undefined>(() => {
     if (state === "basics-error") return { title: "Enter a title of 3–120 characters" };
     if (state === "details-error") return { applyBy: "Choose today or a later date" };
+    if (state === "salary-range-error") return { salary: salaryMessage(salaryDraftOf(state)) };
+    if (state === "salary-amount-error") return { salary: salaryMessage(salaryDraftOf(state)) };
     return undefined;
   });
   const [alert, setAlert] = useState<WizardAlert | undefined>(() => {
@@ -369,6 +386,8 @@ function NewInner({ state }: { state: (typeof NEW_STATES)[number] }) {
       onBack={() => { setErrors(undefined); setStep((s) => Math.max(0, s - 1) as WizardStep); }}
       onContinue={() => {
         if (step === 0 && !titleOk) { setErrors({ title: "Enter a title of 3–120 characters" }); return; }
+        const salaryError = step === 2 ? salaryMessage(values.salary) : undefined;
+        if (salaryError) { setErrors({ salary: salaryError }); return; }
         setErrors(undefined);
         setStep((s) => Math.min(3, s + 1) as WizardStep);
       }}
@@ -381,6 +400,8 @@ function NewInner({ state }: { state: (typeof NEW_STATES)[number] }) {
       onPublish={() => {
         const { fields } = missingFields(values);
         if (fields.length) { setAlert({ kind: "incomplete", fields }); return; }
+        const salaryError = salaryMessage(values.salary);
+        if (salaryError) { setErrors({ salary: salaryError }); setStep(2); return; }
         setBusy("publish");
         window.setTimeout(() => { toast.success(TOASTS.publish.title, { description: TOASTS.publish.description?.(byId("v1")) }); navigate(ROUTES.list); }, 500);
       }}

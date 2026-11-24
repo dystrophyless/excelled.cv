@@ -19,7 +19,7 @@ Novio speaks English (US spelling). Copy is part of the design: a ui-spec lists 
 | Placeholders | an example: "you@university.edu" | repeat the label; instructions |
 | Hints | why / format, one line: "At least 8 characters" | rules that belong in validation |
 | Numbers | digits: "3 of 5", "48 applicants" | "three of five" |
-| Money | `200 000 ₸ / month` (space thousands, ₸ after) | "200,000 KZT" |
+| Money | One formatter, `formatSalary()` in `lib/money.ts`: `200 000 – 300 000 ₸ / month` · `From 200 000 ₸ / month` · `Up to 300 000 ₸ / month` · equal amounts = one number. Non-breaking spaces between thousands and before the symbol; en dash for a range; `₸` `₽` after the amount, `$` `€` before (`$1 500 – 2 200 / month`); always per month | "200,000 KZT", "1000000", a hyphen in a range, a text field for money |
 | Dates | "30 Nov", "Tue, 4 Nov · 14:00" (24h) | "11/30/2026", "2pm" |
 | Relative time | "2h ago", "yesterday", "3 days ago" up to 7 days, then a date | "48 hours ago" |
 | Separators | " · " between meta items | commas, pipes |

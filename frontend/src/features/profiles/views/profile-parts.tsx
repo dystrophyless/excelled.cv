@@ -37,7 +37,9 @@ export function EducationEntry({ profile: pr }: { profile: StudentProfile }) {
  * No field ("I'm not sure yet") reads as a choice, not a gap: "Open to any field" · "Still exploring · Internship".
  */
 export function LookingForEntry({ profile: pr, fields, types }: { profile: StudentProfile; fields: Option[]; types: Option[] }) {
-  const typeText = pr.positionTypes.map((t) => optionLabel(types, t)).map((t, i) => (i === 0 ? t : t.toLowerCase())).join(" or ");
+  // "Internship", "Internship or research", "Internship, full-time or research" (up to four types)
+  const typeNames = pr.positionTypes.map((t) => optionLabel(types, t)).map((t, i) => (i === 0 ? t : t.toLowerCase()));
+  const typeText = typeNames.length > 2 ? `${typeNames.slice(0, -1).join(", ")} or ${typeNames[typeNames.length - 1]}` : typeNames.join(" or ");
   const exploring = pr.lookingForFields.length === 0; // "I'm not sure yet"
   return (
     <div className={styles.entry} data-testid="profile-looking-for" data-exploring={exploring || undefined}>

@@ -30,6 +30,7 @@ and get a section on `/styleguide`.
 | `Combobox` | N | long lists (university, city) — single; tags (skills, languages) — `multiple` | `options`: strings or `{ value, label, description?, keywords? }` (description = muted second line, e.g. city; keywords = aliases / abbreviations / former names — matched case-insensitively, exact and prefix matches ranked first, the matched alias shown on the second line). `allowCreate` for free values + `createLabel={(t) => …}` (default "Add “…”"); every match is listed and scrolls (`limit` only for huge server lists); single `clearable` = clear button + empty-on-blur clears the value (optional fields, edit forms); single `inFlow` = the list sits in the page flow and never covers the action below (wizard steps, forms — patterns.md §16). The list opens on a pointer press, typing or ArrowDown / Alt+ArrowDown — **never on focus alone**, so tabbing in or error focus (refused Continue / Save) doesn't push the layout |
 | `Checkbox`, `Radio`, `Switch`, `ChoiceGroup` | N | multiple choice / one choice / instant on-off setting | Switch = applies immediately; Checkbox in forms with Save |
 | `ChoiceCardGroup`, `ChoiceCard` | N | ready-made answers in a wizard step, 2–12 options: a radio (or `type="checkbox"`) drawn as a tile. `size="sm"` compact text-only (year of study, company size) · `md` with `description` (university + city) and / or `icon` tile (industry, `industryIcon(value)`) | `options=[{value,label,description?,icon?,disabled?}]`, `value`/`defaultValue`/`onChange` (string, or string[] for checkbox), `name`, `legend` (`hideLegend` under a step h1), `hint`, `error`, `disabled`, `required`, `min` / `columns` for the grid; children = extra cards ("Other"). Not for edit forms, toolbars or > 12 options — see patterns.md §16 |
+| `SalaryField` | N | a monthly salary as **From – To** amounts and a **currency** (one row when the group is 452 px or wider, From | To + currency below from 352 px, all stacked below that, so 999 999 999 always shows whole); either amount optional; vacancy wizard and edit form | `value: { min, max, currency }` (digits only, `SalaryDraft`), `onChange`, `currencies` (catalog: value, label, symbol), `label` (group legend), `hint` ("Per month…"), `error` (one message under the row; the amounts it concerns get the error edge), `optional`. Digits group live ("1 000 000") with the caret staying after the same digit when typing, deleting (also over a space) and pasting "1,000,000 ₸"; numeric keyboard (`inputMode`), never `type=number`; "From" / "To" stay visible inside the amount fields as a muted prefix (the input keeps `aria-label`); text inset 12 px like every field; the currency is a `SelectField` showing "₸ KZT", its list adds "Tenge". Group semantics: `fieldset` + `legend`; amounts have `aria-label` From / To. Helpers: `draftToSalary`, `validateSalary`, `formatSalary` in `lib/money.ts` |
 | `FileUpload` | N | one file (CV, logo) | type and size validated |
 | `OtpInput` | A | 6-digit email code | status idle · verifying · error · success |
 | `SegmentedControl` | A | 2–6 views of the same content, status tabs (`variant="underline"`, counts) | > 6 options, form choices |
@@ -40,7 +41,7 @@ and get a section on `/styleguide`.
 
 | Component | Origin | Use |
 |---|---|---|
-| `Tag` | N | status / category pill; tones neutral · accent · success · warning · danger · rose · violet |
+| `Tag` | N | status / category pill; tones neutral · accent · success · warning · danger · rose · violet. **Vacancy type tones** (one rule, `vacancyTypeTone()`): Internship accent · Research violet · Full-time / Part-time neutral |
 | `Chip` | N | a selected value, removable (`onRemove`) |
 | `Count` | N | number next to a label |
 | `Avatar` | N | person (round) / company (`shape="square"`), initials fallback |
@@ -76,7 +77,7 @@ and get a section on `/styleguide`.
 | Component | Origin | Use |
 |---|---|---|
 | `StudentLayout`, `EmployerLayout`, `PublicLayout` | N | the shell of every page by role — pages never build headers |
-| `AppShell` | N | lower-level shell used by the layouts (nav, actions, mobile sheet) |
+| `AppShell` | N | lower-level shell used by the layouts (nav, actions, mobile sheet). A single nav item renders as a plain label (ink colour, `aria-current`) and hides the menu button |
 | `AccountMenu` | N | avatar → affect `ProfileMenu` popover |
 | `NotificationCenter` | N | the header bell: unread badge + panel (Today / Earlier, tinted icon tiles, unread dot, Mark all as read, settings link); opening an item marks it read and navigates. Items: `{ icon, tone, title, detail, time, group, unread, to }` |
 | `ProfileMenu` | A | account card with items + profile setup progress |
@@ -100,8 +101,8 @@ and get a section on `/styleguide`.
 | Component | Use |
 |---|---|
 | `MatchScore` | match % + 3-bar signal + label; `size="lg"` on detail pages, `compact` in tables / cards |
-| `SkillChip`, `SkillMatchRow`, `SkillBreakdown`, `SkillSuggestion` | skills: plain / matched / missing; row for cards; full breakdown for detail; "+ Docker" suggestion |
-| `VacancyCard` | a vacancy in lists (tray: identity + facts + skills; footer: match + actions) |
+| `SkillChip`, `SkillMatchRow`, `SkillBreakdown`, `SkillSuggestion` | skills: plain / matched / missing; row for cards; full breakdown for detail ("x of y" appears only when x > 0, so a bare number never reads as a score; without `have` = plain Required / Nice to have lists, no counts, no tip); "+ Docker" suggestion |
+| `VacancyCard` | a vacancy in lists (tray: identity + facts + skills; footer: match + deadline + actions). `deadline={{ label, soon }}` = the apply-by line (muted; last 7 days: ink text + warning icon, "Closes in 3 days"); without match / actions the footer reads deadline · posted ago. Types: Internship · Full-time · Part-time · Research |
 | `CandidateCard` | a candidate in pipeline columns (white card) |
 | `StatusTag`, `APPLICATION_STATUS` | the only way to show an application status |
 | `FactList` | location · format · duration · salary with icons; `layout="list"` in asides |

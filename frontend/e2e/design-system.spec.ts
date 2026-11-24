@@ -11,8 +11,10 @@ import { mockCompanyProfile } from "./support/vacancies-api";
  */
 
 /*
- * /app/* and /company/* are behind the role guards (feature 001-user-auth), so these demo-route tests run signed in:
+ * /app/* and /company/* are behind the role guards (feature 001-user-auth), so the demo-route tests run signed in:
  * /me answers as an employer for /company/* pages and as a student everywhere else.
+ * 004: the student's demo paths (/app, /app/vacancies, /app/applications, /app/saved) redirect to the opportunities, so
+ * their reference templates are tested at /styleguide/templates/<id>; the employer layout keeps its notification bell.
  */
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/auth/me", (route) => {
@@ -67,24 +69,25 @@ test("styleguide renders and passes axe", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("app routes show the templates and highlight the nav", async ({ page }, info) => {
+test("demo routes show the templates and highlight the nav", async ({ page }, info) => {
   test.skip(info.project.name === "mobile", "nav collapses into the sheet");
-  await page.goto("/app/applications");
+  // student: the Applications nav item is hidden until its feature ships (004), so only the template itself is checked here;
+  // the student nav (Opportunities only, current) is asserted in opportunities.spec.ts
+  await page.goto("/styleguide/templates/tracker");
   await expect(page.getByRole("heading", { level: 1, name: "Applications" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Applications" })).toHaveAttribute("aria-current", "page");
   await page.goto("/company/candidates/c1");
   await expect(page.getByRole("link", { name: "Vacancies" })).toHaveAttribute("aria-current", "page");
 });
 
 test("account menu opens and lists profile actions", async ({ page }, info) => {
   test.skip(info.project.name === "mobile", "header actions collapse on mobile");
-  await page.goto("/app");
+  await page.goto("/styleguide/templates/dashboard");
   await page.getByTestId("account-menu").click();
   await expect(page.getByRole("menuitem", { name: "Settings" })).toBeVisible();
 });
 
 test("row menu is keyboard operable", async ({ page }) => {
-  await page.goto("/app/applications");
+  await page.goto("/styleguide/templates/tracker");
   const trigger = page.getByRole("button", { name: "Actions for Backend Intern (Python)" });
   await trigger.focus();
   await page.keyboard.press("Enter");
@@ -96,7 +99,7 @@ test("row menu is keyboard operable", async ({ page }) => {
 });
 
 test("browse: search, type and filters narrow the results", async ({ page }, info) => {
-  await page.goto("/app/vacancies");
+  await page.goto("/styleguide/templates/browse");
   const count = page.getByText(/^\d+ vacanc(y|ies)$/);
   await expect(count).toHaveText("8 vacancies");
   await page.getByRole("searchbox", { name: "Search vacancies" }).fill("fastapi");
@@ -113,7 +116,7 @@ test("browse: search, type and filters narrow the results", async ({ page }, inf
 });
 
 test("select: keyboard opens, moves and chooses", async ({ page }) => {
-  await page.goto("/app/vacancies");
+  await page.goto("/styleguide/templates/browse");
   const sort = page.getByRole("combobox", { name: /Sort by/ });
   await sort.focus();
   await page.keyboard.press("ArrowDown");
@@ -125,7 +128,7 @@ test("select: keyboard opens, moves and chooses", async ({ page }) => {
 });
 
 test("tracker: status tabs filter, withdraw can be undone", async ({ page }) => {
-  await page.goto("/app/applications");
+  await page.goto("/styleguide/templates/tracker");
   await expect(page.getByTestId("application-row")).toHaveCount(3);
   await page.getByRole("radio", { name: /Interviews/ }).click();
   await expect(page.getByTestId("application-row")).toHaveCount(1);
@@ -186,7 +189,7 @@ test("date field: pick a date from the calendar", async ({ page }) => {
 });
 
 test("dashboard: overview, top matches, funnel and skill suggestion", async ({ page }) => {
-  await page.goto("/app");
+  await page.goto("/styleguide/templates/dashboard");
   await expect(page.getByTestId("dashboard-overview").locator("section")).toHaveCount(3);
   await expect(page.getByTestId("top-matches").getByRole("link")).toHaveCount(4);
   await expect(page.getByTestId("applications-funnel")).toBeVisible();
@@ -195,7 +198,7 @@ test("dashboard: overview, top matches, funnel and skill suggestion", async ({ p
 });
 
 test("dashboard: a failed block retries on its own, the rest stays usable", async ({ page }) => {
-  await page.goto("/app?state=error");
+  await page.goto("/styleguide/templates/dashboard?state=error");
   const matches = page.getByTestId("top-matches");
   await expect(matches).toHaveAttribute("data-status", "error");
   await expect(page.getByTestId("applications-funnel")).toBeVisible();
@@ -204,10 +207,11 @@ test("dashboard: a failed block retries on its own, the rest stays usable", asyn
   await expect(matches.getByRole("link")).toHaveCount(4);
 });
 
+// the student's demo bell is gone (004); the employer layout keeps its bell, so the notification centre is tested there
 test("notifications: badge, panel, mark all read, open an item", async ({ page }) => {
-  await page.goto("/app");
+  await page.goto("/company/candidates/c1");
   const bell = page.getByTestId("notifications-button");
-  await expect(bell).toHaveAccessibleName("Notifications, 2 unread");
+  await expect(bell).toHaveAccessibleName("Notifications, 3 unread");
   await bell.click();
   const panel = page.getByRole("dialog", { name: /Notifications/ });
   await expect(panel.getByTestId("notification")).toHaveCount(4);
@@ -217,14 +221,14 @@ test("notifications: badge, panel, mark all read, open an item", async ({ page }
   expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   await panel.getByRole("button", { name: "Mark all as read" }).click();
   await expect(bell).toHaveAccessibleName("Notifications");
-  await panel.getByTestId("notification").filter({ hasText: "Junior Data Engineer" }).click();
-  await expect(page).toHaveURL(/\/app\/vacancies\/v6$/);
+  await panel.getByTestId("notification").filter({ hasText: "Dana Sultanova" }).click();
+  await expect(page).toHaveURL(/\/company\/candidates\/c5$/);
   await expect(page.getByRole("dialog", { name: /Notifications/ })).toBeHidden();
 });
 
 test("tooltip on a header button opens below it, inside the viewport", async ({ page }, info) => {
   test.skip(info.project.name === "mobile", "no hover on touch");
-  await page.goto("/app");
+  await page.goto("/company/candidates/c1");
   const bell = page.getByTestId("notifications-button");
   await bell.hover();
   const tip = page.getByRole("tooltip", { name: "Notifications" });
@@ -234,7 +238,7 @@ test("tooltip on a header button opens below it, inside the viewport", async ({ 
 });
 
 test("saved: own list, remove with undo, closed vacancy has no Apply", async ({ page }) => {
-  await page.goto("/app/saved");
+  await page.goto("/styleguide/templates/saved");
   const cards = page.getByTestId("saved-list").getByTestId("vacancy-card");
   await expect(cards).toHaveCount(4);
   await expect(cards.last().getByRole("button", { name: "Apply" })).toHaveCount(0);

@@ -13,6 +13,7 @@ class VacancyType(enum.StrEnum):
     internship = "internship"
     full_time = "full_time"
     part_time = "part_time"
+    research = "research"
 
 
 class WorkFormat(enum.StrEnum):
@@ -128,10 +129,28 @@ class LanguageLevel(enum.StrEnum):
     basic = "basic"
 
 
+class Currency(enum.StrEnum):
+    """Salary currencies (004 research R12); tenge is the default."""
+
+    KZT = "KZT"
+    USD = "USD"
+    EUR = "EUR"
+    RUB = "RUB"
+
+
+CURRENCY_SYMBOLS: dict[Currency, str] = {
+    Currency.KZT: "₸",
+    Currency.USD: "$",
+    Currency.EUR: "€",
+    Currency.RUB: "₽",
+}
+
+
 LABELS: dict[enum.StrEnum, str] = {
     VacancyType.internship: "Internship",
     VacancyType.full_time: "Full-time",
     VacancyType.part_time: "Part-time",
+    VacancyType.research: "Research",
     WorkFormat.on_site: "On-site",
     WorkFormat.hybrid: "Hybrid",
     WorkFormat.remote: "Remote",
@@ -178,6 +197,10 @@ LABELS: dict[enum.StrEnum, str] = {
     LanguageLevel.fluent: "Fluent",
     LanguageLevel.intermediate: "Intermediate",
     LanguageLevel.basic: "Basic",
+    Currency.KZT: "Tenge",
+    Currency.USD: "US dollar",
+    Currency.EUR: "Euro",
+    Currency.RUB: "Russian ruble",
 }
 
 
@@ -190,6 +213,10 @@ def field_options() -> list[dict[str, str]]:
         {"value": field.value, "label": LABELS[field], "description": FIELD_DESCRIPTIONS[field]}
         for field in ACCEPTED_FIELDS
     ]
+
+
+def currency_options() -> list[dict[str, str]]:
+    return [{"value": c.value, "label": LABELS[c], "symbol": CURRENCY_SYMBOLS[c]} for c in Currency]
 
 
 def degree_options() -> list[dict]:
@@ -208,3 +235,4 @@ industry_enum = Enum(Industry, name="industry")
 company_size_enum = Enum(CompanySize, name="company_size", values_callable=_values)
 degree_enum = Enum(Degree, name="degree")
 language_level_enum = Enum(LanguageLevel, name="language_level")
+currency_enum = Enum(Currency, name="currency")
