@@ -9,7 +9,7 @@
 Students get a searchable, filterable list of active opportunities and a page for each. A read-only `opportunities`
 backend module serves both from the existing vacancy and company tables, using 002's visibility rule. `research` becomes
 a fourth vacancy type for employers, students' profiles and the student filter. The SPA replaces the student demo routes
-with two real pages and hides the rest. Decisions: [research.md](./research.md) R1–R11.
+with two real pages and hides the rest. Decisions: [research.md](./research.md) R1–R12.
 
 ## Technical Context
 

@@ -61,3 +61,14 @@ that used demo routes as a vehicle move to the templates.
 **Decision**: the Views take optional `match`, `apply` and `save` props. Only the prototype passes them; the pages never
 do, and a test asserts their absence.
 **Rationale**: the design is approved once and later features just fill the slots; no invented data reaches students.
+
+## R12 — Salary as amounts and a currency
+**Decision**: `vacancies` gets `salary_min`, `salary_max` (int, null) and `salary_currency` (enum `currency`: `KZT`, `USD`,
+`EUR`, `RUB`, default `KZT`); the API carries one nested `salary` object or null. The display text is built in one frontend
+function: non-breaking spaces between thousands, en dash for a range, "/ month"; `₸` and `₽` after the amount, `$` and `€`
+before it. Currencies come from `GET /api/catalog`.
+**Upgrade**: `create_tables` adds the type and the columns if missing, then converts the old text column: spaces, `₸`,
+`KZT`, `тг` and `/ month` removed, if 1–9 digits remain the amount goes to both new columns and the text is cleared (so a
+second run cannot bring back a salary the employer removed). Other texts stay in the old, no longer mapped column and their
+number is printed. Idempotent; a new database never has the old column.
+**Alternatives**: formatting the free text on display (guesses the currency, breaks on "from 200k"); a single amount (no range).

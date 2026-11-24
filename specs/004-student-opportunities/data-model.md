@@ -10,6 +10,14 @@ No new tables. Phase 1 of [plan.md](./plan.md).
 
 `student_profiles.position_types`: 1–4 distinct values (was 1–3). Existing databases: research R5.
 
+## Changed: `vacancies`
+
+| Field | Type | Rules |
+|---|---|---|
+| salary_min, salary_max | int, null | "1–999 999 999; min ≤ max when both are set" (also check constraints) |
+| salary_currency | enum `currency` (`KZT` · `USD` · `EUR` · `RUB`) NOT NULL, default `KZT` | used only with an amount |
+| salary (text) | removed from the model | converted by the upgrade, research R12 |
+
 ## Read model: Opportunity
 
 `vacancies` JOIN `company_profiles` ON `company_profiles.user_id = vacancies.employer_id`

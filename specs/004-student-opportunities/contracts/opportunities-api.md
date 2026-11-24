@@ -20,7 +20,7 @@ Query: `q`, `type` (`internship` \| `vacancy` \| `research`), `format`*, `city`*
 {
   "items": [{
     "id": 17, "title": "Backend Intern (Python)", "type": "internship", "field": "backend", "city": "almaty",
-    "format": "hybrid", "duration": "3 months", "salary": "200 000 ₸", "apply_by": "2026-12-15",
+    "format": "hybrid", "duration": "3 months", "salary": {"min": 200000, "max": 300000, "currency": "KZT"}, "apply_by": "2026-12-15",
     "published_at": "2026-11-20T08:00:00Z", "required_skills": ["Python", "SQL"], "nice_skills": ["Docker"],
     "company": {"name": "Acme"}
   }],
@@ -39,3 +39,8 @@ The same item plus `"description"` and
 
 - `GET /api/catalog` → `types` ends with `{"value": "research", "label": "Research"}`.
 - `/api/company/vacancies`: `type` accepts `research`. `/api/student/profile`: `position_types` accepts it, up to 4 values.
+- `salary` in `/api/company/vacancies` (input and output) and in both student endpoints is
+  `{"min": int|null, "max": int|null, "currency": "KZT"|"USD"|"EUR"|"RUB"}` or `null`. Input: `currency` defaults to `KZT`;
+  no amounts means `null`; an amount outside 1–999 999 999, a non-integer or min > max → 422 (min > max at
+  `loc: ["body", "salary", "max"]`). A text is refused (422).
+- `GET /api/catalog` gains `"currencies": [{"value": "KZT", "label": "Tenge", "symbol": "₸"}, …]` (KZT, USD, EUR, RUB).

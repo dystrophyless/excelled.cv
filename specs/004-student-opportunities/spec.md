@@ -19,6 +19,8 @@
   prototype only. The application shows none of them until their own features deliver them.
 - Q: What happens to the student demo pages (Home, Applications, Saved)? → A: Hidden until they are real; `/app` leads
   to Opportunities.
+- Q (owner's manual check): "1000000" is unreadable. How is salary given and shown? → A: Amounts "from" and "to" (either may
+  be empty) in a chosen currency: KZT (default), USD, EUR, RUB; always per month; digits grouped, currency shown.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -107,6 +109,29 @@ look for research positions in their profile.
 
 ---
 
+### User Story 5 - Salary is readable and has a currency (Priority: P1)
+
+The employer enters a monthly salary as from / to amounts and picks a currency (tenge by default). Everyone sees grouped
+digits with the currency.
+
+**Why this priority**: "1000000" cannot be read at a glance and says nothing about the currency.
+
+**Independent Test**: Post 1000000 tenge; the form, the employer's pages and the student's card and page show it grouped
+with ₸.
+
+**Acceptance Scenarios**:
+
+1. **Given** the salary fields, **When** the employer types 1000000, **Then** the field shows "1 000 000" and the currency is ₸.
+2. **Given** from 200 000 and to 300 000, **When** published, **Then** students see "200 000 – 300 000 ₸ / month"; with only
+   one amount "From 200 000 ₸ / month" or "Up to 300 000 ₸ / month"; with equal amounts one number; with none, no salary.
+3. **Given** another currency is chosen, **When** saved, **Then** it is shown everywhere and kept when editing.
+4. **Given** "from" is greater than "to", or an amount is not a whole number from 1 to 999 999 999, **When** saving, **Then**
+   it is refused at the field and what was typed is kept.
+5. **Given** a vacancy saved earlier with a plain number as text, **When** the database is upgraded, **Then** it shows as that
+   amount in tenge.
+
+---
+
 ### Edge Cases
 
 - The opportunity closes while the student reads the list: opening it shows "no longer available".
@@ -155,7 +180,16 @@ look for research positions in their profile.
 - **FR-013**: Research MUST be a type an employer can choose when posting and editing, with the same rules as the others,
   and MUST be shown wherever a type is shown.
 - **FR-014**: Students MUST be able to choose Research among the position types in their profile.
-- **FR-015**: Existing vacancies and profiles MUST stay unchanged.
+- **FR-015**: Existing vacancies and profiles MUST stay unchanged (salary: FR-022).
+
+**Salary**
+
+- **FR-020**: Salary MUST be optional monthly amounts "from" and "to" (whole numbers 1–999 999 999, from ≤ to, either may be
+  empty) with a currency: KZT (default), USD, EUR, RUB. This replaces the free text of 002 FR-001.
+- **FR-021**: Amounts MUST be shown with grouped thousands that never break across lines and with the currency, wherever a
+  salary is shown and while it is typed. Pasting an amount with spaces, commas or a currency sign MUST work.
+- **FR-022**: Earlier text salaries that are a plain amount MUST become that amount in tenge (from = to); other texts MUST
+  NOT be destroyed by the upgrade.
 
 **Access and scope**
 
