@@ -1,0 +1,90 @@
+/*
+ * SalaryField — From / To / Currency. The label, hint and error styles are the field recipe's.
+ * Wide (the group is 452px or more): one row. Medium (352px+): From | To, the currency below. Narrow: From, To and the currency each on their own line, so
+ * 999 999 999 with its "From" / "To" prefix shows whole at 390px and 360px.
+ */
+
+.group {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-6);
+}
+
+.body {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.currency {
+  width: 148px;
+}
+
+/* 352px and up: From and To side by side, the currency on its own line */
+@container (min-width: 352px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .currency {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (min-width: 452px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 104px;
+  }
+
+  .currency {
+    grid-column: auto;
+    width: auto;
+  }
+}
+
+/* the visible "From" / "To" stays inside the field once it is filled; the input keeps its aria-label */
+.amountBox {
+  position: relative;
+  min-width: 0;
+}
+
+.prefix {
+  position: absolute;
+  top: 50%;
+  left: var(--space-12);
+  transform: translateY(-50%);
+  font-size: var(--text-body);
+  color: var(--color-muted);
+  pointer-events: none;
+}
+
+.row .amount {
+  /* the text starts after the prefix; the left edge of the prefix and the right inset equal the other fields' 12px */
+  padding: 0 var(--space-12) 0 calc(var(--space-12) + 2.7em + var(--space-4));
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .prefix {
+    font-size: var(--text-input-mobile);
+  }
+}
+
+/* the open list is wider than the control and says "Tenge · KZT" */
+.currency ul[role="listbox"] {
+  right: 0;
+  left: auto;
+  min-width: 176px;
+}

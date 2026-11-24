@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from "react";
+import { draftToSalary, formatSalary, salaryMessage, type SalaryDraft } from "@/lib/money";
 import { Icon, industryIcon } from "@/components/icons";
 import {
   Avatar, Button, Card, ChangeSummary, Checkbox, ChoiceCard, Combobox, type ComboboxOption, ChoiceCardGroup, Chip, ChoiceGroup, Container, Count, DecisionInbox, EmptyState,
   FilterMenu, Modal, NotificationStack, NumberTicker, OtpInput, PageHeader, PasswordField, ProfileMenu,
-  ProgressTracker, Radio, SectionLabel, SectionTitle, SegmentedControl, SelectField, ShimmerText, Skeleton,
+  ProgressTracker, Radio, SalaryField, SectionLabel, SectionTitle, SegmentedControl, SelectField, ShimmerText, Skeleton,
   SmartRecommendation, Switch, Tag, TextareaField, TextField, TextLink, ThinkingLoader, TipsPanel, Tray, toast,
 } from "@/components/ui";
 import { Stack } from "@/components/layout";
@@ -65,6 +66,31 @@ const FORMATS = [
   { value: "hybrid", label: "Hybrid", description: "Some days at home" },
   { value: "remote", label: "Remote", description: "From anywhere in Kazakhstan" },
 ];
+
+const CURRENCIES = [
+  { value: "KZT", label: "Tenge", symbol: "₸" }, { value: "USD", label: "US dollar", symbol: "$" },
+  { value: "EUR", label: "Euro", symbol: "€" }, { value: "RUB", label: "Russian ruble", symbol: "₽" },
+];
+
+function SalaryFieldDemo() {
+  const [value, setValue] = useState<SalaryDraft>({ min: "1000000", max: "", currency: "KZT" });
+  const [bad, setBad] = useState<SalaryDraft>({ min: "500000", max: "300000", currency: "USD" });
+  const shown = formatSalary(draftToSalary(value), CURRENCIES);
+  return (
+    <div className={styles.grid}>
+      <Demo label="Type, delete in the middle, paste “1,000,000 ₸”">
+        <Tray padding="lg" footer={<span data-testid="salary-shown">{shown ?? "No salary"}</span>}>
+          <SalaryField label="Salary" optional hint="Per month. Fill one or both amounts" value={value} onChange={setValue} currencies={CURRENCIES} data-testid="sg-salary" />
+        </Tray>
+      </Demo>
+      <Demo label="Error · from is greater than to">
+        <Tray padding="lg">
+          <SalaryField label="Salary" optional error={salaryMessage(bad)} value={bad} onChange={setBad} currencies={CURRENCIES} />
+        </Tray>
+      </Demo>
+    </div>
+  );
+}
 
 function ChoiceCardsDemo() {
   const [year, setYear] = useState("3");
@@ -366,6 +392,14 @@ export function StyleguidePage() {
         note="Ready-made answers in a wizard step: a radio or checkbox drawn as a tile. Arrow keys move inside a radio group; Space toggles a checkbox. See patterns.md §16 for cards vs radio vs select vs SegmentedControl."
       >
         <ChoiceCardsDemo />
+      </Section>
+
+      <Section
+        id="salary-field"
+        title="Salary field"
+        note="Monthly salary as From and To amounts plus a currency: one row when wide, stacked when narrow, with From and To kept visible inside the fields. Digits group as you type (the caret stays after the same digit), numeric keyboard on mobile, no spinners, no native select. The same formatSalary() text is used on every card and page."
+      >
+        <SalaryFieldDemo />
       </Section>
 
       <Section id="display" title="Display">
