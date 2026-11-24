@@ -44,10 +44,10 @@ export function ResetConfirmView({
 
   if (state === "success") {
     return (
-      <AuthFrame title="Password updated" subtitle="You're signed in with your new password">
+      <AuthFrame title="Password updated" subtitle="You're logged in with your new password">
         <Tray padding="lg">
           <Stack gap={14}>
-            <Alert tone="success" title="All set">Other devices were signed out.</Alert>
+            <Alert tone="success" title="All set">Other devices were logged out.</Alert>
             <Button size="lg" onClick={onContinue}>Continue</Button>
           </Stack>
         </Tray>
@@ -58,7 +58,7 @@ export function ResetConfirmView({
   if (state === "link-expired") {
     return (
       <AuthFrame title="Start again" subtitle="Your password is unchanged.">
-        <Tray padding="lg" footerAlign="center" footer={<span>Remembered it?&nbsp;<TextLink to={r.signIn}>Sign in</TextLink></span>}>
+        <Tray padding="lg" footerAlign="center" footer={<span>Remembered it?&nbsp;<TextLink to={r.signIn}>Log in</TextLink></span>}>
           <Stack gap={14}>
             <Alert tone="warning" title="Your reset session expired">Reset sessions last 10 minutes and work once. Request a new code to continue.</Alert>
             <Button size="lg" onClick={onStartOver}>Start again</Button>

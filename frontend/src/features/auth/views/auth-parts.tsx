@@ -26,11 +26,11 @@ export function resolveRoutes(routes?: Partial<AuthRoutes>): AuthRoutes {
   return { ...AUTH_ROUTES, ...routes };
 }
 
-export function AuthFrame({ title, subtitle, legal, children }: { title: string; subtitle: ReactNode; legal?: ReactNode; children: ReactNode }) {
+export function AuthFrame({ title, subtitle, legal, home, children }: { title: string; subtitle: ReactNode; legal?: ReactNode; home?: string; children: ReactNode }) {
   return (
-    <div className={styles.page}>
+    <main id="main" className={styles.page}>
       <div className={styles.column}>
-        <div className={styles.logo}><Logo /></div>
+        <div className={styles.logo}><Logo to={home} /></div>
         <div className={styles.head}>
           <h1 className={styles.title}>{title}</h1>
           <p className={styles.sub}>{subtitle}</p>
@@ -38,7 +38,7 @@ export function AuthFrame({ title, subtitle, legal, children }: { title: string;
         {children}
         {legal && <p className={styles.legal}>{legal}</p>}
       </div>
-    </div>
+    </main>
   );
 }
 

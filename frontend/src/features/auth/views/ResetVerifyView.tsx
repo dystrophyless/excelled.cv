@@ -44,7 +44,7 @@ export function ResetVerifyView({ state, email, attemptsLeft = 2, resendIn = 60,
   if (state === "too-many-attempts") {
     return (
       <AuthFrame title="Start again" subtitle="We cancelled this reset. Your password is unchanged.">
-        <Tray padding="lg" footerAlign="center" footer={<span>Remembered it?&nbsp;<TextLink to={r.signIn}>Sign in</TextLink></span>}>
+        <Tray padding="lg" footerAlign="center" footer={<span>Remembered it?&nbsp;<TextLink to={r.signIn}>Log in</TextLink></span>}>
           <Stack gap={14}>
             <Alert tone="error" title="That code can't be used">Too many wrong tries, or the reset ended. Request a new code to continue.</Alert>
             <Button size="lg" onClick={onStartOver}>Request a new code</Button>

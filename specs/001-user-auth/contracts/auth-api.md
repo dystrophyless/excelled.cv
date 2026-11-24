@@ -48,11 +48,15 @@ Resend resets `attempts` to 0 and `expires_at` to now + 10 min.
 
 ## POST `/verify-email` — finish sign-up (changed: sets a session)
 
-Request `{ "email": "...", "code": "123456" }`
+Request `{ "email": "...", "code": "123456", "role": "student" | "employer" }` — `role` is optional. When present and the
+code is correct, the account is created with that role (it wins over the pending one — needed when the user changed the
+role and re-submitted inside the 60 s cooldown, so `/register` answered 429 and the pending role is stale). Absent → the
+pending role. Unknown value → 422. A wrong code never changes anything.
 
 | Status | Body | When |
 |---|---|---|
-| 200 | `{ "account": Account }` + `Set-Cookie: novio_session=…; HttpOnly; Secure; SameSite=Lax; Path=/api; Max-Age=2592000` | account created with the pending role, signed in (FR-005) |
+| 200 | `{ "account": Account }` + `Set-Cookie: novio_session=…; HttpOnly; Secure; SameSite=Lax; Path=/api; Max-Age=2592000` | account created with the given (else pending) role, signed in (FR-005) |
+| 422 | validation error | `role` is not a known role — nothing is created |
 | 400 | `code: "invalid_code", attempts_left: 1–2` | wrong code |
 | 400 | `code: "too_many_attempts"` | 3rd wrong code — pending sign-up deleted |
 | 400 | `code: "code_expired"` | > 10 min |

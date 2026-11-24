@@ -237,7 +237,7 @@ async def verify_email(
             email=email,
             username=None,
             hashed_password=pending.hashed_password,
-            role=pending.role,
+            role=data.role or pending.role,
         )
         await db.delete(pending)
         await db.flush()

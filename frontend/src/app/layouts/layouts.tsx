@@ -22,11 +22,6 @@ export const EMPLOYER_NAV: NavItem[] = [
   { to: "/company/vacancies", label: "Vacancies", icon: "vacancy", also: ["/company/candidates"] },
 ];
 
-export const PUBLIC_NAV: NavItem[] = [
-  { to: "/vacancies", label: "Vacancies", icon: "vacancy" },
-  { to: "/employers", label: "For employers", icon: "company" },
-];
-
 type Account = { name: string; email: string; setup?: { done: number; total: number; next?: string } };
 
 /** Avatar button that opens affect ProfileMenu in a popover. */
@@ -153,19 +148,27 @@ export function EmployerLayout({ children }: { children: ReactNode }) {
   );
 }
 
-export function PublicLayout({ children }: { children: ReactNode }) {
+export type PublicLayoutProps = {
+  children: ReactNode;
+  /** Where the logo, "Log in" and "Create account" go; the prototypes point them at their own screens */
+  homeTo?: string;
+  signInTo?: string;
+  signUpTo?: string;
+};
+
+/** The landing header (005): no navigation, "Log in" and "Create account" always visible, also on mobile. */
+export function PublicLayout({ children, homeTo = "/", signInTo = "/sign-in", signUpTo = "/sign-up" }: PublicLayoutProps) {
   const navigate = useNavigate();
   return (
     <AppShell
-      home="/"
-      nav={PUBLIC_NAV}
+      home={homeTo}
+      nav={[]}
       actions={
         <>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/sign-in")} data-shell-collapse="">Sign in</Button>
-          <Button size="sm" onClick={() => navigate("/sign-up")}>Sign up</Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate(signInTo)}>Log in</Button>
+          <Button size="sm" onClick={() => navigate(signUpTo)}>Create account</Button>
         </>
       }
-      sheetActions={<Button variant="secondary" onClick={() => navigate("/sign-in")}>Sign in</Button>}
     >
       {children}
     </AppShell>

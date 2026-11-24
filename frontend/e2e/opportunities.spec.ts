@@ -169,7 +169,7 @@ test.describe("US1 list (S1)", () => {
     await expect(page).toHaveURL(/\/sign-in\?next=%2Fapp%2Fopportunities%3Fq%3Dpython$/);
     await page.getByLabel("Email").fill("maya@sdu.edu.kz");
     await page.getByLabel("Password", { exact: true }).fill("correct horse");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Log in" }).click();
     await expect(page).toHaveURL(/\/app\/opportunities\?q=python$/);
     await expect(searchbox(page)).toHaveValue("python");
   });

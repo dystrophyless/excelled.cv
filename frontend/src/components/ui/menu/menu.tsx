@@ -58,6 +58,7 @@ export function DropdownMenu({ trigger, items, align = "end", ...rest }: Dropdow
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
+  const placedAt = useRef<{ top: number; left: number } | null>(null);
 
   const focusables = () =>
     Array.from(menuRef.current?.querySelectorAll<HTMLElement>("[role=menuitem]:not([aria-disabled=true])") ?? []);
@@ -75,6 +76,7 @@ export function DropdownMenu({ trigger, items, align = "end", ...rest }: Dropdow
     menu.style.top = `${top}px`;
     menu.style.left = `${Math.min(Math.max(8, left), window.innerWidth - menu.offsetWidth - 8)}px`;
     menu.dataset.side = below ? "bottom" : "top";
+    placedAt.current = { top: r.top, left: r.left };
   }, [open, align]);
 
   useEffect(() => {
@@ -84,16 +86,23 @@ export function DropdownMenu({ trigger, items, align = "end", ...rest }: Dropdow
       const target = e.target as Node;
       if (!root.current?.contains(target) && !menuRef.current?.contains(target)) setOpen(false);
     };
+    // A scroll event can arrive after the menu opened although the scroll happened before the click (scroll-into-view,
+    // momentum): close only when the trigger really moved away from where the menu was placed.
     const onScroll = (e: Event) => {
-      if (!menuRef.current?.contains(e.target as Node)) setOpen(false);
+      if (menuRef.current?.contains(e.target as Node)) return;
+      const placed = placedAt.current;
+      const now = triggerRef.current?.getBoundingClientRect();
+      if (placed && now && Math.abs(now.top - placed.top) <= 1 && Math.abs(now.left - placed.left) <= 1) return;
+      setOpen(false);
     };
+    const onResize = () => setOpen(false);
     document.addEventListener("mousedown", onDown);
     window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("mousedown", onDown);
       window.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
     };
   }, [open]);
 

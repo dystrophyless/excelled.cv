@@ -26,7 +26,9 @@ export function VerifyEmailPage() {
   const onSubmit = async (code: string) => {
     setState("verifying");
     try {
-      const { account } = await verify.mutateAsync({ email, code });
+      // navigation state is untrusted: send the role only when it is one of the two known values
+      const role = nav.role === "student" || nav.role === "employer" ? nav.role : undefined;
+      const { account } = await verify.mutateAsync({ email, code, ...(role && { role }) });
       setState("success");
       navigate(homeFor(account.role), { replace: true });
     } catch (error) {

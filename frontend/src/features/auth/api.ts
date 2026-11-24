@@ -26,7 +26,8 @@ export const register = (body: { email: string; password: string; role: Role }) 
 export const resendCode = (body: { email: string; purpose: CodePurpose }) =>
   api<CodeSent>(`${BASE}/resend-code`, { method: "POST", json: body });
 
-export const verifyEmail = (body: { email: string; code: string }) =>
+/** `role` is optional: the page sends the role chosen on the sign-up form so a resubmitted sign-up verifies with it. */
+export const verifyEmail = (body: { email: string; code: string; role?: Role }) =>
   api<AccountResponse>(`${BASE}/verify-email`, { method: "POST", json: body });
 
 export const resetRequest = (body: { email: string }) =>

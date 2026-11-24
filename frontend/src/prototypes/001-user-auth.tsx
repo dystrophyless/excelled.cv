@@ -9,7 +9,7 @@ import { ResetConfirmView, type ResetConfirmState } from "@/features/auth/views/
 import { ResetVerifyView, type ResetVerifyState } from "@/features/auth/views/ResetVerifyView";
 import { ResetRequestView, type ResetRequestState } from "@/features/auth/views/ResetRequestView";
 import { SignInView, type SignInState } from "@/features/auth/views/SignInView";
-import { SignUpView, type SignUpState } from "@/features/auth/views/SignUpView";
+import { AccountDetailsView, type SignUpState } from "@/features/auth/views/AccountDetailsView";
 import { VerifyEmailView, type VerifyEmailState } from "@/features/auth/views/VerifyEmailView";
 import type { AuthRoutes } from "@/features/auth/views/auth-parts";
 
@@ -67,13 +67,14 @@ export function SignUpPrototype() {
   const keepsEmail = viewState === "email-taken" || viewState === "submitting" || viewState === "server-error";
   return (
     <>
-      <SignUpView
+      <AccountDetailsView
         key={state}
         state={viewState}
         role={employer ? "employer" : "student"}
         email={keepsEmail ? MOCK_EMAIL : ""}
         errors={viewState === "field-errors" ? SIGN_UP_FIELD_ERRORS : undefined}
         onSubmit={() => navigate(ROUTES.verify)}
+        onChangeRole={() => navigate("/prototypes/005-landing-role-choice/choose-role")}
         routes={ROUTES}
       />
       <StateSwitcher states={SIGN_UP_STATES} />

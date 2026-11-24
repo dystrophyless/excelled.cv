@@ -64,7 +64,8 @@ export const mockResendCode = {
 };
 
 export const mockVerifyEmail = {
-  ok: (page: Page, role: Role = "student") => at(page, "POST", "verify-email", (r) => json(r, 200, { account: account(role) })),
+  ok: (page: Page, role: Role = "student", hasProfile = true) =>
+    at(page, "POST", "verify-email", (r) => json(r, 200, { account: account(role, undefined, hasProfile) })),
   invalidCode: (page: Page, attemptsLeft = 2) => at(page, "POST", "verify-email", (r) => err(r, 400, "invalid_code", { attempts_left: attemptsLeft })),
   tooManyAttempts: (page: Page) => at(page, "POST", "verify-email", (r) => err(r, 400, "too_many_attempts")),
   codeExpired: (page: Page) => at(page, "POST", "verify-email", (r) => err(r, 400, "code_expired")),

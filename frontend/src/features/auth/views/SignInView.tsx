@@ -36,9 +36,9 @@ export function SignInView({ state, email = "", retryAfter = 0, errors, onSubmit
   };
 
   return (
-    <AuthFrame title="Welcome back" subtitle="Sign in to see your matches">
-      <Tray padding="lg" footerAlign="center" footer={<span>No account?&nbsp;<TextLink to={r.signUp}>Sign up</TextLink></span>}>
-        <form onSubmit={submit} aria-label="Sign in" noValidate>
+    <AuthFrame title="Welcome back" subtitle="Log in to continue">
+      <Tray padding="lg" footerAlign="center" footer={<span>No account?&nbsp;<TextLink to={r.signUp}>Create account</TextLink></span>}>
+        <form onSubmit={submit} aria-label="Log in" noValidate>
           <Stack gap={14}>
             {invalid && (
               <Alert tone="error" title="Wrong email or password">
@@ -47,11 +47,11 @@ export function SignInView({ state, email = "", retryAfter = 0, errors, onSubmit
             )}
             {locked && (
               <Alert key={nudge} tone="warning" title="Too many attempts">
-                Sign-in is paused for <Countdown left={left} />. <TextLink to={r.reset}>Reset your password</TextLink> to sign in now.
+                Logging in is paused for <Countdown left={left} />. <TextLink to={r.reset}>Reset your password</TextLink> to log in now.
               </Alert>
             )}
             {state === "server-error" && (
-              <Alert tone="error" title="Couldn't sign in">Check your connection and try again.</Alert>
+              <Alert tone="error" title="Couldn't log in">Check your connection and try again.</Alert>
             )}
             <TextField
               label="Email"
@@ -78,7 +78,7 @@ export function SignInView({ state, email = "", retryAfter = 0, errors, onSubmit
                 <TextLink to={r.reset} tone="muted">Forgot password?</TextLink>
               </div>
             </Stack>
-            <Button type="submit" size="lg" loading={state === "submitting"}>Sign in</Button>
+            <Button type="submit" size="lg" loading={state === "submitting"}>Log in</Button>
           </Stack>
         </form>
       </Tray>

@@ -24,7 +24,7 @@ export function ResetRequestView({ state, email = "", errors, onSubmit, routes }
 
   return (
     <AuthFrame title="Reset your password" subtitle="Enter your email and we'll send you a 6-digit code">
-      <Tray padding="lg" footerAlign="center" footer={<span>Remembered it?&nbsp;<TextLink to={r.signIn}>Sign in</TextLink></span>}>
+      <Tray padding="lg" footerAlign="center" footer={<span>Remembered it?&nbsp;<TextLink to={r.signIn}>Log in</TextLink></span>}>
         <form onSubmit={submit} aria-label="Reset password" noValidate>
           <Stack gap={14}>
             {state === "server-error" && (

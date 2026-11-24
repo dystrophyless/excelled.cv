@@ -14,6 +14,10 @@ import {
   DETAILS_STATES, LIST_STATES as OPPORTUNITIES_LIST_STATES, OpportunitiesListPrototype, OpportunityDetailsPrototype,
 } from "./004-student-opportunities";
 
+import {
+  AccountDetailsPrototype, DETAILS_STATES as ACCOUNT_DETAILS_STATES, LANDING_STATES, LandingPrototype, ROLE_STATES, RoleStepPrototype,
+} from "./005-landing-role-choice";
+
 /*
  * Feature prototypes, added by the ui-designer during /speckit-design.
  * Route: /prototypes/<id>/<screen>?state=<state>
@@ -66,6 +70,15 @@ export const PROTOTYPES: PrototypeEntry[] = [
     screens: {
       list: { title: "Opportunities", states: OPPORTUNITIES_LIST_STATES, Component: OpportunitiesListPrototype },
       details: { title: "Opportunity details", states: DETAILS_STATES, Component: OpportunityDetailsPrototype },
+    },
+  },
+  {
+    id: "005-landing-role-choice",
+    title: "Landing and role choice",
+    screens: {
+      landing: { title: "Landing", states: LANDING_STATES, Component: LandingPrototype },
+      "choose-role": { title: "Sign up: choose role", states: ROLE_STATES, Component: RoleStepPrototype },
+      "account-details": { title: "Sign up: account details", states: ACCOUNT_DETAILS_STATES, Component: AccountDetailsPrototype },
     },
   },
 ];
