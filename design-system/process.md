@@ -18,7 +18,7 @@ How a feature goes from spec to approved, implemented UI. SpecKit drives it; thr
 |---|---|---|---|
 | **ui-designer** (`.claude/agents/ui-designer.md`) | Sonnet | spec.md, plan.md, `design-system/*` (README first), reference templates | `specs/<NNN>/ui-spec.md`, view components + prototype, screenshots |
 | **ui-builder** (`.claude/agents/ui-builder.md`) | Sonnet | approved ui-spec, view components, `quality.md`, plan.md (API) | page containers, data hooks, e2e tests |
-| **design-qa** (`.claude/agents/design-qa.md`) | Sonnet | ui-spec, approved screenshots, `quality.md` checklist | `specs/<NNN>/design/qa-report.md` |
+| **design-qa** (`.claude/agents/design-qa.md`) | Sol | ui-spec, approved screenshots, `quality.md` checklist | a report, saved by the main session as `specs/<NNN>/design/qa-report.md` |
 | **design-architect** (`.claude/agents/design-architect.md`) | Opus | everything above | new archetype / pattern / component spec + reference template; critique after 2 rejected rounds |
 | **You (product owner)** | — | prototype on localhost + screenshots | approval or change requests in chat |
 
@@ -65,7 +65,7 @@ look at them, fix what breaks the checklist in `quality.md`.
 ## Step 5 — design QA (design-qa, after implement)
 
 Runs the checklist, snapshots the implemented routes with mocked API, compares to approved screenshots,
-writes `qa-report.md` with pass/fail and concrete fixes (`file:line`). Failures go back to ui-builder.
+returns the report saved as `qa-report.md`, with pass/fail and concrete fixes (`file:line`). Failures go back to ui-builder.
 
 ## Escalation: NEW-ARCHETYPE
 
