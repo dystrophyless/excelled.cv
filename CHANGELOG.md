@@ -5,6 +5,10 @@ and the project uses [Semantic Versioning](https://semver.org/) (pre-1.0: each d
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-25
+
+Feature `006-cv`.
+
 ### Added
 - Student CV: upload, download, replace and remove one CV on the profile page. PDF and DOCX, 1 byte to 5 MB; the file
   type is checked by content as well as by name. Replace and remove ask for confirmation.
@@ -16,6 +20,25 @@ and the project uses [Semantic Versioning](https://semver.org/) (pre-1.0: each d
 
 ### Changed
 - The profile page no longer shows CV as "Coming soon"; the CV is not part of onboarding or the profile edit form.
+
+## [0.6.0] - 2026-11-25
+
+Feature `005-landing-role-choice`.
+
+### Added
+- Public landing page at `/`: the platform, its main capabilities and both roles, with Create account and Log in.
+- Role step at the start of sign-up with nothing preselected; email and password follow. Going back keeps the role and
+  the email.
+- `POST /api/auth/verify-email` accepts an optional `role`, applied only when the code is correct.
+- `main` landmark on the auth screens.
+
+### Changed
+- `/employers`, `/vacancies` and `/vacancies/:id` lead to `/`; signed-in users opening `/` go to their role's home.
+- Auth wording is aligned to Log in / Create account; the Terms and Privacy line is removed.
+
+### Fixed
+- Changing the role and resubmitting sign-up within 60 seconds no longer creates the account with the first role.
+- Row menus no longer close right after opening because of a late scroll event.
 
 ## [0.5.0] - 2026-11-24
 
@@ -126,7 +149,11 @@ Feature `001-user-auth`.
 - Quality gates: Stylelint tokens-only, oxlint, Playwright + axe on desktop and phone.
 - SpecKit design workflow with agents `ui-designer`, `ui-builder`, `design-qa`, `design-architect`; constitution v1.0.0.
 
-[Unreleased]: https://github.com/dystrophyless/excelled.cv/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/dystrophyless/excelled.cv/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/dystrophyless/excelled.cv/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/dystrophyless/excelled.cv/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/dystrophyless/excelled.cv/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/dystrophyless/excelled.cv/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/dystrophyless/excelled.cv/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/dystrophyless/excelled.cv/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/dystrophyless/excelled.cv/releases/tag/v0.1.0

@@ -46,3 +46,10 @@ Agents live in `.claude/agents/`. Sol, Terra and Luna are ChatGPT models reached
 - A review finding is fixed as a class, not only on the reported line.
 - API tests run only on `novio_test`. The owner runs the backend (8000) and the frontend (5173).
 - Never send real CVs, personal data or secrets to an agent; use invented data.
+
+## Versions
+
+SemVer 0.x: a feature raises the minor version, a fix release the patch; tooling and documentation changes raise nothing.
+A feature's own PR updates `CHANGELOG.md`, the README version table and badge, `pyproject.toml`, `uv.lock`,
+`frontend/package.json` and `package-lock.json`. After the merge and the owner's confirmation: an annotated tag `vX.Y.Z`
+on the merge commit and a GitHub release with the changelog section.

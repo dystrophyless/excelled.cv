@@ -9,7 +9,7 @@ the match between the two drives what everyone sees.
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
-![Version](https://img.shields.io/badge/version-0.5.0-2f6bff)
+![Version](https://img.shields.io/badge/version-0.7.0-2f6bff)
 
 | Sign in | Employer vacancies |
 |---|---|
@@ -25,6 +25,8 @@ Novio is built feature by feature (spec → plan → approved design → tasks �
 
 | Version | What it adds |
 |---|---|
+| **0.7.0** | Student CV: upload, download, replace and remove one private PDF or DOCX |
+| **0.6.0** | Public landing page; the role is chosen explicitly at the start of sign-up |
 | **0.5.0** | Student opportunities: browse, search, filter and open active vacancies; the Research type |
 | **0.4.0** | Student and company profiles: 5-step onboarding with ready-made answers, My profile, editing; employers need a company profile to post |
 | **0.3.0** | Employer vacancies: post, edit, list, and manage status (draft, open, paused, closed), automatic closing at the deadline |
@@ -37,7 +39,7 @@ matching. See [CHANGELOG.md](CHANGELOG.md).
 ## Features
 
 **Accounts** (`specs/001-user-auth`)
-- Student and employer roles, chosen at sign-up; email verified with a 6-digit code.
+- Student and employer roles, chosen on the first sign-up step with nothing preselected; email verified with a 6-digit code.
 - 30-day sessions in an HttpOnly cookie that the server can revoke; a password reset signs out other devices.
 - Sign-in pause after 5 wrong passwords in a row; no response reveals whether an email has an account.
 - Role-based route guards in the SPA and a `require_role` dependency in the API.
@@ -125,7 +127,7 @@ Open <http://localhost:5173/sign-up>, choose a role and register. The verificati
 | `FRONTEND_ORIGIN` | origin allowed to make state-changing requests (default `http://localhost:5173`) |
 
 Upgrading from an older checkout: `uv run python -m src.scripts.create_tables` adds new tables and migrates data
-(CV: the `student_cvs` table; 0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"; 0.5.0: the "Research" opportunity type; vacancy salaries become monthly amounts with a currency, and an old text salary that is a plain number such as "200 000 ₸" becomes that amount in tenge, other texts stay in the old column and are listed in the output); it is safe to run again. Add
+(0.7.0: the `student_cvs` table; 0.4.0: profile tables; vacancies with the old "Data" field move to "Data Analytics"; 0.5.0: the "Research" opportunity type; vacancy salaries become monthly amounts with a currency, and an old text salary that is a plain number such as "200 000 ₸" becomes that amount in tenge, other texts stay in the old column and are listed in the output); it is safe to run again. Add
 `--reset-auth` only if the auth tables changed and you can lose development accounts.
 
 ## Tests and checks
@@ -189,7 +191,7 @@ sizes or shadows outside the tokens), so every screen looks like it belongs to t
 ## Versioning
 
 [Semantic Versioning](https://semver.org/): each delivered feature bumps the minor version while the product is
-pre-1.0. Versions are tagged (`v0.1.0` … `v0.3.0` so far) and described in [CHANGELOG.md](CHANGELOG.md).
+pre-1.0. Versions are tagged (`vX.Y.Z`) and described in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
