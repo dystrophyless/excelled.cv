@@ -18,13 +18,15 @@ export type ModalProps = {
   size?: "md" | "lg";
   /** Close on backdrop click (default true). Turn off for forms with unsaved input. */
   dismissible?: boolean;
+  /** A request is running (Novio): Close X is disabled and Esc and the backdrop do nothing until it ends. Default false. */
+  busy?: boolean;
   /** "visible" lets a popover (DateField calendar) extend past the card; use only for short forms */
   overflow?: "auto" | "visible";
   "data-testid"?: string;
 };
 
 export function Modal({
-  open, onClose, title, description, children, footer, size = "md", dismissible = true, overflow = "auto", ...rest
+  open, onClose, title, description, children, footer, size = "md", dismissible = true, busy = false, overflow = "auto", ...rest
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -33,7 +35,11 @@ export function Modal({
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
+    if (open && !dialog.open) {
+      dialog.showModal();
+      // Novio: a safe default button can ask for the first focus (data-autofocus) instead of the Close X
+      dialog.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+    }
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
@@ -47,11 +53,11 @@ export function Modal({
       aria-describedby={description ? descriptionId : undefined}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (!busy) onClose();
       }}
       onClick={(event) => {
         // The backdrop belongs to the <dialog>, so check the click landed outside its box (the tray counts as inside)
-        if (!dismissible || event.target !== event.currentTarget) return;
+        if (!dismissible || busy || event.target !== event.currentTarget) return;
         const box = event.currentTarget.getBoundingClientRect();
         const inside =
           event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
@@ -64,7 +70,7 @@ export function Modal({
           <div className={styles.card}>
             <div className={styles.head}>
               <h2 id={titleId} className={styles.title}>{title}</h2>
-              <button type="button" className={styles.close} onClick={onClose} aria-label="Close">
+              <button type="button" className={styles.close} onClick={onClose} disabled={busy} aria-label="Close">
                 <Icon name="close" size={16} />
               </button>
             </div>

@@ -4,6 +4,7 @@ from src.auth.models import (
     Session,
     SignInThrottle,
 )
+from src.cv.models import StudentCv
 from src.database import Base
 from src.profiles.models import CompanyProfile, StudentLanguage, StudentProfile, StudentProject
 from src.skills.models import Skill

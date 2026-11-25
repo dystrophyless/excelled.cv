@@ -89,7 +89,7 @@ no Apply. No filter aside — personal lists are short.
 
 ### Detail (own profile) — `/styleguide/templates/profile`
 States: `default` `loading`; `?preview=1`
-The profile as employers see it + an owner-only panel (strength, CV, visibility). Primary action "Edit profile".
+The profile as employers see it + an owner-only panel (strength, CV with upload / replace / download / remove, visibility). Primary action "Edit profile".
 Edit profile → Preview opens `?preview=1`: info Alert "This is what companies see" + "Back to editing", owner panel hidden
 (`TwoColumn` without `aside` renders main full width).
 

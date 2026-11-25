@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { expectNoA11yViolations } from "./support/a11y";
+import { mockCv } from "./support/cv-api";
 import { mockSignOut, signedInAs, signedOut } from "./support/auth-api";
 import {
   companyServer, mockCompanyCreate, mockProfileCatalog, mockStudentCreate, mockStudentProfile, newEmployer, newStudent,
@@ -374,6 +375,7 @@ test.describe("S2 My profile", () => {
   test.beforeEach(async ({ page }) => {
     await signedInAs(page, "student", EMAIL);
     await mockProfileCatalog.ok(page);
+    await mockCv.none(page); // 006-cv: My profile also asks for the CV
   });
 
   test("default: every section, Looking for above About, no completeness block", async ({ page }) => {

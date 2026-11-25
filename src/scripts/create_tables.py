@@ -13,6 +13,7 @@ from src.auth.models import (
     Session,
     SignInThrottle,
 )
+from src.cv import models as cv_models  # noqa: F401
 from src.database import Base, async_engine
 from src.profiles import models as profile_models  # noqa: F401
 from src.skills import models as skill_models  # noqa: F401

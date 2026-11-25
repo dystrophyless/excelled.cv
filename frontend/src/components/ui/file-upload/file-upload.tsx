@@ -10,13 +10,22 @@ export type FileUploadProps = {
   /** External error (e.g. upload failed); size/type errors are produced here */
   error?: ReactNode;
   optional?: boolean;
+  /** The label is read by screen readers but not drawn (a heading above already names the zone) */
+  hideLabel?: boolean;
   /** e.g. ".pdf,.docx" */
   accept?: string;
   maxSizeMb?: number;
-  value: File | null;
-  onChange: (file: File | null) => void;
+  value?: File | null;
+  onChange?: (file: File | null) => void;
+  /**
+   * Controlled-by-the-caller mode (Novio): the zone only reports the picked or dropped file; the caller validates it
+   * (and shows `error`) and owns what happens next. The zone never turns into a file row; `value` / `onChange` are unused.
+   */
+  onFile?: (file: File) => void;
   /** Text inside the drop zone */
-  prompt?: string;
+  prompt?: ReactNode;
+  /** A line inside the zone under the prompt; stays visible beside an error and is the input's description */
+  zoneHint?: ReactNode;
   "data-testid"?: string;
 };
 
@@ -26,7 +35,7 @@ function formatSize(bytes: number) {
 
 /** One file (CV, logo). Click or drop; the chosen file shows as a row with Replace / Remove. */
 export function FileUpload({
-  label, hint, error, optional, accept, maxSizeMb = 5, value, onChange, prompt = "Drop a file or click to upload", ...rest
+  label, hint, error, optional, hideLabel, accept, maxSizeMb = 5, value = null, onChange = () => {}, onFile, prompt = "Drop a file or click to upload", zoneHint, ...rest
 }: FileUploadProps) {
   const [dragging, setDragging] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -34,6 +43,7 @@ export function FileUpload({
 
   const pick = (file: File | undefined) => {
     if (!file) return;
+    if (onFile) { onFile(file); return; }
     const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
     if (accept && !accept.split(",").map((a) => a.trim().toLowerCase()).includes(ext)) {
       setLocalError(`Upload a ${accept.replaceAll(",", " or ")} file.`);
@@ -50,7 +60,7 @@ export function FileUpload({
   const hintText = hint ?? `${accept ? accept.replaceAll(",", ", ").toUpperCase().replaceAll(".", "") + " · " : ""}up to ${maxSizeMb} MB`;
 
   return (
-    <Field label={label} hint={value ? undefined : hintText} error={shownError} optional={optional}>
+    <Field label={label} hint={value ? undefined : hintText} error={shownError} optional={optional} hideLabel={hideLabel}>
       {(control) =>
         value ? (
           <div className={styles.file} data-testid={rest["data-testid"]}>
@@ -75,13 +85,18 @@ export function FileUpload({
           >
             <input
               {...control}
+              aria-describedby={[control["aria-describedby"], zoneHint ? `${control.id}-zonehint` : null].filter(Boolean).join(" ") || undefined}
               type="file"
               className={styles.input}
               accept={accept}
-              onChange={(e) => pick(e.target.files?.[0])}
+              onChange={(e) => {
+                pick(e.target.files?.[0]);
+                if (onFile) e.target.value = ""; // choosing the same file again must fire again
+              }}
             />
             <span className={styles.zoneIcon} aria-hidden="true"><Icon name="upload" size={18} /></span>
             <span className={styles.zoneTitle}>{prompt}</span>
+            {zoneHint && <span className={styles.zoneHint} id={`${control.id}-zonehint`}>{zoneHint}</span>}
           </div>
         )
       }

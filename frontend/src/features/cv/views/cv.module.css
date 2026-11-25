@@ -1,0 +1,204 @@
+/* 006-cv: the CV block of the owner panel and its dialogs. Tokens only. */
+
+.block {
+  display: grid;
+  gap: var(--space-12);
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.block:focus-visible {
+  outline: none;
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-focus-halo);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.stored {
+  display: grid;
+  gap: var(--space-12);
+  min-width: 0;
+  border-radius: var(--radius-control);
+}
+
+.stored:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-halo);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  min-width: 0;
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--control-md);
+  height: var(--control-md);
+  border-radius: var(--radius-control);
+  background: var(--color-tray);
+  color: var(--color-muted-strong);
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  display: block;
+  min-width: 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.fit {
+  display: block;
+  overflow: hidden;
+  min-height: var(--leading-body);
+  white-space: nowrap;
+}
+
+/* In dialogs the whole name is shown, wrapped */
+.name[data-wrap] {
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--color-muted-strong);
+}
+
+.statusIcon {
+  flex: none;
+  color: var(--color-success);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.pending {
+  display: grid;
+  gap: var(--space-12);
+}
+
+.swap {
+  display: grid;
+  gap: var(--space-12);
+  min-width: 0;
+}
+
+.swapItem {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.swapLabel {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-muted);
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+}
+
+.skeletonText {
+  display: grid;
+  flex: 1;
+  gap: var(--space-8);
+  padding-top: var(--space-4);
+}
+
+.skeletonActions {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.dialogBody {
+  display: grid;
+  gap: var(--space-16);
+  min-width: 0;
+}
+
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.alertBody {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-8);
+}
+
+/* "or drop it here" only where a pointer can drag a file */
+@media (pointer: coarse) {
+  .dropHint {
+    display: none;
+  }
+}
+
+/* Mobile shortcut in the identity facts: looks like a fact, reads as a link; the panel is beside the card from 1024 */
+.jump {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  border-radius: var(--radius-chip);
+  color: var(--color-muted-strong);
+  text-decoration: underline;
+  text-decoration-color: var(--color-line-strong);
+  text-underline-offset: 3px;
+  /* a 24px target (WCAG 2.5.8): the padding is cancelled by the negative margin, so the facts row does not move */
+  padding-block: var(--space-4);
+  margin-block: calc(-1 * var(--space-4));
+}
+
+.jump:hover {
+  color: var(--color-ink);
+  text-decoration-color: var(--color-ink);
+}
+
+@media (min-width: 1024px) {
+  .jumpItem.jumpItem {
+    display: none;
+  }
+}
