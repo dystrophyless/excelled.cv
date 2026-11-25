@@ -17,6 +17,32 @@ During `/speckit-implement`, every task marked **(ui-builder)** in `tasks.md` is
 (Agent tool, `subagent_type: ui-builder`), never written in the main session. Give it the feature dir, the task IDs and
 the ui-spec screen ids; batch consecutive ui-builder tasks of one user story into one run.
 
-All other implementation tasks (backend, API tests, documentation) are delegated to a worker on Sonnet (Agent tool,
-`subagent_type: general-purpose`, `model: sonnet`). The main session writes the spec, plan and tasks, reviews the workers'
-results, runs the checks and commits.
+Every other implementation task goes to the `implementer` agent. The main session does not implement: it writes the
+spec, plan and tasks, checks the agents' reports against real command output, asks the owner, and commits.
+
+## Agents and models
+
+Agents live in `.claude/agents/`. Sol, Terra and Luna are ChatGPT models reached through `clodex`: start the session with
+`clodex claude`. If such an agent cannot start, tell the owner; do not silently switch models.
+
+| Work | Agent | Model |
+|---|---|---|
+| Feature design; UI implementation | `ui-designer`; `ui-builder` | Sonnet |
+| New archetype; critique after two rejections | `design-architect` | Opus |
+| Design QA | `design-qa` (returns its report, the main session saves it) | Sol |
+| Backend and other non-UI tasks | `implementer` | Terra |
+| Tasks marked **(sol)**: access, privacy, concurrency, database upgrades; tasks `implementer` failed twice | `implementer-sol` | Sol |
+| Extra API tests | `test-writer` | Terra |
+| Review of spec, plan and tasks, after `/speckit-tasks` | `spec-reviewer` | Sol |
+| Review of the diff, before a PR is proposed | `code-reviewer` | Sol |
+| Failing or flaky tests | `test-triage` | Sol |
+| Walking `quickstart.md` in a browser | `quickstart-runner` | Sol |
+| Trying to break the running app, when the owner asks | `explorer-qa` | Terra |
+| Full check runs | `verifier` | Luna |
+| README, CHANGELOG, backlog, quickstart and task checkboxes | `docs-sync` | Luna |
+
+- Spawn agents only where the workflow calls for them. Memory is low: one heavy run (Playwright, build, full pytest) at
+  a time, in the foreground.
+- A review finding is fixed as a class, not only on the reported line.
+- API tests run only on `novio_test`. The owner runs the backend (8000) and the frontend (5173).
+- Never send real CVs, personal data or secrets to an agent; use invented data.

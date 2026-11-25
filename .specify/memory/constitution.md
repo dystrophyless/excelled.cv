@@ -38,7 +38,7 @@ output reported. Screenshots of desktop (1440) and mobile (390) are checked by e
 
 ## Workflow and roles
 
-`design-system/process.md` defines the agents: ui-designer, ui-builder, design-qa (Sonnet) and design-architect (Opus,
+`design-system/process.md` defines the agents: ui-designer, ui-builder (Sonnet), design-qa (Sol) and design-architect (Opus,
 escalations only), and the hooks in `.specify/extensions.yml` (after_plan design, before_tasks gate, after_implement QA).
 
 ## Governance
@@ -47,4 +47,4 @@ This constitution and `design-system/` override ad-hoc preferences. Amendments: 
 `/speckit-constitution`, bump the version (MAJOR: principle removed or redefined; MINOR: principle added; PATCH: wording),
 and update dependent templates. Reviews check compliance with principles II–V.
 
-**Version**: 1.0.1 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-11-02
+**Version**: 1.0.2 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-11-25
