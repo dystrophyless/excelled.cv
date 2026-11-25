@@ -1,6 +1,6 @@
 [project]
 name = "novio"
-version = "0.5.0"
+version = "0.7.0"
 description = "Career platform that matches students' skills with internships and junior jobs."
 readme = "README.md"
 requires-python = ">=3.13"
