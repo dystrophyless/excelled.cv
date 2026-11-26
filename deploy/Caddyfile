@@ -1,0 +1,28 @@
+{
+	admin off
+	default_sni {$NOVIO_SITE}
+}
+
+(novio) {
+	encode zstd gzip
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+	respond 404
+}
+
+{$NOVIO_SITE} {
+	tls {
+		issuer acme {
+			dir https://acme-v02.api.letsencrypt.org/directory
+			profile shortlived
+			disable_tlsalpn_challenge
+		}
+	}
+	import novio
+}
+
+# A private listener for the deployment smoke check.
+http://:8081 {
+	import novio
+}

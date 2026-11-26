@@ -29,3 +29,5 @@ snapshots
 # playwright
 test-results
 playwright-report
+
+.vercel/

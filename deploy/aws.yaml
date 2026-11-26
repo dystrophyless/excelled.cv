@@ -1,0 +1,246 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Novio on EC2 with HTTPS, a retained database volume and automatic releases from GitHub.
+
+Parameters:
+  BootstrapRevision:
+    Type: String
+    AllowedPattern: '[0-9a-f]{40}'
+    Description: Full Git commit SHA containing the checked deployment scripts.
+  FrontendOrigin:
+    Type: String
+    AllowedPattern: 'https://[A-Za-z0-9.-]+'
+    Description: Exact public HTTPS origin of the Vercel frontend, without a trailing slash.
+  InstanceType:
+    Type: String
+    Default: t3.small
+    AllowedValues: [t3.small, t3.medium]
+  ResendFromEmail:
+    Type: String
+    Default: onboarding@resend.dev
+    AllowedPattern: '[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+'
+  Ami:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+
+Resources:
+  Network:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.72.0.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+  Gateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Network
+      InternetGatewayId: !Ref Gateway
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Network
+      CidrBlock: 10.72.0.0/26
+      AvailabilityZone: !Select [0, !GetAZs '']
+  Routes:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Network
+  InternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref Routes
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref Gateway
+  SubnetRoute:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref Routes
+      SubnetId: !Ref Subnet
+  WebAccess:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Public HTTPS and ACME HTTP challenges
+      VpcId: !Ref Network
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+  Address:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachment
+    Properties:
+      Domain: vpc
+  AddressAttachment:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt Address.AllocationId
+      InstanceId: !Ref Server
+  DataVolume:
+    Type: AWS::EC2::Volume
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      AvailabilityZone: !GetAtt Subnet.AvailabilityZone
+      Size: 20
+      VolumeType: gp3
+      Encrypted: true
+      Tags:
+        - Key: Name
+          Value: novio-data
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: fetch-novio-resend-key
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: ssm:GetParameter
+                Resource: !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/novio/production/resend-api-key'
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref InstanceRole]
+  Server:
+    Type: AWS::EC2::Instance
+    DependsOn: [InternetRoute, SubnetRoute]
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT20M
+    Properties:
+      ImageId: !Ref Ami
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref InstanceProfile
+      MetadataOptions:
+        HttpTokens: required
+        HttpPutResponseHopLimit: 1
+      CreditSpecification:
+        CPUCredits: standard
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          SubnetId: !Ref Subnet
+          GroupSet: [!Ref WebAccess]
+          AssociatePublicIpAddress: true
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            Encrypted: true
+            VolumeType: gp3
+            VolumeSize: 12
+      Volumes:
+        - Device: /dev/sdf
+          VolumeId: !Ref DataVolume
+      Tags:
+        - Key: Name
+          Value: novio
+      UserData:
+        Fn::Base64: !Sub |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          finish() {
+            status=$?
+            /opt/aws/bin/cfn-signal -e "$status" --stack '${AWS::StackName}' --resource Server --region '${AWS::Region}'
+            exit "$status"
+          }
+          trap finish EXIT
+          dnf -y install docker aws-cfn-bootstrap jq openssl
+          systemctl enable --now docker
+
+          # Nitro exposes the EBS volume ID as the NVMe serial number.
+          volume_id='${DataVolume}'
+          for attempt in $(seq 1 60); do
+            device=$(lsblk -dnro PATH,SERIAL | awk -v id="$(tr -d '-' <<< "$volume_id")" '$2 == id { print $1 }')
+            [[ -b "$device" ]] && break
+            sleep 2
+          done
+          test -b "$device"
+          if ! blkid "$device" >/dev/null; then
+            mkfs.ext4 "$device"
+          fi
+          install -d -m 0700 /var/lib/novio
+          echo "UUID=$(blkid -s UUID -o value "$device") /var/lib/novio ext4 defaults 0 2" >> /etc/fstab
+          mount /var/lib/novio
+          chmod 0700 /var/lib/novio
+          install -d -m 0750 /opt/novio
+          install -d /var/lib/novio/postgres
+          install -d -o 10001 -g 10001 /var/lib/novio/{caddy-data,caddy-config}
+
+          install -d /usr/local/lib/docker/cli-plugins
+          plugin=/usr/local/lib/docker/cli-plugins/docker-compose
+          curl --fail --silent --show-error --location --retry 4 --output "$plugin" \
+            https://github.com/docker/compose/releases/download/v5.8.0/docker-compose-linux-x86_64
+          echo "b8840f5008c447f41fce0a57ae3adeab42c89b1eb6e6012524bcabbfb4ffbaf6  $plugin" | sha256sum --check
+          chmod 0755 "$plugin"
+
+          for name in compose.yaml pull-release.sh smoke.sh; do
+            curl --fail --silent --show-error --retry 4 --output "/opt/novio/$name" \
+              "https://raw.githubusercontent.com/dystrophyless/excelled.cv/${BootstrapRevision}/deploy/$name"
+          done
+
+          umask 077
+          env_file=/var/lib/novio/runtime.env
+          if [[ ! -f "$env_file" ]]; then
+            printf 'POSTGRES_PASSWORD=%s\nSECRET_KEY=%s\n' \
+              "$(openssl rand -hex 32)" "$(openssl rand -hex 48)" > "$env_file"
+          fi
+          sed -i '/^NOVIO_SITE=/d; /^NOVIO_FRONTEND_ORIGIN=/d; /^RESEND_API_KEY=/d; /^RESEND_FROM_EMAIL=/d' "$env_file"
+          resend_key=$(aws ssm get-parameter --region '${AWS::Region}' \
+            --name /novio/production/resend-api-key --with-decryption --query 'Parameter.Value' --output text)
+          [[ "$resend_key" =~ ^re_[a-zA-Z0-9_-]+$ ]]
+          printf 'NOVIO_SITE=%s\nNOVIO_FRONTEND_ORIGIN=%s\nRESEND_API_KEY=%s\nRESEND_FROM_EMAIL=%s\n' \
+            '${Address}' '${FrontendOrigin}' "$resend_key" '${ResendFromEmail}' >> "$env_file"
+
+          cat > /etc/systemd/system/novio-deploy.service <<'UNIT'
+          [Unit]
+          Description=Install the latest verified Novio release
+          After=docker.service network-online.target
+          Requires=docker.service
+          Wants=network-online.target
+          RequiresMountsFor=/var/lib/novio
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/bash /opt/novio/pull-release.sh
+          TimeoutStartSec=12min
+          StandardOutput=journal+console
+          StandardError=journal+console
+          UNIT
+          cat > /etc/systemd/system/novio-deploy.timer <<'UNIT'
+          [Unit]
+          Description=Check for new Novio releases every five minutes
+
+          [Timer]
+          OnBootSec=5min
+          OnUnitInactiveSec=5min
+
+          [Install]
+          WantedBy=timers.target
+          UNIT
+          systemctl daemon-reload
+          systemctl start novio-deploy.service
+          systemctl enable --now novio-deploy.timer
+
+Outputs:
+  Url:
+    Description: HTTPS origin for the Vercel API proxy
+    Value: !Sub 'https://${Address}'
+  InstanceId:
+    Value: !Ref Server
+  DatabaseVolumeId:
+    Value: !Ref DataVolume
