@@ -1,0 +1,129 @@
+name: CI and AWS release
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: novio-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18-bookworm
+        env:
+          POSTGRES_USER: novio
+          POSTGRES_PASSWORD: ci-test
+          POSTGRES_DB: novio_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U novio -d novio_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://novio:ci-test@localhost:5432/novio_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          python-version: '3.13'
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run --no-sync pytest -q
+
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run lint:css
+      - run: npm run test:e2e -- --workers=2
+
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NOVIO_IMAGE: novio:release
+      NOVIO_SITE: 127.0.0.1
+      NOVIO_FRONTEND_ORIGIN: https://novio.example.com
+      NOVIO_BIND_ADDRESS: 127.0.0.1
+      NOVIO_HTTP_PORT: '18080'
+      NOVIO_HTTPS_PORT: '18443'
+      POSTGRES_PASSWORD: ci-test
+      SECRET_KEY: ci-smoke-only
+      RESEND_API_KEY: re_ci_smoke
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the Linux image
+        run: docker build --label "org.opencontainers.image.revision=$GITHUB_SHA" --tag "$NOVIO_IMAGE" .
+      - name: Start the production stack and check API routing
+        run: |
+          export NOVIO_DATA_DIR="$RUNNER_TEMP/novio-data"
+          mkdir -p "$NOVIO_DATA_DIR"/{postgres,caddy-data,caddy-config}
+          sudo chown -R 10001:10001 "$NOVIO_DATA_DIR"/caddy-*
+          docker compose -f deploy/compose.yaml up --wait db
+          docker compose -f deploy/compose.yaml run --rm --no-deps api python -m src.scripts.create_tables
+          docker compose -f deploy/compose.yaml up --wait api web
+          bash deploy/smoke.sh http://127.0.0.1:18081 "$NOVIO_FRONTEND_ORIGIN"
+      - name: Save the tested image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -o pipefail
+          docker save "$NOVIO_IMAGE" | gzip -1 > "$RUNNER_TEMP/novio-image.tar.gz"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: aws-image
+          path: ${{ runner.temp }}/novio-image.tar.gz
+          compression-level: 0
+          retention-days: 3
+
+  publish:
+    if: github.ref == 'refs/heads/main'
+    needs: [backend, frontend, image]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: aws-image
+      - name: Publish the checked image to the rolling AWS release
+        run: |
+          if ! gh release view aws-deploy >/dev/null 2>&1; then
+            gh release create aws-deploy --target "$GITHUB_SHA" --prerelease --latest=false \
+              --title "AWS deployment image" --notes "Rolling Linux image for AWS. The image label records the tested main commit."
+          fi
+          gh release upload aws-deploy novio-image.tar.gz --clobber
