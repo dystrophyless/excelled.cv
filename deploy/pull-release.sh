@@ -16,8 +16,10 @@ if [[ -s "$active_file" ]]; then
   read -r previous < "$active_file"
 fi
 
-metadata=$(curl --fail --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
-  https://api.github.com/repos/dystrophyless/excelled.cv/releases/tags/aws-deploy)
+# The repository ID stays constant when the GitHub project is renamed.
+release_api=https://api.github.com/repositories/1469266514/releases
+metadata=$(curl --fail --silent --show-error --location --retry 3 --connect-timeout 10 --max-time 30 \
+  "$release_api/tags/aws-deploy")
 read -r asset_id digest < <(jq -er '
   .assets[] | select(.name == "novio-image.tar.gz" and .state == "uploaded") |
   select(.digest | test("^sha256:[a-f0-9]{64}$")) | [.id, .digest] | @tsv
@@ -33,7 +35,7 @@ if ! docker image inspect "$candidate" >/dev/null 2>&1; then
   trap 'rm -f "$archive"' EXIT
   curl --fail --silent --show-error --location --retry 3 --connect-timeout 10 --max-time 240 \
     --header 'Accept: application/octet-stream' --output "$archive" \
-    "https://api.github.com/repos/dystrophyless/excelled.cv/releases/assets/$asset_id"
+    "$release_api/assets/$asset_id"
   printf '%s  %s\n' "${digest#sha256:}" "$archive" | sha256sum --check --status
   docker load --input "$archive"
   docker image tag novio:release "$candidate"

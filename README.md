@@ -97,8 +97,8 @@ stateDiagram-v2
 browser tests).
 
 ```bash
-git clone https://github.com/dystrophyless/excelled.cv.git
-cd excelled.cv
+git clone https://github.com/dystrophyless/Novio.git
+cd Novio
 
 # 1. Backend
 uv sync
