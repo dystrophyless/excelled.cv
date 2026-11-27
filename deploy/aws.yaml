@@ -190,7 +190,8 @@ Resources:
 
           for name in compose.yaml pull-release.sh smoke.sh; do
             curl --fail --silent --show-error --retry 4 --output "/opt/novio/$name" \
-              "https://raw.githubusercontent.com/dystrophyless/excelled.cv/${BootstrapRevision}/deploy/$name"
+              --header 'Accept: application/vnd.github.raw+json' \
+              "https://api.github.com/repositories/1469266514/contents/deploy/$name?ref=${BootstrapRevision}"
           done
 
           umask 077
