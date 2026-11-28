@@ -28,6 +28,11 @@ async def upsert_skills(db: AsyncSession, names: list[str]) -> dict[str, Skill]:
     return {skill.key: skill for skill in rows}
 
 
+async def all_names(db: AsyncSession) -> list[str]:
+    """Every skill name in the vocabulary (the CV extraction also looks for the skills employers use)."""
+    return list((await db.execute(select(Skill.name))).scalars().all())
+
+
 async def suggest(db: AsyncSession, query: str, limit: int = 10) -> list[str]:
     """Skill names starting with `query`; with an empty query, the most used skills first."""
     # Imported here: the vacancies package imports this module for upserts.

@@ -17,6 +17,7 @@ from src.cv import models as cv_models  # noqa: F401
 from src.database import Base, async_engine
 from src.profiles import models as profile_models  # noqa: F401
 from src.skills import models as skill_models  # noqa: F401
+from src.student_skills import models as student_skill_models  # noqa: F401
 from src.users import models as user_models  # noqa: F401
 from src.vacancies import models as vacancy_models  # noqa: F401
 from src.vacancies.models import SALARY_CHECKS, SALARY_MAX
