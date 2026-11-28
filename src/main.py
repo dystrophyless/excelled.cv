@@ -18,6 +18,7 @@ from src.opportunities.router import router as opportunities_router
 from src.profiles.router import router as profiles_router
 from src.database import async_engine
 from src.skills.router import router as skills_router
+from src.student_skills.router import router as student_skills_router
 from src.users.router import router as users_router
 from src.vacancies.router import router as vacancies_router
 
@@ -89,6 +90,7 @@ app.include_router(vacancies_router, prefix="/api", tags=["vacancies"])
 app.include_router(profiles_router, prefix="/api", tags=["profiles"])
 app.include_router(opportunities_router, prefix="/api", tags=["opportunities"])
 app.include_router(cv_router, prefix="/api", tags=["cv"])
+app.include_router(student_skills_router, prefix="/api", tags=["student-skills"])
 
 
 @app.get("/")

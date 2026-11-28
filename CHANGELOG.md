@@ -5,6 +5,17 @@ and the project uses [Semantic Versioning](https://semver.org/) (pre-1.0: each d
 
 ## [Unreleased]
 
+### Added
+- Student skills: `GET` / `PUT /api/student/skills`, the skills a student has, in the shared skills vocabulary used by
+  vacancies. Each skill has a `source` (manual or CV) and a `confirmed` flag; saving a list confirms its skills (the
+  base for reviewing CV skills, US-18, and for matching). New table `student_skills`, created by `create_tables`.
+  Contract: `specs/007-student-skills/contracts/skills-api.md`.
+- Skills from the CV (US-17): `POST /api/student/skills/extract` reads the student's PDF or DOCX CV and stores the skills
+  it names (about 150 technical and soft skills with other spellings, plus the skills employers use) as unconfirmed
+  `cv` skills for review. Skills the student already has are never changed. The CV text is not stored or sent anywhere;
+  scans and damaged files answer `cv_unreadable`, a missing CV `cv_required`. New dependencies: `pypdf`, `python-docx`.
+  Contract: `specs/008-extract-skills/contracts/extract-api.md`.
+
 ## [0.7.0] - 2026-11-25
 
 Feature `006-cv`.

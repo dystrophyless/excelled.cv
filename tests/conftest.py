@@ -27,6 +27,7 @@ from src.main import app  # noqa: E402
 from src.cv import models as cv_models  # noqa: F401, E402
 from src.profiles import models as profile_models  # noqa: F401, E402
 from src.skills import models as skill_models  # noqa: F401, E402
+from src.student_skills import models as student_skill_models  # noqa: F401, E402
 from src.users import models as user_models  # noqa: F401, E402
 from src.vacancies import models as vacancy_models  # noqa: F401, E402
 from src.users.models import User, UserRole  # noqa: E402
